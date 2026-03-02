@@ -1,0 +1,668 @@
+{
+  "success": true,
+  "url": "http://localhost:3000/bao-gia/tao-moi",
+  "title": "Auto Quotation - Tạo báo giá nhanh",
+  "elementCount": 33,
+  "elements": [
+    {
+      "index": 0,
+      "tagName": "a",
+      "type": null,
+      "id": null,
+      "className": "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left outline-hidden ring-sidebar-ring transition-[width,height,padding] focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-12 text-sm group-data-[collapsible=icon]:p-0!",
+      "name": null,
+      "value": null,
+      "text": "Auto QuotationBáo giá nhanh",
+      "href": "http://localhost:3000/",
+      "selector": "a.peer/menu-button.flex.w-full.items-center.gap-2.overflow-hidden.rounded-md.p-2.text-left.outline-hidden.ring-sidebar-ring.transition-[width,height,padding].focus-visible:ring-2.active:bg-sidebar-accent.active:text-sidebar-accent-foreground.disabled:pointer-events-none.disabled:opacity-50.group-has-data-[sidebar=menu-action]/menu-item:pr-8.aria-disabled:pointer-events-none.aria-disabled:opacity-50.data-[active=true]:bg-sidebar-accent.data-[active=true]:font-medium.data-[active=true]:text-sidebar-accent-foreground.data-[state=open]:hover:bg-sidebar-accent.data-[state=open]:hover:text-sidebar-accent-foreground.group-data-[collapsible=icon]:size-8!.[&>span:last-child]:truncate.[&>svg]:size-4.[&>svg]:shrink-0.hover:bg-sidebar-accent.hover:text-sidebar-accent-foreground.h-12.text-sm.group-data-[collapsible=icon]:p-0!",
+      "xpath": "/html/body/div[2]/div[1]/div[2]/div[1]/div[1]/ul[1]/li[1]/a[1]",
+      "visible": true,
+      "position": {
+        "x": 8,
+        "y": 8,
+        "width": 239,
+        "height": 48
+      }
+    },
+    {
+      "index": 1,
+      "tagName": "a",
+      "type": null,
+      "id": null,
+      "className": "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left outline-hidden ring-sidebar-ring transition-[width,height,padding] focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-8 text-sm",
+      "name": null,
+      "value": null,
+      "text": "Tổng quan",
+      "href": "http://localhost:3000/",
+      "selector": "a.peer/menu-button.flex.w-full.items-center.gap-2.overflow-hidden.rounded-md.p-2.text-left.outline-hidden.ring-sidebar-ring.transition-[width,height,padding].focus-visible:ring-2.active:bg-sidebar-accent.active:text-sidebar-accent-foreground.disabled:pointer-events-none.disabled:opacity-50.group-has-data-[sidebar=menu-action]/menu-item:pr-8.aria-disabled:pointer-events-none.aria-disabled:opacity-50.data-[active=true]:bg-sidebar-accent.data-[active=true]:font-medium.data-[active=true]:text-sidebar-accent-foreground.data-[state=open]:hover:bg-sidebar-accent.data-[state=open]:hover:text-sidebar-accent-foreground.group-data-[collapsible=icon]:size-8!.group-data-[collapsible=icon]:p-2!.[&>span:last-child]:truncate.[&>svg]:size-4.[&>svg]:shrink-0.hover:bg-sidebar-accent.hover:text-sidebar-accent-foreground.h-8.text-sm",
+      "xpath": "/html/body/div[2]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/ul[1]/li[1]/a[1]",
+      "visible": true,
+      "position": {
+        "x": 8,
+        "y": 72,
+        "width": 239,
+        "height": 32
+      }
+    },
+    {
+      "index": 2,
+      "tagName": "a",
+      "type": null,
+      "id": null,
+      "className": "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left outline-hidden ring-sidebar-ring transition-[width,height,padding] focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-8 text-sm",
+      "name": null,
+      "value": null,
+      "text": "Báo giá",
+      "href": "http://localhost:3000/bao-gia",
+      "selector": "a.peer/menu-button.flex.w-full.items-center.gap-2.overflow-hidden.rounded-md.p-2.text-left.outline-hidden.ring-sidebar-ring.transition-[width,height,padding].focus-visible:ring-2.active:bg-sidebar-accent.active:text-sidebar-accent-foreground.disabled:pointer-events-none.disabled:opacity-50.group-has-data-[sidebar=menu-action]/menu-item:pr-8.aria-disabled:pointer-events-none.aria-disabled:opacity-50.data-[active=true]:bg-sidebar-accent.data-[active=true]:font-medium.data-[active=true]:text-sidebar-accent-foreground.data-[state=open]:hover:bg-sidebar-accent.data-[state=open]:hover:text-sidebar-accent-foreground.group-data-[collapsible=icon]:size-8!.group-data-[collapsible=icon]:p-2!.[&>span:last-child]:truncate.[&>svg]:size-4.[&>svg]:shrink-0.hover:bg-sidebar-accent.hover:text-sidebar-accent-foreground.h-8.text-sm",
+      "xpath": "/html/body/div[2]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/ul[1]/li[2]/a[1]",
+      "visible": true,
+      "position": {
+        "x": 8,
+        "y": 108,
+        "width": 239,
+        "height": 32
+      }
+    },
+    {
+      "index": 3,
+      "tagName": "a",
+      "type": null,
+      "id": null,
+      "className": "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left outline-hidden ring-sidebar-ring transition-[width,height,padding] focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-8 text-sm",
+      "name": null,
+      "value": null,
+      "text": "Sản phẩm",
+      "href": "http://localhost:3000/san-pham",
+      "selector": "a.peer/menu-button.flex.w-full.items-center.gap-2.overflow-hidden.rounded-md.p-2.text-left.outline-hidden.ring-sidebar-ring.transition-[width,height,padding].focus-visible:ring-2.active:bg-sidebar-accent.active:text-sidebar-accent-foreground.disabled:pointer-events-none.disabled:opacity-50.group-has-data-[sidebar=menu-action]/menu-item:pr-8.aria-disabled:pointer-events-none.aria-disabled:opacity-50.data-[active=true]:bg-sidebar-accent.data-[active=true]:font-medium.data-[active=true]:text-sidebar-accent-foreground.data-[state=open]:hover:bg-sidebar-accent.data-[state=open]:hover:text-sidebar-accent-foreground.group-data-[collapsible=icon]:size-8!.group-data-[collapsible=icon]:p-2!.[&>span:last-child]:truncate.[&>svg]:size-4.[&>svg]:shrink-0.hover:bg-sidebar-accent.hover:text-sidebar-accent-foreground.h-8.text-sm",
+      "xpath": "/html/body/div[2]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/ul[1]/li[3]/a[1]",
+      "visible": true,
+      "position": {
+        "x": 8,
+        "y": 144,
+        "width": 239,
+        "height": 32
+      }
+    },
+    {
+      "index": 4,
+      "tagName": "a",
+      "type": null,
+      "id": null,
+      "className": "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left outline-hidden ring-sidebar-ring transition-[width,height,padding] focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-8 text-sm",
+      "name": null,
+      "value": null,
+      "text": "Khách hàng",
+      "href": "http://localhost:3000/khach-hang",
+      "selector": "a.peer/menu-button.flex.w-full.items-center.gap-2.overflow-hidden.rounded-md.p-2.text-left.outline-hidden.ring-sidebar-ring.transition-[width,height,padding].focus-visible:ring-2.active:bg-sidebar-accent.active:text-sidebar-accent-foreground.disabled:pointer-events-none.disabled:opacity-50.group-has-data-[sidebar=menu-action]/menu-item:pr-8.aria-disabled:pointer-events-none.aria-disabled:opacity-50.data-[active=true]:bg-sidebar-accent.data-[active=true]:font-medium.data-[active=true]:text-sidebar-accent-foreground.data-[state=open]:hover:bg-sidebar-accent.data-[state=open]:hover:text-sidebar-accent-foreground.group-data-[collapsible=icon]:size-8!.group-data-[collapsible=icon]:p-2!.[&>span:last-child]:truncate.[&>svg]:size-4.[&>svg]:shrink-0.hover:bg-sidebar-accent.hover:text-sidebar-accent-foreground.h-8.text-sm",
+      "xpath": "/html/body/div[2]/div[1]/div[2]/div[1]/div[2]/div[1]/div[1]/ul[1]/li[4]/a[1]",
+      "visible": true,
+      "position": {
+        "x": 8,
+        "y": 180,
+        "width": 239,
+        "height": 32
+      }
+    },
+    {
+      "index": 5,
+      "tagName": "a",
+      "type": null,
+      "id": null,
+      "className": "peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md p-2 text-left outline-hidden ring-sidebar-ring transition-[width,height,padding] focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 group-has-data-[sidebar=menu-action]/menu-item:pr-8 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:font-medium data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground h-8 text-sm",
+      "name": null,
+      "value": null,
+      "text": "Cài đặt",
+      "href": "http://localhost:3000/cai-dat",
+      "selector": "a.peer/menu-button.flex.w-full.items-center.gap-2.overflow-hidden.rounded-md.p-2.text-left.outline-hidden.ring-sidebar-ring.transition-[width,height,padding].focus-visible:ring-2.active:bg-sidebar-accent.active:text-sidebar-accent-foreground.disabled:pointer-events-none.disabled:opacity-50.group-has-data-[sidebar=menu-action]/menu-item:pr-8.aria-disabled:pointer-events-none.aria-disabled:opacity-50.data-[active=true]:bg-sidebar-accent.data-[active=true]:font-medium.data-[active=true]:text-sidebar-accent-foreground.data-[state=open]:hover:bg-sidebar-accent.data-[state=open]:hover:text-sidebar-accent-foreground.group-data-[collapsible=icon]:size-8!.group-data-[collapsible=icon]:p-2!.[&>span:last-child]:truncate.[&>svg]:size-4.[&>svg]:shrink-0.hover:bg-sidebar-accent.hover:text-sidebar-accent-foreground.h-8.text-sm",
+      "xpath": "/html/body/div[2]/div[1]/div[2]/div[1]/div[3]/ul[1]/li[1]/a[1]",
+      "visible": true,
+      "position": {
+        "x": 8,
+        "y": 1040,
+        "width": 239,
+        "height": 32
+      }
+    },
+    {
+      "index": 6,
+      "tagName": "button",
+      "type": "submit",
+      "id": null,
+      "className": "hover:after:bg-sidebar-border absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] sm:flex in-data-[side=left]:cursor-w-resize in-data-[side=right]:cursor-e-resize [[data-side=left][data-state=collapsed]_&]:cursor-e-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize hover:group-data-[collapsible=offcanvas]:bg-sidebar group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full [[data-side=left][data-collapsible=offcanvas]_&]:-right-2 [[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
+      "name": null,
+      "value": null,
+      "text": null,
+      "href": null,
+      "selector": "button.hover:after:bg-sidebar-border.absolute.inset-y-0.z-20.hidden.w-4.-translate-x-1/2.transition-all.ease-linear.group-data-[side=left]:-right-4.group-data-[side=right]:left-0.after:absolute.after:inset-y-0.after:left-1/2.after:w-[2px].sm:flex.in-data-[side=left]:cursor-w-resize.in-data-[side=right]:cursor-e-resize.[[data-side=left][data-state=collapsed]_&]:cursor-e-resize.[[data-side=right][data-state=collapsed]_&]:cursor-w-resize.hover:group-data-[collapsible=offcanvas]:bg-sidebar.group-data-[collapsible=offcanvas]:translate-x-0.group-data-[collapsible=offcanvas]:after:left-full.[[data-side=left][data-collapsible=offcanvas]_&]:-right-2.[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
+      "xpath": "/html/body/div[2]/div[1]/div[2]/div[1]/button[1]",
+      "visible": true,
+      "position": {
+        "x": 247,
+        "y": 0,
+        "width": 16,
+        "height": 1080
+      }
+    },
+    {
+      "index": 7,
+      "tagName": "button",
+      "type": "submit",
+      "id": null,
+      "className": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 size-7 -ml-1",
+      "name": null,
+      "value": null,
+      "text": "Toggle Sidebar",
+      "href": null,
+      "selector": "button.inline-flex.items-center.justify-center.gap-2.whitespace-nowrap.rounded-md.text-sm.font-medium.transition-all.disabled:pointer-events-none.disabled:opacity-50.[&_svg]:pointer-events-none.[&_svg:not([class*='size-'])]:size-4.shrink-0.[&_svg]:shrink-0.outline-none.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive.hover:bg-accent.hover:text-accent-foreground.dark:hover:bg-accent/50.size-7.-ml-1",
+      "xpath": "/html/body/div[2]/main[1]/header[1]/button[1]",
+      "visible": true,
+      "position": {
+        "x": 268,
+        "y": 13.5,
+        "width": 28,
+        "height": 28
+      }
+    },
+    {
+      "index": 8,
+      "tagName": "button",
+      "type": "submit",
+      "id": null,
+      "className": "items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-8 rounded-md px-3 has-[>svg]:px-2.5 hidden sm:flex gap-2 text-muted-foreground",
+      "name": null,
+      "value": null,
+      "text": "Tìm sản phẩm...Ctrl+K",
+      "href": null,
+      "selector": "button.items-center.justify-center.whitespace-nowrap.text-sm.font-medium.transition-all.disabled:pointer-events-none.disabled:opacity-50.[&_svg]:pointer-events-none.[&_svg:not([class*='size-'])]:size-4.shrink-0.[&_svg]:shrink-0.outline-none.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive.border.bg-background.shadow-xs.hover:bg-accent.hover:text-accent-foreground.dark:bg-input/30.dark:border-input.dark:hover:bg-input/50.h-8.rounded-md.px-3.has-[>svg]:px-2.5.hidden.sm:flex.gap-2.text-muted-foreground",
+      "xpath": "/html/body/div[2]/main[1]/header[1]/div[2]/button[1]",
+      "visible": true,
+      "position": {
+        "x": 1691.875,
+        "y": 11.5,
+        "width": 212.125,
+        "height": 32
+      }
+    },
+    {
+      "index": 9,
+      "tagName": "button",
+      "type": "submit",
+      "id": null,
+      "className": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 size-9 sm:hidden",
+      "name": null,
+      "value": null,
+      "text": null,
+      "href": null,
+      "selector": "button.inline-flex.items-center.justify-center.gap-2.whitespace-nowrap.rounded-md.text-sm.font-medium.transition-all.disabled:pointer-events-none.disabled:opacity-50.[&_svg]:pointer-events-none.[&_svg:not([class*='size-'])]:size-4.shrink-0.[&_svg]:shrink-0.outline-none.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive.hover:bg-accent.hover:text-accent-foreground.dark:hover:bg-accent/50.size-9.sm:hidden",
+      "xpath": "/html/body/div[2]/main[1]/header[1]/div[2]/button[2]",
+      "visible": false,
+      "position": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      }
+    },
+    {
+      "index": 10,
+      "tagName": "button",
+      "type": "submit",
+      "id": null,
+      "className": "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-primary text-primary-foreground hover:bg-primary/90 h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+      "name": null,
+      "value": null,
+      "text": "Nhập liệu",
+      "href": null,
+      "selector": "button.inline-flex.items-center.justify-center.whitespace-nowrap.text-sm.font-medium.transition-all.disabled:pointer-events-none.disabled:opacity-50.[&_svg]:pointer-events-none.[&_svg:not([class*='size-'])]:size-4.shrink-0.[&_svg]:shrink-0.outline-none.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive.bg-primary.text-primary-foreground.hover:bg-primary/90.h-8.rounded-md.gap-1.5.px-3.has-[>svg]:px-2.5",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/div[1]/div[1]/button[1]",
+      "visible": false,
+      "position": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      }
+    },
+    {
+      "index": 11,
+      "tagName": "button",
+      "type": "submit",
+      "id": null,
+      "className": "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+      "name": null,
+      "value": null,
+      "text": "Xem trước",
+      "href": null,
+      "selector": "button.inline-flex.items-center.justify-center.whitespace-nowrap.text-sm.font-medium.transition-all.disabled:pointer-events-none.disabled:opacity-50.[&_svg]:pointer-events-none.[&_svg:not([class*='size-'])]:size-4.shrink-0.[&_svg]:shrink-0.outline-none.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive.border.bg-background.shadow-xs.hover:bg-accent.hover:text-accent-foreground.dark:bg-input/30.dark:border-input.dark:hover:bg-input/50.h-8.rounded-md.gap-1.5.px-3.has-[>svg]:px-2.5",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/div[1]/div[1]/button[2]",
+      "visible": false,
+      "position": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      }
+    },
+    {
+      "index": 12,
+      "tagName": "button",
+      "type": "button",
+      "id": null,
+      "className": "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+      "name": null,
+      "value": null,
+      "text": "Tìm KH",
+      "href": null,
+      "selector": "button.inline-flex.items-center.justify-center.whitespace-nowrap.text-sm.font-medium.transition-all.disabled:pointer-events-none.disabled:opacity-50.[&_svg]:pointer-events-none.[&_svg:not([class*='size-'])]:size-4.shrink-0.[&_svg]:shrink-0.outline-none.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive.border.bg-background.shadow-xs.hover:bg-accent.hover:text-accent-foreground.dark:bg-input/30.dark:border-input.dark:hover:bg-input/50.h-8.rounded-md.gap-1.5.px-3.has-[>svg]:px-2.5",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[1]/div[1]/div[1]/button[1]",
+      "visible": true,
+      "position": {
+        "x": 1584.078125,
+        "y": 153,
+        "width": 94.921875,
+        "height": 32
+      }
+    },
+    {
+      "index": 13,
+      "tagName": "input",
+      "type": "text",
+      "id": null,
+      "className": "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+      "name": "customerName",
+      "value": null,
+      "text": null,
+      "href": null,
+      "selector": "input.file:text-foreground.placeholder:text-muted-foreground.selection:bg-primary.selection:text-primary-foreground.dark:bg-input/30.border-input.h-9.w-full.min-w-0.rounded-md.border.bg-transparent.px-3.py-1.text-base.shadow-xs.transition-[color,box-shadow].outline-none.file:inline-flex.file:h-7.file:border-0.file:bg-transparent.file:text-sm.file:font-medium.disabled:pointer-events-none.disabled:cursor-not-allowed.disabled:opacity-50.md:text-sm.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/input[1]",
+      "visible": true,
+      "position": {
+        "x": 497,
+        "y": 260.25,
+        "width": 585,
+        "height": 36
+      }
+    },
+    {
+      "index": 14,
+      "tagName": "input",
+      "type": "text",
+      "id": null,
+      "className": "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+      "name": "customerCompany",
+      "value": null,
+      "text": null,
+      "href": null,
+      "selector": "input.file:text-foreground.placeholder:text-muted-foreground.selection:bg-primary.selection:text-primary-foreground.dark:bg-input/30.border-input.h-9.w-full.min-w-0.rounded-md.border.bg-transparent.px-3.py-1.text-base.shadow-xs.transition-[color,box-shadow].outline-none.file:inline-flex.file:h-7.file:border-0.file:bg-transparent.file:text-sm.file:font-medium.disabled:pointer-events-none.disabled:cursor-not-allowed.disabled:opacity-50.md:text-sm.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[2]/input[1]",
+      "visible": true,
+      "position": {
+        "x": 1094,
+        "y": 260.25,
+        "width": 585,
+        "height": 36
+      }
+    },
+    {
+      "index": 15,
+      "tagName": "input",
+      "type": "text",
+      "id": null,
+      "className": "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+      "name": "customerPhone",
+      "value": null,
+      "text": null,
+      "href": null,
+      "selector": "input.file:text-foreground.placeholder:text-muted-foreground.selection:bg-primary.selection:text-primary-foreground.dark:bg-input/30.border-input.h-9.w-full.min-w-0.rounded-md.border.bg-transparent.px-3.py-1.text-base.shadow-xs.transition-[color,box-shadow].outline-none.file:inline-flex.file:h-7.file:border-0.file:bg-transparent.file:text-sm.file:font-medium.disabled:pointer-events-none.disabled:cursor-not-allowed.disabled:opacity-50.md:text-sm.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[3]/input[1]",
+      "visible": true,
+      "position": {
+        "x": 497,
+        "y": 339.5,
+        "width": 585,
+        "height": 36
+      }
+    },
+    {
+      "index": 16,
+      "tagName": "input",
+      "type": "text",
+      "id": null,
+      "className": "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+      "name": "customerEmail",
+      "value": null,
+      "text": null,
+      "href": null,
+      "selector": "input.file:text-foreground.placeholder:text-muted-foreground.selection:bg-primary.selection:text-primary-foreground.dark:bg-input/30.border-input.h-9.w-full.min-w-0.rounded-md.border.bg-transparent.px-3.py-1.text-base.shadow-xs.transition-[color,box-shadow].outline-none.file:inline-flex.file:h-7.file:border-0.file:bg-transparent.file:text-sm.file:font-medium.disabled:pointer-events-none.disabled:cursor-not-allowed.disabled:opacity-50.md:text-sm.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[1]/div[2]/div[1]/div[4]/input[1]",
+      "visible": true,
+      "position": {
+        "x": 1094,
+        "y": 339.5,
+        "width": 585,
+        "height": 36
+      }
+    },
+    {
+      "index": 17,
+      "tagName": "button",
+      "type": "button",
+      "id": null,
+      "className": "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+      "name": null,
+      "value": null,
+      "text": "Thêm SP",
+      "href": null,
+      "selector": "button.inline-flex.items-center.justify-center.whitespace-nowrap.text-sm.font-medium.transition-all.disabled:pointer-events-none.disabled:opacity-50.[&_svg]:pointer-events-none.[&_svg:not([class*='size-'])]:size-4.shrink-0.[&_svg]:shrink-0.outline-none.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive.border.bg-background.shadow-xs.hover:bg-accent.hover:text-accent-foreground.dark:bg-input/30.dark:border-input.dark:hover:bg-input/50.h-8.rounded-md.gap-1.5.px-3.has-[>svg]:px-2.5",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[2]/button[1]",
+      "visible": true,
+      "position": {
+        "x": 1419.6875,
+        "y": 449.5,
+        "width": 106.015625,
+        "height": 32
+      }
+    },
+    {
+      "index": 18,
+      "tagName": "button",
+      "type": "button",
+      "id": null,
+      "className": "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+      "name": null,
+      "value": null,
+      "text": "Dòng tùy chỉnh",
+      "href": null,
+      "selector": "button.inline-flex.items-center.justify-center.whitespace-nowrap.text-sm.font-medium.transition-all.disabled:pointer-events-none.disabled:opacity-50.[&_svg]:pointer-events-none.[&_svg:not([class*='size-'])]:size-4.shrink-0.[&_svg]:shrink-0.outline-none.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive.hover:bg-accent.hover:text-accent-foreground.dark:hover:bg-accent/50.h-8.rounded-md.gap-1.5.px-3.has-[>svg]:px-2.5",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[2]/button[2]",
+      "visible": true,
+      "position": {
+        "x": 1533.703125,
+        "y": 449.5,
+        "width": 145.296875,
+        "height": 32
+      }
+    },
+    {
+      "index": 19,
+      "tagName": "input",
+      "type": "number",
+      "id": null,
+      "className": "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+      "name": "globalDiscountPercent",
+      "value": "0",
+      "text": null,
+      "href": null,
+      "selector": "input.file:text-foreground.placeholder:text-muted-foreground.selection:bg-primary.selection:text-primary-foreground.dark:bg-input/30.border-input.h-9.w-full.min-w-0.rounded-md.border.bg-transparent.px-3.py-1.text-base.shadow-xs.transition-[color,box-shadow].outline-none.file:inline-flex.file:h-7.file:border-0.file:bg-transparent.file:text-sm.file:font-medium.disabled:pointer-events-none.disabled:cursor-not-allowed.disabled:opacity-50.md:text-sm.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[3]/div[2]/div[1]/div[1]/input[1]",
+      "visible": true,
+      "position": {
+        "x": 497,
+        "y": 770.75,
+        "width": 283.5,
+        "height": 36
+      }
+    },
+    {
+      "index": 20,
+      "tagName": "input",
+      "type": "number",
+      "id": null,
+      "className": "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+      "name": "vatPercent",
+      "value": "10",
+      "text": null,
+      "href": null,
+      "selector": "input.file:text-foreground.placeholder:text-muted-foreground.selection:bg-primary.selection:text-primary-foreground.dark:bg-input/30.border-input.h-9.w-full.min-w-0.rounded-md.border.bg-transparent.px-3.py-1.text-base.shadow-xs.transition-[color,box-shadow].outline-none.file:inline-flex.file:h-7.file:border-0.file:bg-transparent.file:text-sm.file:font-medium.disabled:pointer-events-none.disabled:cursor-not-allowed.disabled:opacity-50.md:text-sm.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[3]/div[2]/div[1]/div[2]/input[1]",
+      "visible": true,
+      "position": {
+        "x": 796.5,
+        "y": 770.75,
+        "width": 283.5,
+        "height": 36
+      }
+    },
+    {
+      "index": 21,
+      "tagName": "input",
+      "type": "number",
+      "id": null,
+      "className": "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+      "name": "shippingFee",
+      "value": "50000",
+      "text": null,
+      "href": null,
+      "selector": "input.file:text-foreground.placeholder:text-muted-foreground.selection:bg-primary.selection:text-primary-foreground.dark:bg-input/30.border-input.h-9.w-full.min-w-0.rounded-md.border.bg-transparent.px-3.py-1.text-base.shadow-xs.transition-[color,box-shadow].outline-none.file:inline-flex.file:h-7.file:border-0.file:bg-transparent.file:text-sm.file:font-medium.disabled:pointer-events-none.disabled:cursor-not-allowed.disabled:opacity-50.md:text-sm.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[3]/div[2]/div[1]/div[3]/input[1]",
+      "visible": true,
+      "position": {
+        "x": 1096,
+        "y": 770.75,
+        "width": 283.5,
+        "height": 36
+      }
+    },
+    {
+      "index": 22,
+      "tagName": "input",
+      "type": "number",
+      "id": null,
+      "className": "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+      "name": "otherFees",
+      "value": "0",
+      "text": null,
+      "href": null,
+      "selector": "input.file:text-foreground.placeholder:text-muted-foreground.selection:bg-primary.selection:text-primary-foreground.dark:bg-input/30.border-input.h-9.w-full.min-w-0.rounded-md.border.bg-transparent.px-3.py-1.text-base.shadow-xs.transition-[color,box-shadow].outline-none.file:inline-flex.file:h-7.file:border-0.file:bg-transparent.file:text-sm.file:font-medium.disabled:pointer-events-none.disabled:cursor-not-allowed.disabled:opacity-50.md:text-sm.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[3]/div[2]/div[1]/div[4]/input[1]",
+      "visible": true,
+      "position": {
+        "x": 1395.5,
+        "y": 770.75,
+        "width": 283.5,
+        "height": 36
+      }
+    },
+    {
+      "index": 23,
+      "tagName": "input",
+      "type": "text",
+      "id": null,
+      "className": "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive mt-1",
+      "name": "otherFeesLabel",
+      "value": null,
+      "text": null,
+      "href": null,
+      "selector": "input.file:text-foreground.placeholder:text-muted-foreground.selection:bg-primary.selection:text-primary-foreground.dark:bg-input/30.border-input.h-9.w-full.min-w-0.rounded-md.border.bg-transparent.px-3.py-1.text-base.shadow-xs.transition-[color,box-shadow].outline-none.file:inline-flex.file:h-7.file:border-0.file:bg-transparent.file:text-sm.file:font-medium.disabled:pointer-events-none.disabled:cursor-not-allowed.disabled:opacity-50.md:text-sm.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive.mt-1",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[3]/div[2]/div[1]/div[4]/input[2]",
+      "visible": true,
+      "position": {
+        "x": 1395.5,
+        "y": 822.75,
+        "width": 283.5,
+        "height": 36
+      }
+    },
+    {
+      "index": 24,
+      "tagName": "textarea",
+      "type": "textarea",
+      "id": null,
+      "className": "border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+      "name": "terms",
+      "value": "- Thời gian giao hàng: 3-5 ngày làm việc\n- Bảo hành: Theo chính sách nhà sản xuất\n- Thanh toán: Chuyển khoản 100% trước khi giao hàng\n- Báo giá có hiệu lực trong 30 ngày",
+      "text": null,
+      "href": null,
+      "selector": "textarea.border-input.placeholder:text-muted-foreground.focus-visible:border-ring.focus-visible:ring-ring/50.aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive.dark:bg-input/30.flex.field-sizing-content.min-h-16.w-full.rounded-md.border.bg-transparent.px-3.py-2.text-base.shadow-xs.transition-[color,box-shadow].outline-none.focus-visible:ring-[3px].disabled:cursor-not-allowed.disabled:opacity-50.md:text-sm",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[4]/div[1]/div[1]/textarea[1]",
+      "visible": true,
+      "position": {
+        "x": 497,
+        "y": 1142,
+        "width": 1182,
+        "height": 98
+      }
+    },
+    {
+      "index": 25,
+      "tagName": "textarea",
+      "type": "textarea",
+      "id": null,
+      "className": "border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+      "name": "notes",
+      "value": null,
+      "text": null,
+      "href": null,
+      "selector": "textarea.border-input.placeholder:text-muted-foreground.focus-visible:border-ring.focus-visible:ring-ring/50.aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive.dark:bg-input/30.flex.field-sizing-content.min-h-16.w-full.rounded-md.border.bg-transparent.px-3.py-2.text-base.shadow-xs.transition-[color,box-shadow].outline-none.focus-visible:ring-[3px].disabled:cursor-not-allowed.disabled:opacity-50.md:text-sm",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[4]/div[1]/div[2]/div[1]/textarea[1]",
+      "visible": true,
+      "position": {
+        "x": 497,
+        "y": 1287.25,
+        "width": 583,
+        "height": 64
+      }
+    },
+    {
+      "index": 26,
+      "tagName": "input",
+      "type": "date",
+      "id": null,
+      "className": "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+      "name": "validUntil",
+      "value": "2026-04-01",
+      "text": null,
+      "href": null,
+      "selector": "input.file:text-foreground.placeholder:text-muted-foreground.selection:bg-primary.selection:text-primary-foreground.dark:bg-input/30.border-input.h-9.w-full.min-w-0.rounded-md.border.bg-transparent.px-3.py-1.text-base.shadow-xs.transition-[color,box-shadow].outline-none.file:inline-flex.file:h-7.file:border-0.file:bg-transparent.file:text-sm.file:font-medium.disabled:pointer-events-none.disabled:cursor-not-allowed.disabled:opacity-50.md:text-sm.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[4]/div[1]/div[2]/div[2]/input[1]",
+      "visible": true,
+      "position": {
+        "x": 1096,
+        "y": 1287.25,
+        "width": 583,
+        "height": 36
+      }
+    },
+    {
+      "index": 27,
+      "tagName": "button",
+      "type": "button",
+      "id": null,
+      "className": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 h-9 px-4 py-2 has-[>svg]:px-3",
+      "name": null,
+      "value": null,
+      "text": "Hủy",
+      "href": null,
+      "selector": "button.inline-flex.items-center.justify-center.gap-2.whitespace-nowrap.rounded-md.text-sm.font-medium.transition-all.disabled:pointer-events-none.disabled:opacity-50.[&_svg]:pointer-events-none.[&_svg:not([class*='size-'])]:size-4.shrink-0.[&_svg]:shrink-0.outline-none.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive.border.bg-background.shadow-xs.hover:bg-accent.hover:text-accent-foreground.dark:bg-input/30.dark:border-input.dark:hover:bg-input/50.h-9.px-4.py-2.has-[>svg]:px-3",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[5]/button[1]",
+      "visible": true,
+      "position": {
+        "x": 1512.6875,
+        "y": 1416.25,
+        "width": 60.90625,
+        "height": 36
+      }
+    },
+    {
+      "index": 28,
+      "tagName": "button",
+      "type": "submit",
+      "id": null,
+      "className": "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-4 py-2 has-[>svg]:px-3",
+      "name": null,
+      "value": null,
+      "text": "Lưu nháp",
+      "href": null,
+      "selector": "button.inline-flex.items-center.justify-center.gap-2.whitespace-nowrap.rounded-md.text-sm.font-medium.transition-all.disabled:pointer-events-none.disabled:opacity-50.[&_svg]:pointer-events-none.[&_svg:not([class*='size-'])]:size-4.shrink-0.[&_svg]:shrink-0.outline-none.focus-visible:border-ring.focus-visible:ring-ring/50.focus-visible:ring-[3px].aria-invalid:ring-destructive/20.dark:aria-invalid:ring-destructive/40.aria-invalid:border-destructive.bg-primary.text-primary-foreground.hover:bg-primary/90.h-9.px-4.py-2.has-[>svg]:px-3",
+      "xpath": "/html/body/div[2]/main[1]/div[1]/div[1]/form[1]/div[1]/div[1]/div[5]/button[2]",
+      "visible": true,
+      "position": {
+        "x": 1585.59375,
+        "y": 1416.25,
+        "width": 118.40625,
+        "height": 36
+      }
+    },
+    {
+      "index": 29,
+      "tagName": "a",
+      "type": null,
+      "id": null,
+      "className": "flex flex-col items-center gap-1 px-3 py-2 text-xs transition-colors text-muted-foreground hover:text-foreground",
+      "name": null,
+      "value": null,
+      "text": "Tổng quan",
+      "href": "http://localhost:3000/",
+      "selector": "a.flex.flex-col.items-center.gap-1.px-3.py-2.text-xs.transition-colors.text-muted-foreground.hover:text-foreground",
+      "xpath": "/html/body/div[2]/nav[1]/a[1]",
+      "visible": false,
+      "position": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      }
+    },
+    {
+      "index": 30,
+      "tagName": "a",
+      "type": null,
+      "id": null,
+      "className": "flex flex-col items-center gap-1 px-3 py-2 text-xs transition-colors text-primary font-medium",
+      "name": null,
+      "value": null,
+      "text": "Báo giá",
+      "href": "http://localhost:3000/bao-gia",
+      "selector": "a.flex.flex-col.items-center.gap-1.px-3.py-2.text-xs.transition-colors.text-primary.font-medium",
+      "xpath": "/html/body/div[2]/nav[1]/a[2]",
+      "visible": false,
+      "position": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      }
+    },
+    {
+      "index": 31,
+      "tagName": "a",
+      "type": null,
+      "id": null,
+      "className": "flex flex-col items-center gap-1 px-3 py-2 text-xs transition-colors text-muted-foreground hover:text-foreground",
+      "name": null,
+      "value": null,
+      "text": "Sản phẩm",
+      "href": "http://localhost:3000/san-pham",
+      "selector": "a.flex.flex-col.items-center.gap-1.px-3.py-2.text-xs.transition-colors.text-muted-foreground.hover:text-foreground",
+      "xpath": "/html/body/div[2]/nav[1]/a[3]",
+      "visible": false,
+      "position": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      }
+    },
+    {
+      "index": 32,
+      "tagName": "a",
+      "type": null,
+      "id": null,
+      "className": "flex flex-col items-center gap-1 px-3 py-2 text-xs transition-colors text-muted-foreground hover:text-foreground",
+      "name": null,
+      "value": null,
+      "text": "Khách hàng",
+      "href": "http://localhost:3000/khach-hang",
+      "selector": "a.flex.flex-col.items-center.gap-1.px-3.py-2.text-xs.transition-colors.text-muted-foreground.hover:text-foreground",
+      "xpath": "/html/body/div[2]/nav[1]/a[4]",
+      "visible": false,
+      "position": {
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0
+      }
+    }
+  ]
+}
