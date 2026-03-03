@@ -572,13 +572,8 @@ async function main() {
     console.log("  Quotes already exist, skipping");
   }
 
-  // ─── FPT sample quotes (chỉ tạo nếu chưa có quote nào dùng SP FPT) ──
-  const fptQuoteExists = await prisma.quoteItem.findFirst({
-    where: { product: { code: { startsWith: "FPT-" } } },
-  });
-
-  if (!fptQuoteExists) {
-    // Lấy số thứ tự hiện tại từ settings để sinh mã không trùng
+  // ─── FPT sample quotes (luôn tạo mới, mã sinh tự động không trùng) ──
+  {
     const cfg = await prisma.settings.findUnique({ where: { id: "default" } });
     let seq = cfg?.quoteNextNumber ?? 1;
     const pfx = (cfg?.quotePrefix ?? "BG-{YYYY}-").replace("{YYYY}", String(new Date().getFullYear()));
@@ -671,8 +666,6 @@ async function main() {
 
     await prisma.settings.update({ where: { id: "default" }, data: { quoteNextNumber: seq } });
     console.log("  FPT sample quotes seeded");
-  } else {
-    console.log("  FPT quotes already exist, skipping");
   }
 
   console.log("Seeding complete!");
