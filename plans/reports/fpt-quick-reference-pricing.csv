@@ -1,0 +1,11 @@
+Package_Name,Category,Speed_Download_Mbps,Speed_Upload_Mbps,Monthly_Price_VND,Equipment,Key_Features,Target_Segment,Access_Points_Included,Has_TV_Box,Sports_Included
+Internet Giga,Internet,300,Standard,195000,Wi-Fi 6 modem,Basic browsing and streaming,Budget users,0,No,No
+Internet Sky,Internet,1000,300,195000,Wi-Fi 6 modem,Standard household usage,General users,0,No,No
+Internet F-Game,Internet,1000,300,225000,Wi-Fi 6 modem + UltraFast,Gaming optimization for low latency,Gamers,0,No,No
+Internet Sky F1,Internet,1000,300,210000,Wi-Fi 6 modem + 1 AP,Extended coverage for larger homes,Family homes,1,No,No
+Internet Sky F2,Internet,1000,300,230000,Wi-Fi 6 modem + 2 AP,Maximum coverage for large properties,Large homes,2,No,No
+Combo Sky,Bundle,1000,300,299000,Wi-Fi 6 modem + TV Box,Internet + FPT Play + Premier League,Sports enthusiasts,0,Yes,Yes
+Combo Sky F1,Bundle,1000,300,319000,Wi-Fi 6 modem + 1 AP + TV Box,Extended coverage + Entertainment,Sports fans with large homes,1,Yes,Yes
+Combo Meta,Bundle,1000,1000,399000,Wi-Fi 7 modem + TV Box,Symmetric speed + Premier League + content creation,Content creators and professionals,0,Yes,Yes
+SpeedX2,Ultra-Premium,2000,2000,999000,Mesh Wi-Fi 7 system,Ultra-high speed fiber (XGS-PON),Enterprise and power users,Multiple,No,No
+SpeedX10,Ultra-Premium,10000,10000,1599000,Premium mesh Wi-Fi 7,Maximum speed fiber (XGS-PON),Enterprise and data centers,Multiple,No,No

@@ -18,6 +18,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -108,7 +109,7 @@ export function QuoteItemsTable({ fieldArray, register, watch, setValue, errors 
               <div />
               <div>Tên</div>
               <div>ĐVT</div>
-              <div className="text-right">SL</div>
+              <div className="text-right">SL / Kỳ hạn</div>
               <div className="text-right">Đơn giá</div>
               <div className="text-right">CK%</div>
               <div className="text-right">Thành tiền</div>
@@ -165,6 +166,7 @@ function SortableItemRow({
   const style = { transform: CSS.Transform.toString(transform), transition };
 
   const qty = watch(`items.${index}.quantity`) || 0;
+  const unit = watch(`items.${index}.unit`) || "";
   const price = watch(`items.${index}.unitPrice`) || 0;
   const disc = watch(`items.${index}.discountPercent`) || 0;
   const lineTotal = calculateLineTotal(price, qty, disc);
@@ -188,7 +190,29 @@ function SortableItemRow({
       ) : (
         <span className="text-xs text-muted-foreground">{watch(`items.${index}.unit`)}</span>
       )}
-      <Input type="number" min={1} className="h-8 text-sm text-right" {...register(`items.${index}.quantity`, { valueAsNumber: true })} />
+      <div className="space-y-0.5">
+        <Input type="number" min={1} className="h-7 text-sm text-right" {...register(`items.${index}.quantity`, { valueAsNumber: true })} />
+        <div className="flex gap-0.5 justify-end">
+          {([1, 3, 6, 12] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => {
+                setValue(`items.${index}.quantity`, m);
+                setValue(`items.${index}.unit`, "Tháng");
+              }}
+              className={cn(
+                "text-[9px] h-4 px-1 rounded border transition-colors leading-none",
+                qty === m && unit === "Tháng"
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "text-muted-foreground border-border hover:border-primary hover:text-primary"
+              )}
+            >
+              {m}T
+            </button>
+          ))}
+        </div>
+      </div>
       <Input type="number" min={0} className="h-8 text-sm text-right" {...register(`items.${index}.unitPrice`, { valueAsNumber: true })} />
       <Input type="number" min={0} max={100} className="h-8 text-sm text-right" {...register(`items.${index}.discountPercent`, { valueAsNumber: true })} />
       <span className="text-sm text-right tabular-nums font-medium">{formatCurrency(lineTotal)}</span>
