@@ -67,7 +67,8 @@ export async function GET(
       },
     });
   } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
     console.error("PDF generation error:", err);
-    return NextResponse.json({ error: "Lỗi xuất PDF" }, { status: 500 });
+    return NextResponse.json({ error: "Lỗi xuất PDF", detail: message }, { status: 500 });
   }
 }
