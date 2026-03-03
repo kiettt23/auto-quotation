@@ -350,16 +350,15 @@ async function main() {
 
   // ─── Quotes (sample data) ─────────────────────────────
   // Fetch created customers & products for IDs
-  const [custBinhMinh, custTruong, custBenhVien, custKhachSan, custHDK] =
+  const [custBinhMinh, custTruong, custBenhVien, custKhachSan] =
     await Promise.all([
       prisma.customer.findFirst({ where: { email: "an.nguyen@binhminh.com" } }),
       prisma.customer.findFirst({ where: { email: "bich.tran@nguyendu.edu.vn" } }),
       prisma.customer.findFirst({ where: { email: "minh.le@bvhoabinh.vn" } }),
       prisma.customer.findFirst({ where: { email: "hung.pham@saigonstar.com" } }),
-      prisma.customer.findFirst({ where: { email: "duc.hoang@hdk-arch.vn" } }),
     ]);
 
-  const [pSwitch, pRouter, pONU, pCam2M, pNVR, pCap, pInstall, pSupport, pFptSkyF1, pFptMeta] =
+  const [pSwitch, pRouter, pONU, pCam2M, pNVR, pCap, pInstall, pSupport] =
     await Promise.all([
       prisma.product.findUnique({ where: { code: "SW-24P-TP" } }),
       prisma.product.findUnique({ where: { code: "RT-WIFI6-AX" } }),
@@ -369,8 +368,6 @@ async function main() {
       prisma.product.findUnique({ where: { code: "CAP-CAT6-LINK" } }),
       prisma.product.findUnique({ where: { code: "SVC-INSTALL-NET" } }),
       prisma.product.findUnique({ where: { code: "SVC-SUPPORT-Y" } }),
-      prisma.product.findUnique({ where: { code: "FPT-SKYF1" } }),
-      prisma.product.findUnique({ where: { code: "FPT-COMBO-META" } }),
     ]);
 
   const validUntil30 = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
@@ -570,59 +567,112 @@ async function main() {
       },
     });
 
-    // BG-2026-0005: Văn phòng HDK - SENT (gói Internet theo kỳ hạn)
-    if (custHDK) {
-      // Internet Sky F1 × 12 tháng + Combo Meta × 6 tháng
-      const q5Items = [
-        { p: pFptSkyF1, name: "Internet Sky F1 1Gbps + 1 Access Point", qty: 12, price: 210000 },
-        { p: pFptMeta,  name: "Combo Meta 1Gbps Symmetric WiFi 7 + FPT Play", qty: 6, price: 399000 },
-      ];
-      const q5Subtotal = q5Items.reduce((s, i) => s + i.qty * i.price, 0); // 12×210k + 6×399k = 4,914,000
-      const q5Vat = Math.round(q5Subtotal * 0.1);
-      const q5Total = q5Subtotal + q5Vat;
-      await prisma.quote.create({
-        data: {
-          quoteNumber: "BG-2026-0005",
-          customerId: custHDK.id,
-          customerName: custHDK.name,
-          customerCompany: custHDK.company,
-          customerPhone: custHDK.phone,
-          customerEmail: custHDK.email,
-          customerAddress: custHDK.address,
-          status: "SENT",
-          vatPercent: 10,
-          shareToken: "demo-hdk-2026",
-          validUntil: validUntil30,
-          subtotal: q5Subtotal,
-          vatAmount: q5Vat,
-          total: q5Total,
-          terms: "- Gói cước tính theo kỳ hạn đăng ký\n- Miễn phí lắp đặt và modem WiFi\n- Hỗ trợ kỹ thuật 24/7",
-          createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          items: {
-            create: q5Items.map((i, idx) => ({
-              productId: i.p?.id,
-              sortOrder: idx,
-              name: i.name,
-              unit: "Tháng",
-              quantity: i.qty,
-              unitPrice: i.price,
-              discountPercent: 0,
-              lineTotal: i.qty * i.price,
-            })),
-          },
-        },
-      });
-    }
-
-    // Update quoteNextNumber to 6
-    await prisma.settings.update({
-      where: { id: "default" },
-      data: { quoteNextNumber: 6 },
-    });
-
-    console.log("  5 sample quotes seeded");
+    console.log("  4 sample quotes seeded");
   } else {
     console.log("  Quotes already exist, skipping");
+  }
+
+  // ─── FPT sample quotes (chỉ tạo nếu chưa có quote nào dùng SP FPT) ──
+  const fptQuoteExists = await prisma.quoteItem.findFirst({
+    where: { product: { code: { startsWith: "FPT-" } } },
+  });
+
+  if (!fptQuoteExists) {
+    // Lấy số thứ tự hiện tại từ settings để sinh mã không trùng
+    const cfg = await prisma.settings.findUnique({ where: { id: "default" } });
+    let seq = cfg?.quoteNextNumber ?? 1;
+    const pfx = (cfg?.quotePrefix ?? "BG-{YYYY}-").replace("{YYYY}", String(new Date().getFullYear()));
+    const nextCode = () => `${pfx}${String(seq++).padStart(4, "0")}`;
+
+    const [cust1, cust2, cust3] = await Promise.all([
+      prisma.customer.findFirst({ where: { email: "an.nguyen@binhminh.com" } }),
+      prisma.customer.findFirst({ where: { email: "bich.tran@nguyendu.edu.vn" } }),
+      prisma.customer.findFirst({ where: { email: "hung.pham@saigonstar.com" } }),
+    ]);
+
+    const [pSky, pSkyF1, pFGame, pComboMeta, pSpeedX2] = await Promise.all([
+      prisma.product.findUnique({ where: { code: "FPT-SKY" } }),
+      prisma.product.findUnique({ where: { code: "FPT-SKYF1" } }),
+      prisma.product.findUnique({ where: { code: "FPT-FGAME" } }),
+      prisma.product.findUnique({ where: { code: "FPT-COMBO-META" } }),
+      prisma.product.findUnique({ where: { code: "FPT-SPEEDX2" } }),
+    ]);
+
+    // Quote A: gói 3 tháng thử nghiệm (DRAFT)
+    if (cust2) {
+      const items = [
+        { p: pSky,   name: "Internet Sky 1Gbps WiFi 6",         qty: 3, price: 195000 },
+        { p: pFGame, name: "Internet F-Game 1Gbps Gaming",       qty: 3, price: 225000 },
+      ];
+      const sub = items.reduce((s, i) => s + i.qty * i.price, 0);
+      const vat = Math.round(sub * 0.1);
+      await prisma.quote.create({ data: {
+        quoteNumber: nextCode(),
+        customerId: cust2.id, customerName: cust2.name, customerCompany: cust2.company,
+        customerPhone: cust2.phone, customerEmail: cust2.email, customerAddress: cust2.address,
+        status: "DRAFT", vatPercent: 10,
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        subtotal: sub, vatAmount: vat, total: sub + vat,
+        terms: "- Gói thử nghiệm 3 tháng\n- Miễn phí lắp đặt và modem WiFi",
+        items: { create: items.map((i, idx) => ({
+          productId: i.p?.id, sortOrder: idx, name: i.name,
+          unit: "Tháng", quantity: i.qty, unitPrice: i.price,
+          discountPercent: 0, lineTotal: i.qty * i.price,
+        })) },
+      } });
+    }
+
+    // Quote B: gói 6 tháng văn phòng (SENT)
+    if (cust1) {
+      const items = [
+        { p: pSkyF1, name: "Internet Sky F1 1Gbps + 1 Access Point", qty: 6, price: 210000 },
+      ];
+      const sub = items.reduce((s, i) => s + i.qty * i.price, 0);
+      const vat = Math.round(sub * 0.1);
+      await prisma.quote.create({ data: {
+        quoteNumber: nextCode(),
+        customerId: cust1.id, customerName: cust1.name, customerCompany: cust1.company,
+        customerPhone: cust1.phone, customerEmail: cust1.email, customerAddress: cust1.address,
+        status: "SENT", vatPercent: 10,
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        subtotal: sub, vatAmount: vat, total: sub + vat,
+        terms: "- Gói 6 tháng, gia hạn 12 tháng giảm thêm 5%\n- Miễn phí lắp đặt",
+        items: { create: items.map((i, idx) => ({
+          productId: i.p?.id, sortOrder: idx, name: i.name,
+          unit: "Tháng", quantity: i.qty, unitPrice: i.price,
+          discountPercent: 0, lineTotal: i.qty * i.price,
+        })) },
+      } });
+    }
+
+    // Quote C: gói 12 tháng cao cấp có chiết khấu (ACCEPTED)
+    if (cust3) {
+      const items = [
+        { p: pComboMeta, name: "Combo Meta 1Gbps Symmetric WiFi 7 + FPT Play", qty: 12, price: 399000, disc: 10 },
+        { p: pSpeedX2,   name: "SpeedX2 2Gbps Symmetric XGS-PON WiFi 7",       qty: 12, price: 999000, disc: 10 },
+      ];
+      const sub = items.reduce((s, i) => s + Math.round(i.qty * i.price * (1 - i.disc / 100)), 0);
+      const vat = Math.round(sub * 0.1);
+      await prisma.quote.create({ data: {
+        quoteNumber: nextCode(),
+        customerId: cust3.id, customerName: cust3.name, customerCompany: cust3.company,
+        customerPhone: cust3.phone, customerEmail: cust3.email, customerAddress: cust3.address,
+        status: "ACCEPTED", vatPercent: 10,
+        validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        subtotal: sub, vatAmount: vat, total: sub + vat,
+        terms: "- Hợp đồng 12 tháng, chiết khấu 10%\n- SLA 99.9% uptime\n- Hỗ trợ kỹ thuật 24/7",
+        items: { create: items.map((i, idx) => ({
+          productId: i.p?.id, sortOrder: idx, name: i.name,
+          unit: "Tháng", quantity: i.qty, unitPrice: i.price,
+          discountPercent: i.disc, lineTotal: Math.round(i.qty * i.price * (1 - i.disc / 100)),
+        })) },
+      } });
+    }
+
+    await prisma.settings.update({ where: { id: "default" }, data: { quoteNextNumber: seq } });
+    console.log("  FPT sample quotes seeded");
+  } else {
+    console.log("  FPT quotes already exist, skipping");
   }
 
   console.log("Seeding complete!");
