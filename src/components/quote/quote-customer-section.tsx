@@ -108,7 +108,7 @@ export function QuoteCustomerSection({ register, watch, setValue, errors }: Prop
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Field>
-            <FieldLabel>Tên KH</FieldLabel>
+            <FieldLabel>Tên khách hàng</FieldLabel>
             <Input {...register("customerName")} readOnly={!!customerId} />
           </Field>
           <Field>
@@ -116,7 +116,7 @@ export function QuoteCustomerSection({ register, watch, setValue, errors }: Prop
             <Input {...register("customerCompany")} readOnly={!!customerId} />
           </Field>
           <Field>
-            <FieldLabel>SĐT</FieldLabel>
+            <FieldLabel>Điện thoại</FieldLabel>
             <Input {...register("customerPhone")} readOnly={!!customerId} />
           </Field>
           <Field>

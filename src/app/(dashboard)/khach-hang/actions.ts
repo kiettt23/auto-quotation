@@ -49,18 +49,26 @@ export async function createCustomer(data: unknown) {
   const parsed = customerSchema.safeParse(data);
   if (!parsed.success) return { error: "Dữ liệu không hợp lệ" };
 
-  await db.customer.create({ data: parsed.data });
-  revalidatePath("/khach-hang");
-  return { success: true };
+  try {
+    await db.customer.create({ data: parsed.data });
+    revalidatePath("/khach-hang");
+    return { success: true };
+  } catch {
+    return { error: "Lỗi tạo khách hàng" };
+  }
 }
 
 export async function updateCustomer(id: string, data: unknown) {
   const parsed = customerSchema.safeParse(data);
   if (!parsed.success) return { error: "Dữ liệu không hợp lệ" };
 
-  await db.customer.update({ where: { id }, data: parsed.data });
-  revalidatePath("/khach-hang");
-  return { success: true };
+  try {
+    await db.customer.update({ where: { id }, data: parsed.data });
+    revalidatePath("/khach-hang");
+    return { success: true };
+  } catch {
+    return { error: "Lỗi cập nhật khách hàng" };
+  }
 }
 
 export async function deleteCustomer(

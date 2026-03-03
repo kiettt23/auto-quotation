@@ -78,21 +78,25 @@ export async function createProduct(data: unknown) {
     return { error: `Mã sản phẩm "${productData.code}" đã tồn tại` };
   }
 
-  await db.product.create({
-    data: {
-      ...productData,
-      basePrice: productData.basePrice ?? 0,
-      pricingTiers: pricingTiers?.length
-        ? { create: pricingTiers }
-        : undefined,
-      volumeDiscounts: volumeDiscounts?.length
-        ? { create: volumeDiscounts }
-        : undefined,
-    },
-  });
+  try {
+    await db.product.create({
+      data: {
+        ...productData,
+        basePrice: productData.basePrice ?? 0,
+        pricingTiers: pricingTiers?.length
+          ? { create: pricingTiers }
+          : undefined,
+        volumeDiscounts: volumeDiscounts?.length
+          ? { create: volumeDiscounts }
+          : undefined,
+      },
+    });
 
-  revalidatePath("/san-pham");
-  return { success: true };
+    revalidatePath("/san-pham");
+    return { success: true };
+  } catch {
+    return { error: "Lỗi tạo sản phẩm" };
+  }
 }
 
 export async function updateProduct(id: string, data: unknown) {
@@ -111,27 +115,31 @@ export async function updateProduct(id: string, data: unknown) {
     return { error: `Mã sản phẩm "${productData.code}" đã tồn tại` };
   }
 
-  // Transaction: update product + replace tiers/discounts
-  await db.$transaction([
-    db.pricingTier.deleteMany({ where: { productId: id } }),
-    db.volumeDiscount.deleteMany({ where: { productId: id } }),
-    db.product.update({
-      where: { id },
-      data: {
-        ...productData,
-        basePrice: productData.basePrice ?? 0,
-        pricingTiers: pricingTiers?.length
-          ? { create: pricingTiers }
-          : undefined,
-        volumeDiscounts: volumeDiscounts?.length
-          ? { create: volumeDiscounts }
-          : undefined,
-      },
-    }),
-  ]);
+  try {
+    // Transaction: update product + replace tiers/discounts
+    await db.$transaction([
+      db.pricingTier.deleteMany({ where: { productId: id } }),
+      db.volumeDiscount.deleteMany({ where: { productId: id } }),
+      db.product.update({
+        where: { id },
+        data: {
+          ...productData,
+          basePrice: productData.basePrice ?? 0,
+          pricingTiers: pricingTiers?.length
+            ? { create: pricingTiers }
+            : undefined,
+          volumeDiscounts: volumeDiscounts?.length
+            ? { create: volumeDiscounts }
+            : undefined,
+        },
+      }),
+    ]);
 
-  revalidatePath("/san-pham");
-  return { success: true };
+    revalidatePath("/san-pham");
+    return { success: true };
+  } catch {
+    return { error: "Lỗi cập nhật sản phẩm" };
+  }
 }
 
 export async function deleteProduct(id: string) {
@@ -144,7 +152,11 @@ export async function deleteProduct(id: string) {
     };
   }
 
-  await db.product.delete({ where: { id } });
-  revalidatePath("/san-pham");
-  return { success: true };
+  try {
+    await db.product.delete({ where: { id } });
+    revalidatePath("/san-pham");
+    return { success: true };
+  } catch {
+    return { error: "Lỗi xóa sản phẩm" };
+  }
 }

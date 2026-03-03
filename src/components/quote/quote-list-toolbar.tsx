@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -75,10 +76,10 @@ export function QuoteListToolbar({ currentStatus, currentSearch }: Props) {
       </div>
 
       <Button size="sm" asChild>
-        <a href="/bao-gia/tao-moi">
+        <Link href="/bao-gia/tao-moi">
           <Plus className="mr-2 size-4" />
           Tạo báo giá
-        </a>
+        </Link>
       </Button>
     </div>
   );

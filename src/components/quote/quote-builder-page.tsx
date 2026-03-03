@@ -12,6 +12,7 @@ import { saveQuote } from "@/app/(dashboard)/bao-gia/actions";
 import { QuoteCustomerSection } from "./quote-customer-section";
 import { QuoteItemsTable } from "./quote-items-table";
 import { QuoteSummarySection } from "./quote-summary-section";
+import { QuotePreview, type CompanyInfo } from "./quote-preview";
 
 type Defaults = {
   vatPercent: number;
@@ -29,6 +30,7 @@ type Props = {
   defaults: Defaults;
   existingQuote?: ExistingQuote;
   customer?: CustomerData | null;
+  company?: CompanyInfo | null;
 };
 
 function buildDefaults(defaults: Defaults, quote?: ExistingQuote, customer?: CustomerData | null): QuoteFormValues {
@@ -81,7 +83,7 @@ function buildDefaults(defaults: Defaults, quote?: ExistingQuote, customer?: Cus
   };
 }
 
-export function QuoteBuilderPage({ defaults, existingQuote, customer }: Props) {
+export function QuoteBuilderPage({ defaults, existingQuote, customer, company }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [mobileTab, setMobileTab] = useState<"form" | "preview">("form");
@@ -148,10 +150,27 @@ export function QuoteBuilderPage({ defaults, existingQuote, customer }: Props) {
         </div>
 
         {mobileTab === "preview" && (
-          <div className="md:hidden">
-            <p className="text-center text-muted-foreground py-8">
-              Xem trước sẽ hiển thị sau khi hoàn thành Phase 09
-            </p>
+          <div className="md:hidden overflow-x-auto">
+            <QuotePreview
+              data={{
+                quoteNumber: existingQuote?.quoteNumber,
+                createdAt: existingQuote?.createdAt,
+                customerName: watch("customerName"),
+                customerCompany: watch("customerCompany"),
+                customerPhone: watch("customerPhone"),
+                customerEmail: watch("customerEmail"),
+                customerAddress: watch("customerAddress"),
+                items: watch("items"),
+                globalDiscountPercent: watch("globalDiscountPercent"),
+                vatPercent: watch("vatPercent"),
+                shippingFee: watch("shippingFee"),
+                otherFees: watch("otherFees"),
+                otherFeesLabel: watch("otherFeesLabel"),
+                terms: watch("terms"),
+                validUntil: watch("validUntil"),
+              }}
+              company={company}
+            />
           </div>
         )}
       </form>

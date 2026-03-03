@@ -233,22 +233,30 @@ export async function saveQuote(data: unknown, quoteId?: string) {
 }
 
 export async function generateShareLink(quoteId: string) {
-  const token = crypto.randomUUID();
-  await db.quote.update({
-    where: { id: quoteId },
-    data: { shareToken: token },
-  });
-  return { token };
+  try {
+    const token = crypto.randomUUID();
+    await db.quote.update({
+      where: { id: quoteId },
+      data: { shareToken: token },
+    });
+    return { success: true, token };
+  } catch {
+    return { error: "Lỗi tạo link chia sẻ" };
+  }
 }
 
 export async function updateQuoteStatus(quoteId: string, status: "DRAFT" | "SENT" | "ACCEPTED" | "REJECTED" | "EXPIRED") {
-  await db.quote.update({
-    where: { id: quoteId },
-    data: { status },
-  });
-  revalidatePath("/bao-gia");
-  revalidatePath("/");
-  return { success: true };
+  try {
+    await db.quote.update({
+      where: { id: quoteId },
+      data: { status },
+    });
+    revalidatePath("/bao-gia");
+    revalidatePath("/");
+    return { success: true };
+  } catch {
+    return { error: "Lỗi cập nhật trạng thái" };
+  }
 }
 
 export async function cloneQuote(quoteId: string) {
@@ -263,65 +271,73 @@ export async function cloneQuote(quoteId: string) {
   const nextNum = settings?.quoteNextNumber ?? 1;
   const quoteNumber = generateQuoteNumber(prefix, nextNum);
 
-  const quote = await db.quote.create({
-    data: {
-      quoteNumber,
-      status: "DRAFT",
-      customerId: source.customerId,
-      customerName: source.customerName,
-      customerCompany: source.customerCompany,
-      customerPhone: source.customerPhone,
-      customerEmail: source.customerEmail,
-      customerAddress: source.customerAddress,
-      globalDiscountPercent: source.globalDiscountPercent,
-      vatPercent: source.vatPercent,
-      shippingFee: source.shippingFee,
-      otherFees: source.otherFees,
-      otherFeesLabel: source.otherFeesLabel,
-      subtotal: source.subtotal,
-      discountAmount: source.discountAmount,
-      vatAmount: source.vatAmount,
-      total: source.total,
-      notes: source.notes,
-      terms: source.terms,
-      validUntil: source.validUntil,
-      items: {
-        create: source.items.map((i) => ({
-          productId: i.productId,
-          name: i.name,
-          description: i.description,
-          unit: i.unit,
-          quantity: i.quantity,
-          unitPrice: i.unitPrice,
-          discountPercent: i.discountPercent,
-          lineTotal: i.lineTotal,
-          isCustomItem: i.isCustomItem,
-          sortOrder: i.sortOrder,
-        })),
+  try {
+    const quote = await db.quote.create({
+      data: {
+        quoteNumber,
+        status: "DRAFT",
+        customerId: source.customerId,
+        customerName: source.customerName,
+        customerCompany: source.customerCompany,
+        customerPhone: source.customerPhone,
+        customerEmail: source.customerEmail,
+        customerAddress: source.customerAddress,
+        globalDiscountPercent: source.globalDiscountPercent,
+        vatPercent: source.vatPercent,
+        shippingFee: source.shippingFee,
+        otherFees: source.otherFees,
+        otherFeesLabel: source.otherFeesLabel,
+        subtotal: source.subtotal,
+        discountAmount: source.discountAmount,
+        vatAmount: source.vatAmount,
+        total: source.total,
+        notes: source.notes,
+        terms: source.terms,
+        validUntil: source.validUntil,
+        items: {
+          create: source.items.map((i) => ({
+            productId: i.productId,
+            name: i.name,
+            description: i.description,
+            unit: i.unit,
+            quantity: i.quantity,
+            unitPrice: i.unitPrice,
+            discountPercent: i.discountPercent,
+            lineTotal: i.lineTotal,
+            isCustomItem: i.isCustomItem,
+            sortOrder: i.sortOrder,
+          })),
+        },
       },
-    },
-  });
-
-  if (settings) {
-    await db.settings.update({
-      where: { id: settings.id },
-      data: { quoteNextNumber: nextNum + 1 },
     });
-  }
 
-  revalidatePath("/bao-gia");
-  revalidatePath("/");
-  return { success: true, id: quote.id };
+    if (settings) {
+      await db.settings.update({
+        where: { id: settings.id },
+        data: { quoteNextNumber: nextNum + 1 },
+      });
+    }
+
+    revalidatePath("/bao-gia");
+    revalidatePath("/");
+    return { success: true, id: quote.id };
+  } catch {
+    return { error: "Lỗi nhân bản báo giá" };
+  }
 }
 
 export async function deleteQuote(quoteId: string) {
-  await db.$transaction([
-    db.quoteItem.deleteMany({ where: { quoteId } }),
-    db.quote.delete({ where: { id: quoteId } }),
-  ]);
-  revalidatePath("/bao-gia");
-  revalidatePath("/");
-  return { success: true };
+  try {
+    await db.$transaction([
+      db.quoteItem.deleteMany({ where: { quoteId } }),
+      db.quote.delete({ where: { id: quoteId } }),
+    ]);
+    revalidatePath("/bao-gia");
+    revalidatePath("/");
+    return { success: true };
+  } catch {
+    return { error: "Lỗi xóa báo giá" };
+  }
 }
 
 function mapItem(item: {

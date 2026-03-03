@@ -10,6 +10,7 @@ import {
   Copy,
   Trash2,
   FileSpreadsheet,
+  FileText,
   Share2,
   Eye,
 } from "lucide-react";
@@ -85,8 +86,9 @@ export function QuoteDataTable({
 
   function handleDelete(id: string) {
     startTransition(async () => {
-      await deleteQuote(id);
-      toast.success("Đã xóa báo giá");
+      const result = await deleteQuote(id);
+      if (result.error) toast.error(result.error);
+      else toast.success("Đã xóa báo giá");
     });
   }
 
@@ -103,12 +105,13 @@ export function QuoteDataTable({
 
   async function handleShare(id: string) {
     const result = await generateShareLink(id);
+    if (result.error) { toast.error(result.error); return; }
     const url = `${window.location.origin}/chia-se/${result.token}`;
     await navigator.clipboard.writeText(url);
     toast.success("Đã sao chép link chia sẻ");
   }
 
-  function SortBtn({ field, children }: { field: string; children: React.ReactNode }) {
+  function SortButton({ field, children }: { field: string; children: React.ReactNode }) {
     return (
       <Button variant="ghost" size="sm" className="-ml-3 h-8" onClick={() => toggleSort(field)}>
         {children}
@@ -123,10 +126,10 @@ export function QuoteDataTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[130px]"><SortBtn field="quoteNumber">Mã BG</SortBtn></TableHead>
-              <TableHead><SortBtn field="customerName">Khách hàng</SortBtn></TableHead>
-              <TableHead className="w-[140px] text-right"><SortBtn field="total">Tổng tiền</SortBtn></TableHead>
-              <TableHead className="w-[100px]"><SortBtn field="createdAt">Ngày</SortBtn></TableHead>
+              <TableHead className="w-[130px]"><SortButton field="quoteNumber">Mã BG</SortButton></TableHead>
+              <TableHead><SortButton field="customerName">Khách hàng</SortButton></TableHead>
+              <TableHead className="w-[140px] text-right"><SortButton field="total">Tổng tiền</SortButton></TableHead>
+              <TableHead className="w-[100px]"><SortButton field="createdAt">Ngày</SortButton></TableHead>
               <TableHead className="w-[100px]">Trạng thái</TableHead>
               <TableHead className="w-[50px]" />
             </TableRow>
@@ -176,6 +179,11 @@ export function QuoteDataTable({
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleShare(q.id)}>
                           <Share2 className="mr-2 size-4" /> Chia sẻ link
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <a href={`/api/export/pdf/${q.id}`} download>
+                            <FileText className="mr-2 size-4" /> Xuất PDF
+                          </a>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <a href={`/api/export/excel/${q.id}`} download>

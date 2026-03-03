@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatCurrency } from "@/lib/format-currency";
 import type { MappedRow } from "./product-import-wizard";
 
 type Props = {
@@ -127,7 +128,7 @@ export function ImportPreviewStep({ rows, mapping, onBack, onDone }: Props) {
                 <TableCell>{row.name}</TableCell>
                 <TableCell>{row.category || "—"}</TableCell>
                 <TableCell className="text-right tabular-nums">
-                  {row.price?.toLocaleString("vi-VN") || "0"}
+                  {formatCurrency(row.price ?? 0)}
                 </TableCell>
                 <TableCell>{row.unit || "—"}</TableCell>
               </TableRow>

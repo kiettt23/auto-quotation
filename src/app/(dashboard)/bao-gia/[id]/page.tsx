@@ -29,6 +29,20 @@ export default async function EditQuotePage({ params }: Props) {
           .split("T")[0],
       }}
       existingQuote={quote}
+      company={settings ? {
+        companyName: settings.companyName ?? "",
+        address: settings.address ?? "",
+        phone: settings.phone ?? "",
+        email: settings.email ?? "",
+        logoUrl: settings.logoUrl ?? "",
+        bankName: settings.bankName ?? "",
+        bankAccount: settings.bankAccount ?? "",
+        bankOwner: settings.bankOwner ?? "",
+        showAmountInWords: settings.showAmountInWords ?? true,
+        showBankInfo: settings.showBankInfo ?? false,
+        showSignatureBlocks: settings.showSignatureBlocks ?? true,
+        primaryColor: settings.primaryColor ?? "#0369A1",
+      } : null}
     />
   );
 }

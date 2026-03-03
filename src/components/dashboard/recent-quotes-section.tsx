@@ -41,7 +41,7 @@ export function RecentQuotesSection({ quotes }: Props) {
 
       {quotes.length === 0 ? (
         <div className="rounded-lg border border-dashed p-8 text-center">
-          <p className="text-muted-foreground">Chưa có báo giá nào.</p>
+          <p className="text-muted-foreground">Chưa có báo giá nào</p>
           <Button className="mt-4" asChild>
             <Link href="/bao-gia/tao-moi">Tạo báo giá đầu tiên</Link>
           </Button>
@@ -69,7 +69,7 @@ export function RecentQuotesSection({ quotes }: Props) {
                     {q.customerName || q.customerCompany || "—"}
                   </TableCell>
                   <TableCell className="text-right">
-                    {formatCurrency(q.total)} ₫
+                    {formatCurrency(q.total)}
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
                     <div>{q.createdAt.toLocaleDateString("vi-VN")}</div>

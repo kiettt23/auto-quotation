@@ -27,7 +27,7 @@ export function DashboardStatsCards({
       />
       <StatCard
         title="Tổng giá trị tháng"
-        value={`${formatCurrency(monthlyTotal)} ₫`}
+        value={formatCurrency(monthlyTotal)}
         icon={DollarSign}
       />
     </div>

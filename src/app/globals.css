@@ -66,15 +66,15 @@
   --secondary-foreground: #0F172A;
   --muted: #F1F5F9;
   --muted-foreground: #64748B;
-  --accent: #F97316;
-  --accent-foreground: #FFFFFF;
+  --accent: #F1F5F9;
+  --accent-foreground: #0F172A;
   --destructive: #DC2626;
   --border: #E2E8F0;
   --input: #E2E8F0;
   --ring: #0369A1;
   /* Charts */
   --chart-1: #0369A1;
-  --chart-2: #F97316;
+  --chart-2: #94A3B8;
   --chart-3: #16A34A;
   --chart-4: #D97706;
   --chart-5: #DC2626;

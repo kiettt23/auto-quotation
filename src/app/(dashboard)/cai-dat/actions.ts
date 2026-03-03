@@ -18,13 +18,17 @@ export async function updateCompanyInfo(data: unknown) {
   if (!parsed.success) {
     return { error: "Dữ liệu không hợp lệ" };
   }
-  await db.settings.upsert({
-    where: { id: "default" },
-    update: parsed.data,
-    create: { id: "default", ...parsed.data },
-  });
-  revalidatePath("/cai-dat");
-  return { success: true };
+  try {
+    await db.settings.upsert({
+      where: { id: "default" },
+      update: parsed.data,
+      create: { id: "default", ...parsed.data },
+    });
+    revalidatePath("/cai-dat");
+    return { success: true };
+  } catch {
+    return { error: "Lỗi lưu thông tin công ty" };
+  }
 }
 
 export async function updateQuoteTemplate(data: unknown) {
@@ -32,13 +36,17 @@ export async function updateQuoteTemplate(data: unknown) {
   if (!parsed.success) {
     return { error: "Dữ liệu không hợp lệ" };
   }
-  await db.settings.upsert({
-    where: { id: "default" },
-    update: parsed.data,
-    create: { id: "default", ...parsed.data },
-  });
-  revalidatePath("/cai-dat");
-  return { success: true };
+  try {
+    await db.settings.upsert({
+      where: { id: "default" },
+      update: parsed.data,
+      create: { id: "default", ...parsed.data },
+    });
+    revalidatePath("/cai-dat");
+    return { success: true };
+  } catch {
+    return { error: "Lỗi lưu mẫu báo giá" };
+  }
 }
 
 export async function updateDefaults(data: unknown) {
@@ -46,13 +54,17 @@ export async function updateDefaults(data: unknown) {
   if (!parsed.success) {
     return { error: "Dữ liệu không hợp lệ" };
   }
-  await db.settings.upsert({
-    where: { id: "default" },
-    update: parsed.data,
-    create: { id: "default", ...parsed.data },
-  });
-  revalidatePath("/cai-dat");
-  return { success: true };
+  try {
+    await db.settings.upsert({
+      where: { id: "default" },
+      update: parsed.data,
+      create: { id: "default", ...parsed.data },
+    });
+    revalidatePath("/cai-dat");
+    return { success: true };
+  } catch {
+    return { error: "Lỗi lưu cài đặt mặc định" };
+  }
 }
 
 export async function uploadLogo(formData: FormData) {
@@ -106,11 +118,15 @@ export async function createCategory(name: string) {
   if (!parsed.success) {
     return { error: "Nhập tên danh mục" };
   }
-  const category = await db.category.create({
-    data: { name: parsed.data.name },
-  });
-  revalidatePath("/cai-dat");
-  return { success: true, category };
+  try {
+    const category = await db.category.create({
+      data: { name: parsed.data.name },
+    });
+    revalidatePath("/cai-dat");
+    return { success: true, category };
+  } catch {
+    return { error: "Lỗi tạo danh mục" };
+  }
 }
 
 export async function updateCategory(id: string, name: string) {
@@ -118,12 +134,16 @@ export async function updateCategory(id: string, name: string) {
   if (!parsed.success) {
     return { error: "Nhập tên danh mục" };
   }
-  await db.category.update({
-    where: { id },
-    data: { name: parsed.data.name },
-  });
-  revalidatePath("/cai-dat");
-  return { success: true };
+  try {
+    await db.category.update({
+      where: { id },
+      data: { name: parsed.data.name },
+    });
+    revalidatePath("/cai-dat");
+    return { success: true };
+  } catch {
+    return { error: "Lỗi cập nhật danh mục" };
+  }
 }
 
 export async function deleteCategory(id: string) {
@@ -131,9 +151,13 @@ export async function deleteCategory(id: string) {
   if (count > 0) {
     return { error: `Không thể xóa: đang có ${count} sản phẩm thuộc danh mục này` };
   }
-  await db.category.delete({ where: { id } });
-  revalidatePath("/cai-dat");
-  return { success: true };
+  try {
+    await db.category.delete({ where: { id } });
+    revalidatePath("/cai-dat");
+    return { success: true };
+  } catch {
+    return { error: "Lỗi xóa danh mục" };
+  }
 }
 
 // ─── Units ──────────────────────────────────────────────
@@ -143,11 +167,15 @@ export async function createUnit(name: string) {
   if (!parsed.success) {
     return { error: "Nhập tên đơn vị" };
   }
-  const unit = await db.unit.create({
-    data: { name: parsed.data.name },
-  });
-  revalidatePath("/cai-dat");
-  return { success: true, unit };
+  try {
+    const unit = await db.unit.create({
+      data: { name: parsed.data.name },
+    });
+    revalidatePath("/cai-dat");
+    return { success: true, unit };
+  } catch {
+    return { error: "Lỗi tạo đơn vị" };
+  }
 }
 
 export async function updateUnit(id: string, name: string) {
@@ -155,12 +183,16 @@ export async function updateUnit(id: string, name: string) {
   if (!parsed.success) {
     return { error: "Nhập tên đơn vị" };
   }
-  await db.unit.update({
-    where: { id },
-    data: { name: parsed.data.name },
-  });
-  revalidatePath("/cai-dat");
-  return { success: true };
+  try {
+    await db.unit.update({
+      where: { id },
+      data: { name: parsed.data.name },
+    });
+    revalidatePath("/cai-dat");
+    return { success: true };
+  } catch {
+    return { error: "Lỗi cập nhật đơn vị" };
+  }
 }
 
 export async function deleteUnit(id: string) {
@@ -168,7 +200,11 @@ export async function deleteUnit(id: string) {
   if (count > 0) {
     return { error: `Không thể xóa: đang có ${count} sản phẩm sử dụng đơn vị này` };
   }
-  await db.unit.delete({ where: { id } });
-  revalidatePath("/cai-dat");
-  return { success: true };
+  try {
+    await db.unit.delete({ where: { id } });
+    revalidatePath("/cai-dat");
+    return { success: true };
+  } catch {
+    return { error: "Lỗi xóa đơn vị" };
+  }
 }

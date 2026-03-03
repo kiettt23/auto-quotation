@@ -29,6 +29,20 @@ export default async function CreateQuotePage({ searchParams }: Props) {
         validUntil: validUntil.toISOString().split("T")[0],
       }}
       customer={customer ? JSON.parse(JSON.stringify(customer)) : null}
+      company={settings ? {
+        companyName: settings.companyName ?? "",
+        address: settings.address ?? "",
+        phone: settings.phone ?? "",
+        email: settings.email ?? "",
+        logoUrl: settings.logoUrl ?? "",
+        bankName: settings.bankName ?? "",
+        bankAccount: settings.bankAccount ?? "",
+        bankOwner: settings.bankOwner ?? "",
+        showAmountInWords: settings.showAmountInWords ?? true,
+        showBankInfo: settings.showBankInfo ?? false,
+        showSignatureBlocks: settings.showSignatureBlocks ?? true,
+        primaryColor: settings.primaryColor ?? "#0369A1",
+      } : null}
     />
   );
 }
