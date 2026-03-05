@@ -617,21 +617,22 @@ async function main() {
       } });
     }
 
-    // Quote B: gói 6 tháng văn phòng (SENT)
+    // Quote B: gói 6 tháng văn phòng (SENT) - có phí lắp đặt
     if (cust1) {
       const items = [
         { p: pSkyF1, name: "Internet Sky F1 1Gbps + 1 Access Point", qty: 6, price: 210000 },
       ];
       const sub = items.reduce((s, i) => s + i.qty * i.price, 0);
       const vat = Math.round(sub * 0.1);
+      const shipping = 150000; // phí lắp đặt
       await prisma.quote.create({ data: {
         quoteNumber: nextCode(),
         customerId: cust1.id, customerName: cust1.name, customerCompany: cust1.company,
         customerPhone: cust1.phone, customerEmail: cust1.email, customerAddress: cust1.address,
-        status: "SENT", vatPercent: 10,
+        status: "SENT", vatPercent: 10, shippingFee: shipping,
         validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-        subtotal: sub, vatAmount: vat, total: sub + vat,
-        terms: "- Gói 6 tháng, gia hạn 12 tháng giảm thêm 5%\n- Miễn phí lắp đặt",
+        subtotal: sub, vatAmount: vat, total: sub + vat + shipping,
+        terms: "- Gói 6 tháng, gia hạn 12 tháng giảm thêm 5%\n- Phí lắp đặt một lần 150.000đ",
         items: { create: items.map((i, idx) => ({
           productId: i.p?.id, sortOrder: idx, name: i.name,
           unit: "Tháng", quantity: i.qty, unitPrice: i.price,
