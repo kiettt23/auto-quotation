@@ -294,11 +294,13 @@ function parseDateParts(dateStr: string): {
 }
 
 function sumColumn(items: PghTableRow[], key: "boxQty" | "netWeight"): string {
-  const total = items.reduce(
-    (sum, row) => sum + (parseFloat(row[key]) || 0),
-    0,
-  );
-  return total % 1 === 0 ? total.toFixed(0) : total.toFixed(2);
+  // Use integer arithmetic (×100) to avoid floating-point precision errors
+  const totalCents = items.reduce((sum, row) => {
+    const val = parseFloat(row[key]);
+    if (isNaN(val)) return sum;
+    return sum + Math.round(val * 100);
+  }, 0);
+  return (totalCents / 100).toFixed(2);
 }
 
 function TH({

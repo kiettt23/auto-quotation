@@ -106,7 +106,24 @@ export function PghFormPage() {
     update({ items: form.items.filter((_, i) => i !== index) });
   }
 
+  function validateForm(): string | null {
+    if (!form.docNumber.trim()) return "Vui lòng nhập số phiếu";
+    if (!form.deliveryDate.trim()) return "Vui lòng chọn ngày giao hàng";
+    if (form.items.length === 0) return "Cần ít nhất 1 dòng hàng hóa";
+    for (let i = 0; i < form.items.length; i++) {
+      const { boxQty, netWeight } = form.items[i];
+      if (boxQty.trim() && isNaN(parseFloat(boxQty)))
+        return `Dòng ${i + 1}: Số thùng phải là số`;
+      if (netWeight.trim() && isNaN(parseFloat(netWeight)))
+        return `Dòng ${i + 1}: Cân nặng phải là số`;
+    }
+    return null;
+  }
+
   async function handleExport() {
+    const error = validateForm();
+    if (error) { toast.error(error); return; }
+
     setIsExporting(true);
     try {
       const res = await fetch("/api/pgh/export", {
@@ -174,8 +191,8 @@ export function PghFormPage() {
       <section className="space-y-3">
         <h2 className="text-base font-semibold">Thông tin phiếu</h2>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="Số phiếu" value={form.docNumber} onChange={(v) => update({ docNumber: v })} />
-          <Field label="Ngày giao hàng" value={form.deliveryDate} onChange={(v) => update({ deliveryDate: v })} type="date" />
+          <Field label="Số phiếu" value={form.docNumber} onChange={(v) => update({ docNumber: v })} required />
+          <Field label="Ngày giao hàng" value={form.deliveryDate} onChange={(v) => update({ deliveryDate: v })} type="date" required />
         </div>
       </section>
 
@@ -245,12 +262,12 @@ export function PghFormPage() {
 
 // ─── Reusable field components ───────────────────────────────────────────────
 
-function Field({ label, value, onChange, type = "text" }: {
-  label: string; value: string; onChange: (v: string) => void; type?: string;
+function Field({ label, value, onChange, type = "text", required }: {
+  label: string; value: string; onChange: (v: string) => void; type?: string; required?: boolean;
 }) {
   return (
     <div className="space-y-1.5">
-      <Label>{label}</Label>
+      <Label>{label}{required && <span className="text-destructive ml-0.5">*</span>}</Label>
       <Input type={type} value={value} onChange={(e) => onChange(e.target.value)} />
     </div>
   );

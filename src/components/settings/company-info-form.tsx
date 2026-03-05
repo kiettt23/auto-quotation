@@ -106,7 +106,7 @@ export function CompanyInfoForm({ settings }: Props) {
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/png,image/jpeg,image/webp"
+                accept="image/png,image/jpeg,image/webp,image/svg+xml"
                 className="hidden"
                 onChange={handleLogoUpload}
               />

@@ -74,9 +74,9 @@ export async function uploadLogo(formData: FormData) {
   }
 
   // Validate file type and size
-  const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
+  const allowedTypes = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
   if (!allowedTypes.includes(file.type)) {
-    return { error: "Chỉ chấp nhận file PNG, JPG hoặc WebP" };
+    return { error: "Chỉ chấp nhận file PNG, JPG, WebP hoặc SVG" };
   }
   if (file.size > 2 * 1024 * 1024) {
     return { error: "File tối đa 2MB" };
