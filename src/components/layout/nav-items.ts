@@ -6,6 +6,7 @@ import {
   Settings,
   Blocks,
   FilePlus2,
+  Truck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -52,6 +53,12 @@ export const navItems: NavItem[] = [
     icon: FilePlus2,
     href: "/chung-tu",
     showInBottomNav: true,
+  },
+  {
+    label: "PGH (Test)",
+    icon: Truck,
+    href: "/pgh",
+    showInBottomNav: false,
   },
   {
     label: "Cài đặt",
