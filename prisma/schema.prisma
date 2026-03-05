@@ -198,6 +198,51 @@ model Quote {
   @@map("quotes")
 }
 
+// ─── DocTemplate (Excel template engine) ────────────────
+
+model DocTemplate {
+  id            String   @id @default(cuid())
+  name          String
+  description   String   @default("")
+  // Original Excel file stored as base64
+  fileBase64    String   @map("file_base64") @db.Text
+  sheetName     String   @map("sheet_name")
+  // Placeholder definitions: [{ cellRef, label, type }]
+  placeholders  Json     @default("[]")
+  // Repeating row region: { startRow, columns: [{ col, label }] }
+  tableRegion   Json?    @map("table_region")
+  // Numbering
+  docPrefix     String   @default("DOC-{YYYY}-") @map("doc_prefix")
+  docNextNumber Int      @default(1) @map("doc_next_number")
+  // Relations
+  entries       DocEntry[]
+  // Timestamps
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("doc_templates")
+}
+
+// ─── DocEntry (documents created from templates) ────────
+
+model DocEntry {
+  id         String      @id @default(cuid())
+  templateId String      @map("template_id")
+  template   DocTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  docNumber  String      @unique @map("doc_number")
+  // Data: { placeholderCellRef: value, ... }
+  fieldData  Json        @default("{}") @map("field_data")
+  // Table rows: [{ colLetter: value, ... }]
+  tableRows  Json        @default("[]") @map("table_rows")
+  // Timestamps
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+
+  @@index([templateId])
+  @@index([docNumber])
+  @@map("doc_entries")
+}
+
 // ─── QuoteItem ──────────────────────────────────────────
 
 model QuoteItem {

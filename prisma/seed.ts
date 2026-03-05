@@ -669,6 +669,16 @@ async function main() {
     console.log("  FPT sample quotes seeded");
   }
 
+  // ─── Doc Templates (Excel Template Engine) ──────────
+  // Note: Real templates require uploading an Excel file via the UI.
+  // Seed data is skipped since fileBase64 requires an actual Excel file.
+  const existingTemplates = await prisma.docTemplate.count();
+  if (existingTemplates === 0) {
+    console.log("  No doc templates (upload Excel files via /mau-chung-tu/tao-moi)");
+  } else {
+    console.log(`  ${existingTemplates} doc templates already exist`);
+  }
+
   console.log("Seeding complete!");
 }
 
