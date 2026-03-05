@@ -26,3 +26,18 @@ export const tableRegionSchema = z.object({
 
 export type TableColumn = z.infer<typeof tableColumnSchema>;
 export type TableRegion = z.infer<typeof tableRegionSchema>;
+
+// ─── PDF text region (overlay area on PDF page) ─────────
+
+export const pdfRegionSchema = z.object({
+  id: z.string().min(1),           // unique identifier
+  label: z.string().min(1),        // display label e.g. "Khách hàng"
+  x: z.number(),                   // left position (PDF points)
+  y: z.number(),                   // bottom position (PDF points)
+  width: z.number().positive(),    // region width
+  height: z.number().positive(),   // region height
+  fontSize: z.number().default(10),
+  type: z.enum(["text", "number", "date"]).default("text"),
+});
+
+export type PdfRegion = z.infer<typeof pdfRegionSchema>;

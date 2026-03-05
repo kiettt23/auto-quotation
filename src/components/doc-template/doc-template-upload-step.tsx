@@ -4,7 +4,18 @@ import { useRef, useState } from "react";
 import { Loader2, UploadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export type AnalysisResult = {
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type PdfAnalysisResult = {
+  fileType: "pdf";
+  pageCount: number;
+  pages: Array<{ width: number; height: number }>;
+  fileBase64: string;
+  fileName: string;
+};
+
+export type ExcelAnalysisResult = {
+  fileType: "excel";
   sheets: string[];
   sheetsAnalysis: Array<{
     name: string;
@@ -23,9 +34,13 @@ export type AnalysisResult = {
   fileName: string;
 };
 
+export type AnalysisResult = ExcelAnalysisResult | PdfAnalysisResult;
+
 type Props = {
   onAnalyzed: (result: AnalysisResult) => void;
 };
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function DocTemplateUploadStep({ onAnalyzed }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -34,25 +49,44 @@ export function DocTemplateUploadStep({ onAnalyzed }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   async function analyzeFile(file: File) {
-    if (!file.name.match(/\.(xlsx|xls)$/i)) {
-      setError("Chỉ hỗ trợ file Excel (.xlsx, .xls)");
+    const isPdf = file.name.match(/\.pdf$/i);
+    const isExcel = file.name.match(/\.(xlsx|xls)$/i);
+
+    if (!isPdf && !isExcel) {
+      setError("Chỉ hỗ trợ file Excel (.xlsx, .xls) hoặc PDF (.pdf)");
       return;
     }
+
     setError(null);
     setIsLoading(true);
+
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await fetch("/api/doc-template/analyze", {
-        method: "POST",
-        body: formData,
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body?.error ?? "Lỗi khi phân tích file");
+
+      if (isPdf) {
+        const res = await fetch("/api/doc-template/analyze-pdf", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body?.error ?? "Lỗi khi phân tích file PDF");
+        }
+        const data = await res.json();
+        onAnalyzed({ fileType: "pdf", ...data } as PdfAnalysisResult);
+      } else {
+        const res = await fetch("/api/doc-template/analyze", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error(body?.error ?? "Lỗi khi phân tích file Excel");
+        }
+        const data = await res.json();
+        onAnalyzed({ fileType: "excel", ...data } as ExcelAnalysisResult);
       }
-      const data: AnalysisResult = await res.json();
-      onAnalyzed(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Lỗi không xác định");
     } finally {
@@ -94,12 +128,12 @@ export function DocTemplateUploadStep({ onAnalyzed }: Props) {
           <p className="text-sm font-medium">
             {isLoading ? "Đang phân tích file..." : "Kéo thả hoặc nhấn để chọn file"}
           </p>
-          <p className="text-xs text-muted-foreground mt-1">Hỗ trợ .xlsx, .xls</p>
+          <p className="text-xs text-muted-foreground mt-1">Hỗ trợ .xlsx, .xls, .pdf</p>
         </div>
         <input
           ref={inputRef}
           type="file"
-          accept=".xlsx,.xls"
+          accept=".xlsx,.xls,.pdf"
           className="hidden"
           onChange={handleFileChange}
         />
@@ -115,7 +149,7 @@ export function DocTemplateUploadStep({ onAnalyzed }: Props) {
         disabled={isLoading}
         onClick={() => inputRef.current?.click()}
       >
-        Chọn file Excel
+        Chọn file (Excel hoặc PDF)
       </Button>
     </div>
   );

@@ -198,18 +198,21 @@ model Quote {
   @@map("quotes")
 }
 
-// ─── DocTemplate (Excel template engine) ────────────────
+// ─── DocTemplate (Excel/PDF template engine) ────────────
 
 model DocTemplate {
   id            String   @id @default(cuid())
   name          String
   description   String   @default("")
-  // Original Excel file stored as base64
+  // File type: "excel" or "pdf"
+  fileType      String   @default("excel") @map("file_type")
+  // Original file stored as base64
   fileBase64    String   @map("file_base64") @db.Text
-  sheetName     String   @map("sheet_name")
-  // Placeholder definitions: [{ cellRef, label, type }]
+  // Excel: sheet name to use; PDF: unused
+  sheetName     String   @default("") @map("sheet_name")
+  // Excel: [{ cellRef, label, type }]; PDF: [{ id, label, x, y, width, height, fontSize, type }]
   placeholders  Json     @default("[]")
-  // Repeating row region: { startRow, columns: [{ col, label }] }
+  // Excel only: repeating row region { startRow, columns }
   tableRegion   Json?    @map("table_region")
   // Numbering
   docPrefix     String   @default("DOC-{YYYY}-") @map("doc_prefix")

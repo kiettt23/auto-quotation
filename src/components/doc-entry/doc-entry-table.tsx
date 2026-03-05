@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Pencil, Trash2, Download, MoreHorizontal } from "lucide-react";
+import { Pencil, Trash2, Download, FileText, MoreHorizontal } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -100,6 +100,12 @@ export function DocEntryTable({ entries }: Props) {
                         <a href={`/api/doc-export/excel/${entry.id}`} download>
                           <Download className="mr-2 size-4" />
                           Xuất Excel
+                        </a>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <a href={`/api/doc-export/pdf/${entry.id}`} download>
+                          <FileText className="mr-2 size-4" />
+                          Xuất PDF
                         </a>
                       </DropdownMenuItem>
                       <AlertDialog>

@@ -25,6 +25,7 @@ export async function createDocTemplate(data: {
   description: string;
   fileBase64: string;
   sheetName: string;
+  fileType?: string;
   placeholders: Placeholder[];
   tableRegion: TableRegion | null;
   docPrefix: string;
@@ -36,6 +37,7 @@ export async function createDocTemplate(data: {
       description: data.description,
       fileBase64: data.fileBase64,
       sheetName: data.sheetName,
+      fileType: data.fileType ?? "excel",
       placeholders: toJson(data.placeholders),
       tableRegion: data.tableRegion ? toJson(data.tableRegion) : undefined,
       docPrefix: data.docPrefix,

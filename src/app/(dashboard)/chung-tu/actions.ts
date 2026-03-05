@@ -38,10 +38,16 @@ export async function createDocEntry(data: {
     where: { id: data.templateId },
   });
 
-  const docNumber = generateDocNumber(
-    template.docPrefix,
-    template.docNextNumber
-  );
+  // Find safe next number: skip any existing doc numbers to avoid unique constraint violations
+  let nextNum = template.docNextNumber;
+  for (let i = 0; i < 20; i++) {
+    const candidate = generateDocNumber(template.docPrefix, nextNum);
+    const existing = await db.docEntry.findUnique({ where: { docNumber: candidate } });
+    if (!existing) break;
+    nextNum++;
+  }
+
+  const docNumber = generateDocNumber(template.docPrefix, nextNum);
 
   const [entry] = await db.$transaction([
     db.docEntry.create({
@@ -54,7 +60,7 @@ export async function createDocEntry(data: {
     }),
     db.docTemplate.update({
       where: { id: data.templateId },
-      data: { docNextNumber: template.docNextNumber + 1 },
+      data: { docNextNumber: nextNum + 1 },
     }),
   ]);
 

@@ -11,10 +11,11 @@ import {
   type ConfigureFormState,
   type PlaceholderDraft,
   type TableColumnDraft,
+  type PdfRegionDraft,
 } from "./doc-template-configure-step";
 import { DocTemplateStepIndicator } from "./doc-template-step-indicator";
 import { createDocTemplate, updateDocTemplate } from "@/app/(dashboard)/mau-chung-tu/actions";
-import type { Placeholder, TableRegion, TableColumn } from "@/lib/validations/doc-template-schemas";
+import type { Placeholder, TableRegion, TableColumn, PdfRegion } from "@/lib/validations/doc-template-schemas";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -23,6 +24,8 @@ type ExistingTemplate = {
   name: string;
   description: string;
   sheetName: string;
+  fileType: string;
+  fileBase64: string;
   docPrefix: string;
   docNextNumber: number;
   placeholders: unknown;
@@ -37,31 +40,34 @@ type Props = {
 
 function buildInitialForm(template?: ExistingTemplate): ConfigureFormState {
   if (template) {
-    const phs = Array.isArray(template.placeholders)
+    const isPdf = template.fileType === "pdf";
+
+    // For PDF templates, placeholders stores PdfRegion[]; for Excel, Placeholder[]
+    const pdfRegions: PdfRegionDraft[] = isPdf && Array.isArray(template.placeholders)
+      ? (template.placeholders as PdfRegion[]).map((r) => ({ ...r }))
+      : [];
+
+    const phs = !isPdf && Array.isArray(template.placeholders)
       ? (template.placeholders as Placeholder[]).map((p): PlaceholderDraft => ({
-          cellRef: p.cellRef,
-          label: p.label,
-          type: p.type,
-          originalFormula: p.originalFormula,
-          included: true,
+          cellRef: p.cellRef, label: p.label, type: p.type,
+          originalFormula: p.originalFormula ?? "", included: true,
         }))
       : [];
+
     const tr = template.tableRegion as { startRow?: number; columns?: TableColumn[] } | null;
     const columns: TableColumnDraft[] = (tr?.columns ?? []).map((c) => ({
       col: c.col, label: c.label, type: c.type, included: true,
     }));
+
     return {
-      name: template.name,
-      description: template.description,
-      sheetName: template.sheetName,
-      placeholders: phs,
+      name: template.name, description: template.description,
+      sheetName: template.sheetName, placeholders: phs, pdfRegions,
       tableRegion: { enabled: !!tr, startRow: tr?.startRow ?? 1, columns },
-      docPrefix: template.docPrefix,
-      docNextNumber: template.docNextNumber,
+      docPrefix: template.docPrefix, docNextNumber: template.docNextNumber,
     };
   }
   return {
-    name: "", description: "", sheetName: "", placeholders: [],
+    name: "", description: "", sheetName: "", placeholders: [], pdfRegions: [],
     tableRegion: { enabled: false, startRow: 1, columns: [] },
     docPrefix: "DOC-{YYYY}-", docNextNumber: 1,
   };
@@ -71,6 +77,15 @@ function toPlaceholders(drafts: PlaceholderDraft[]): Placeholder[] {
   return drafts
     .filter((d) => d.included && d.label.trim())
     .map((d) => ({ cellRef: d.cellRef, label: d.label.trim(), type: d.type, originalFormula: d.originalFormula }));
+}
+
+function toPdfRegions(drafts: PdfRegionDraft[]): PdfRegion[] {
+  return drafts
+    .filter((d) => d.label.trim())
+    .map((d) => ({
+      id: d.id, label: d.label.trim(), x: d.x, y: d.y,
+      width: d.width, height: d.height, fontSize: d.fontSize, type: d.type,
+    }));
 }
 
 function toTableRegion(draft: ConfigureFormState["tableRegion"]): TableRegion | null {
@@ -86,7 +101,6 @@ function toTableRegion(draft: ConfigureFormState["tableRegion"]): TableRegion | 
 const STEPS_NEW = ["Tải file", "Cấu hình", "Lưu mẫu"];
 const STEPS_EDIT = ["Cấu hình", "Lưu mẫu"];
 
-// contentStep: 0=upload, 1=configure, 2=review
 function getContentStep(step: number, isEdit: boolean) {
   return isEdit ? step + 1 : step;
 }
@@ -103,11 +117,21 @@ export function DocTemplateBuilderPage({ template }: Props) {
 
   const steps = isEdit ? STEPS_EDIT : STEPS_NEW;
   const contentStep = getContentStep(step, isEdit);
-  const canAdvance = contentStep !== 1 || (form.name.trim() !== "" && (isEdit || form.sheetName !== ""));
+  const effectiveFileType = analysis?.fileType ?? (template?.fileType === "pdf" ? "pdf" : "excel");
+  const isPdf = effectiveFileType === "pdf";
+
+  const configureIsValid = form.name.trim() !== "" &&
+    (isPdf || isEdit || form.sheetName !== "");
+  const canAdvance = contentStep !== 1 || configureIsValid;
+
+  // fileBase64 for PDF canvas viewer (from analysis or existing template)
+  const fileBase64ForPdf = analysis?.fileType === "pdf"
+    ? analysis.fileBase64
+    : template?.fileType === "pdf" ? template.fileBase64 : undefined;
 
   function handleAnalyzed(result: AnalysisResult) {
     setAnalysis(result);
-    const nameWithoutExt = result.fileName.replace(/\.(xlsx?)$/i, "");
+    const nameWithoutExt = result.fileName.replace(/\.(xlsx?|pdf)$/i, "");
     setForm((prev) => ({ ...prev, name: prev.name || nameWithoutExt }));
     setStep(1);
   }
@@ -120,20 +144,33 @@ export function DocTemplateBuilderPage({ template }: Props) {
     if (!form.name.trim()) { toast.error("Vui lòng nhập tên mẫu"); return; }
     startTransition(async () => {
       try {
-        const placeholders = toPlaceholders(form.placeholders);
-        const tableRegion = toTableRegion(form.tableRegion);
+        // For PDF: save pdfRegions as placeholders, no tableRegion
+        // For Excel: save placeholders and tableRegion as usual
+        const placeholders = isPdf
+          ? toPdfRegions(form.pdfRegions)
+          : toPlaceholders(form.placeholders);
+        const tableRegion = isPdf ? null : toTableRegion(form.tableRegion);
+
         if (isEdit && template) {
           await updateDocTemplate(template.id, {
             name: form.name, description: form.description,
-            placeholders, tableRegion, docPrefix: form.docPrefix, docNextNumber: form.docNextNumber,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            placeholders: placeholders as any,
+            tableRegion,
+            docPrefix: form.docPrefix, docNextNumber: form.docNextNumber,
           });
           toast.success("Đã cập nhật mẫu chứng từ");
         } else {
           if (!analysis) { toast.error("Chưa có file để lưu"); return; }
           await createDocTemplate({
             name: form.name, description: form.description,
-            fileBase64: analysis.fileBase64, sheetName: form.sheetName,
-            placeholders, tableRegion, docPrefix: form.docPrefix, docNextNumber: form.docNextNumber,
+            fileBase64: analysis.fileBase64,
+            sheetName: isPdf ? "" : form.sheetName,
+            fileType: analysis.fileType,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            placeholders: placeholders as any,
+            tableRegion,
+            docPrefix: form.docPrefix, docNextNumber: form.docNextNumber,
           });
           toast.success("Đã tạo mẫu chứng từ");
         }
@@ -152,7 +189,7 @@ export function DocTemplateBuilderPage({ template }: Props) {
             {isEdit ? `Chỉnh sửa: ${template.name}` : "Tạo mẫu chứng từ mới"}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {isEdit ? "Cập nhật cấu hình mẫu" : "Tải lên file Excel và cấu hình các trường dữ liệu"}
+            {isEdit ? "Cập nhật cấu hình mẫu" : "Tải lên file Excel hoặc PDF và cấu hình các trường dữ liệu"}
           </p>
         </div>
         <DocTemplateStepIndicator step={step} steps={steps} />
@@ -166,19 +203,12 @@ export function DocTemplateBuilderPage({ template }: Props) {
             form={form}
             onChange={handleFormChange}
             isEdit={isEdit}
+            fileType={effectiveFileType as "excel" | "pdf"}
+            fileBase64={fileBase64ForPdf}
           />
         )}
         {contentStep === 2 && (
-          <div className="space-y-3 text-sm">
-            <p className="font-medium">Xem lại trước khi lưu:</p>
-            <ul className="space-y-1 text-muted-foreground list-disc list-inside">
-              <li>Tên: <span className="text-foreground">{form.name}</span></li>
-              <li>Sheet: <span className="text-foreground">{form.sheetName}</span></li>
-              <li>Số trường: <span className="text-foreground">{toPlaceholders(form.placeholders).length}</span></li>
-              <li>Tiền tố: <span className="text-foreground">{form.docPrefix}</span></li>
-              <li>Bảng dữ liệu: <span className="text-foreground">{form.tableRegion.enabled ? "Bật" : "Tắt"}</span></li>
-            </ul>
-          </div>
+          <ReviewStep form={form} fileType={effectiveFileType} toPlaceholders={toPlaceholders} toPdfRegions={toPdfRegions} />
         )}
       </div>
 
@@ -198,6 +228,38 @@ export function DocTemplateBuilderPage({ template }: Props) {
           </Button>
         )}
       </div>
+    </div>
+  );
+}
+
+// ─── Review step ──────────────────────────────────────────────────────────────
+
+type ReviewStepProps = {
+  form: ConfigureFormState;
+  fileType: string;
+  toPlaceholders: (drafts: PlaceholderDraft[]) => Placeholder[];
+  toPdfRegions: (drafts: PdfRegionDraft[]) => PdfRegion[];
+};
+
+function ReviewStep({ form, fileType, toPlaceholders, toPdfRegions }: ReviewStepProps) {
+  const isPdf = fileType === "pdf";
+  const fieldCount = isPdf
+    ? toPdfRegions(form.pdfRegions).length
+    : toPlaceholders(form.placeholders).length;
+
+  return (
+    <div className="space-y-3 text-sm">
+      <p className="font-medium">Xem lại trước khi lưu:</p>
+      <ul className="space-y-1 text-muted-foreground list-disc list-inside">
+        <li>Tên: <span className="text-foreground">{form.name}</span></li>
+        <li>Loại: <span className="text-foreground">{isPdf ? "PDF" : "Excel"}</span></li>
+        {!isPdf && <li>Sheet: <span className="text-foreground">{form.sheetName}</span></li>}
+        <li>Số trường: <span className="text-foreground">{fieldCount}</span></li>
+        <li>Tiền tố: <span className="text-foreground">{form.docPrefix}</span></li>
+        {!isPdf && (
+          <li>Bảng dữ liệu: <span className="text-foreground">{form.tableRegion.enabled ? "Bật" : "Tắt"}</span></li>
+        )}
+      </ul>
     </div>
   );
 }

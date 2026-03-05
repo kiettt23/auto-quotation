@@ -12,7 +12,7 @@ import {
 } from "@/app/(dashboard)/chung-tu/actions";
 import { DocEntryFieldInputs } from "./doc-entry-field-inputs";
 import { DocEntryTableRegionEditor } from "./doc-entry-table-region-editor";
-import type { Placeholder, TableRegion } from "@/lib/validations/doc-template-schemas";
+import type { Placeholder, TableRegion, PdfRegion } from "@/lib/validations/doc-template-schemas";
 import type { JsonValue } from "@prisma/client/runtime/client";
 
 // Props accept Prisma's wider JSON types for JSON fields (JsonValue)
@@ -21,6 +21,7 @@ type DocTemplateProp = {
   id: string;
   name: string;
   description: string;
+  fileType?: string;
   placeholders: JsonValue;
   tableRegion: JsonValue;
 };
@@ -70,8 +71,13 @@ export function DocEntryFormPage({ template, entry }: Props) {
   const [isPending, startTransition] = useTransition();
   const isEditing = !!entry;
 
-  const placeholders = castPlaceholders(template.placeholders);
-  const tableRegion = castTableRegion(template.tableRegion);
+  const isPdf = template.fileType === "pdf";
+  // For PDF templates, placeholders stores PdfRegion[]; normalize to Placeholder shape
+  const placeholders = isPdf
+    ? (Array.isArray(template.placeholders) ? (template.placeholders as unknown as PdfRegion[]) : [])
+        .map((r): Placeholder => ({ cellRef: r.id, label: r.label, type: r.type, originalFormula: "" }))
+    : castPlaceholders(template.placeholders);
+  const tableRegion = isPdf ? null : castTableRegion(template.tableRegion);
 
   const [fieldData, setFieldData] = useState<Record<string, string>>(
     () => (entry ? castFieldData(entry.fieldData) : {})
@@ -133,7 +139,7 @@ export function DocEntryFormPage({ template, entry }: Props) {
 
       <Separator />
 
-      {/* Placeholder fields */}
+      {/* Placeholder fields (Excel) or PDF region fields */}
       {placeholders.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-base font-semibold">Thông tin chứng từ</h2>

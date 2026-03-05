@@ -572,10 +572,12 @@ async function main() {
     console.log("  Quotes already exist, skipping");
   }
 
-  // ─── FPT sample quotes (luôn tạo mới, mã sinh tự động không trùng) ──
-  {
+  // ─── FPT sample quotes ──────────────────────────────
+  const totalQuotes = await prisma.quote.count();
+  if (totalQuotes === 4) {
     const cfg = await prisma.settings.findUnique({ where: { id: "default" } });
-    let seq = cfg?.quoteNextNumber ?? 1;
+    // Start after existing hardcoded quotes (0001-0004)
+    let seq = Math.max(cfg?.quoteNextNumber ?? 1, 5);
     const pfx = (cfg?.quotePrefix ?? "BG-{YYYY}-").replace("{YYYY}", String(new Date().getFullYear()));
     const nextCode = () => `${pfx}${String(seq++).padStart(4, "0")}`;
 
@@ -667,6 +669,8 @@ async function main() {
 
     await prisma.settings.update({ where: { id: "default" }, data: { quoteNextNumber: seq } });
     console.log("  FPT sample quotes seeded");
+  } else {
+    console.log("  FPT quotes already exist, skipping");
   }
 
   // ─── Doc Templates (Excel Template Engine) ──────────
