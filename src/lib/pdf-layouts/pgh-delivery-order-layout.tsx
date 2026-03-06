@@ -23,6 +23,7 @@ Font.register({
   family: "Roboto",
   fonts: [
     { src: fontDataUrl("Roboto-Regular.ttf"), fontWeight: "normal" },
+    { src: fontDataUrl("Roboto-Italic.ttf"), fontWeight: "normal", fontStyle: "italic" },
     { src: fontDataUrl("Roboto-Bold.ttf"), fontWeight: "bold" },
   ],
 });
