@@ -3,30 +3,14 @@ import {
   Page,
   Text,
   View,
-  Font,
   StyleSheet,
   renderToBuffer,
   type Styles,
 } from "@react-pdf/renderer";
-import fs from "fs";
-import path from "path";
+import { registerFonts } from "@/lib/pdf/font-registration";
 
-// ─── Font registration ───────────────────────────────────────────────────────
-
-function fontDataUrl(filename: string): string {
-  const filePath = path.join(process.cwd(), "public", "fonts", filename);
-  const buf = fs.readFileSync(filePath);
-  return `data:font/truetype;base64,${buf.toString("base64")}`;
-}
-
-Font.register({
-  family: "Roboto",
-  fonts: [
-    { src: fontDataUrl("Roboto-Regular.ttf"), fontWeight: "normal" },
-    { src: fontDataUrl("Roboto-Italic.ttf"), fontWeight: "normal", fontStyle: "italic" },
-    { src: fontDataUrl("Roboto-Bold.ttf"), fontWeight: "bold" },
-  ],
-});
+// Use shared font registration — safe to call multiple times
+registerFonts();
 
 // ─── Data types ──────────────────────────────────────────────────────────────
 

@@ -35,7 +35,7 @@ import { deleteDocEntry } from "@/app/(dashboard)/documents/actions";
 export type EntryRow = {
   id: string;
   docNumber: string;
-  createdAt: Date;
+  createdAt: Date | string;
   template: { id: string; name: string };
 };
 

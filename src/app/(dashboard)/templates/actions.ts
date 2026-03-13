@@ -1,9 +1,14 @@
 "use server";
 
-// Stub actions for templates route — full implementation in a future phase
-import { err } from "@/lib/result";
+import { getTenantContext } from "@/lib/tenant-context";
+import {
+  createTemplate,
+  updateTemplate,
+  deleteTemplate,
+} from "@/services/template-service";
+import { revalidatePath } from "next/cache";
 
-export async function createDocTemplate(_data: {
+export async function createDocTemplate(data: {
   name: string;
   description?: string;
   fileBase64: string;
@@ -14,12 +19,19 @@ export async function createDocTemplate(_data: {
   docPrefix?: string;
   docNextNumber?: number;
 }) {
-  return err("Tính năng mẫu chứng từ chưa được triển khai");
+  const { tenantId } = await getTenantContext();
+  const result = await createTemplate(tenantId, {
+    ...data,
+    fileType: data.fileType as "excel" | "pdf",
+  });
+  if (!result.ok) throw new Error(result.error);
+  revalidatePath("/templates");
+  return result.value;
 }
 
 export async function updateDocTemplate(
-  _id: string,
-  _data: {
+  id: string,
+  data: {
     name?: string;
     description?: string;
     placeholders?: unknown;
@@ -28,9 +40,16 @@ export async function updateDocTemplate(
     docNextNumber?: number;
   }
 ) {
-  return err("Tính năng mẫu chứng từ chưa được triển khai");
+  const { tenantId } = await getTenantContext();
+  const result = await updateTemplate(tenantId, id, data);
+  if (!result.ok) throw new Error(result.error);
+  revalidatePath("/templates");
+  return result.value;
 }
 
-export async function deleteDocTemplate(_id: string) {
-  return err("Tính năng mẫu chứng từ chưa được triển khai");
+export async function deleteDocTemplate(id: string) {
+  const { tenantId } = await getTenantContext();
+  const result = await deleteTemplate(tenantId, id);
+  if (!result.ok) throw new Error(result.error);
+  revalidatePath("/templates");
 }
