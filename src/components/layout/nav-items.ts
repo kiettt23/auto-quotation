@@ -4,9 +4,6 @@ import {
   Package,
   Users,
   Settings,
-  Blocks,
-  FilePlus2,
-  Truck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -27,43 +24,25 @@ export const navItems: NavItem[] = [
   {
     label: "Báo giá",
     icon: FileText,
-    href: "/bao-gia",
+    href: "/quotes",
     showInBottomNav: true,
   },
   {
     label: "Sản phẩm",
     icon: Package,
-    href: "/san-pham",
+    href: "/products",
     showInBottomNav: true,
   },
   {
     label: "Khách hàng",
     icon: Users,
-    href: "/khach-hang",
+    href: "/customers",
     showInBottomNav: true,
-  },
-  {
-    label: "Mẫu chứng từ",
-    icon: Blocks,
-    href: "/mau-chung-tu",
-    showInBottomNav: false,
-  },
-  {
-    label: "Chứng từ",
-    icon: FilePlus2,
-    href: "/chung-tu",
-    showInBottomNav: true,
-  },
-  {
-    label: "PGH (Test)",
-    icon: Truck,
-    href: "/pgh",
-    showInBottomNav: false,
   },
   {
     label: "Cài đặt",
     icon: Settings,
-    href: "/cai-dat",
+    href: "/settings",
     showInBottomNav: false,
   },
 ];

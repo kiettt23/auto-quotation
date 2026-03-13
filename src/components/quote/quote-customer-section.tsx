@@ -14,7 +14,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { searchCustomers } from "@/app/(dashboard)/bao-gia/actions";
+import { searchCustomers } from "@/app/(dashboard)/quotes/actions";
 import type { UseFormRegister, UseFormWatch, UseFormSetValue, FieldErrors } from "react-hook-form";
 import type { QuoteFormValues } from "@/lib/validations/quote-schemas";
 
@@ -42,8 +42,8 @@ export function QuoteCustomerSection({ register, watch, setValue, errors }: Prop
 
   const doSearch = useCallback(async (q: string) => {
     if (q.length < 1) { setResults([]); return; }
-    const data = await searchCustomers(q);
-    setResults(data as CustomerResult[]);
+    const result = await searchCustomers(q);
+    setResults(result.ok ? (result.value as CustomerResult[]) : []);
   }, []);
 
   useEffect(() => {

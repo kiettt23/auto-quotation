@@ -37,12 +37,12 @@ export function ImportColumnMappingStep({
   function setFieldMapping(colIndex: number, fieldKey: string) {
     setMapping((prev) => {
       const next = { ...prev };
-      // Remove previous mapping for this field
+      // Remove any existing mapping for this column
       for (const [key, idx] of Object.entries(next)) {
         if (idx === colIndex) delete next[key];
       }
-      // Remove previous mapping for this column
-      for (const [key, idx] of Object.entries(next)) {
+      // Remove any existing mapping for this field key
+      for (const key of Object.keys(next)) {
         if (key === fieldKey) delete next[key];
       }
       if (fieldKey !== "skip") {
@@ -53,21 +53,18 @@ export function ImportColumnMappingStep({
   }
 
   const hasNameMapping = Object.keys(mapping).includes("name");
-
-  // Count warnings
   const nameColIdx = mapping["name"];
   const priceColIdx = mapping["price"];
-  const missingName = nameColIdx !== undefined
-    ? rows.filter((r) => !r[nameColIdx]).length
-    : rows.length;
-  const missingPrice = priceColIdx !== undefined
-    ? rows.filter((r) => !r[priceColIdx] || isNaN(Number(r[priceColIdx]))).length
-    : 0;
+
+  const missingPrice =
+    priceColIdx !== undefined
+      ? rows.filter((r) => !r[priceColIdx] || isNaN(Number(r[priceColIdx]))).length
+      : 0;
 
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Ghép cột Excel với trường hệ thống. Cột &quot;Tên sản phẩm&quot; bắt buộc.
+        Ghép cột Excel với trường hệ thống. Cột &quot;Tên sản phẩm&quot; là bắt buộc.
       </p>
 
       <div className="space-y-2">
@@ -103,16 +100,16 @@ export function ImportColumnMappingStep({
       </div>
 
       {/* Warnings */}
-      {(missingPrice > 0 || missingName > 0) && (
+      {(!hasNameMapping || missingPrice > 0) && (
         <div className="rounded-md bg-yellow-50 dark:bg-yellow-950/20 p-3 text-sm space-y-1">
           {!hasNameMapping && (
             <p className="text-yellow-800 dark:text-yellow-200">
-              ⚠ Chưa ghép cột &quot;Tên sản phẩm&quot; (bắt buộc)
+              Chưa ghép cột &quot;Tên sản phẩm&quot; (bắt buộc)
             </p>
           )}
           {missingPrice > 0 && priceColIdx !== undefined && (
             <p className="text-yellow-800 dark:text-yellow-200">
-              ⚠ {missingPrice} dòng thiếu giá (sẽ nhập giá = 0)
+              {missingPrice} dòng thiếu giá (sẽ nhập giá = 0)
             </p>
           )}
         </div>

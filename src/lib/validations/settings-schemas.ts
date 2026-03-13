@@ -1,31 +1,34 @@
 import { z } from "zod/v4";
 
+// Non-optional fields — defaults handled at form level to avoid resolver type conflicts
 export const companyInfoSchema = z.object({
-  companyName: z.string().min(1, "Nhập tên công ty"),
-  address: z.string().min(1, "Nhập địa chỉ"),
-  phone: z.string().min(1, "Nhập số điện thoại"),
-  email: z.email("Email không hợp lệ").optional().or(z.literal("")),
-  taxCode: z.string().optional(),
-  website: z.string().optional(),
-  bankName: z.string().optional(),
-  bankAccount: z.string().optional(),
-  bankOwner: z.string().optional(),
+  companyName: z.string().min(1, "Tên công ty không được để trống"),
+  address: z.string(),
+  phone: z.string(),
+  email: z.string(),
+  taxCode: z.string(),
+  website: z.string(),
+});
+
+export const bankingSchema = z.object({
+  bankName: z.string(),
+  bankAccount: z.string(),
+  bankOwner: z.string(),
 });
 
 export const quoteTemplateSchema = z.object({
-  primaryColor: z.string().min(1),
-  greetingText: z.string().optional(),
-  defaultTerms: z.string().optional(),
+  primaryColor: z.string(),
+  greetingText: z.string(),
+  defaultTerms: z.string(),
   showAmountInWords: z.boolean(),
   showBankInfo: z.boolean(),
   showSignatureBlocks: z.boolean(),
   showFooterNote: z.boolean(),
-  footerNote: z.string().optional(),
+  footerNote: z.string(),
 });
 
 export const defaultsSchema = z.object({
   quotePrefix: z.string().min(1, "Nhập tiền tố mã báo giá"),
-  quoteNextNumber: z.number().int().min(1, "Số bắt đầu >= 1"),
   defaultVatPercent: z.number().min(0).max(100, "VAT 0-100%"),
   defaultValidityDays: z.number().int().min(1, "Tối thiểu 1 ngày"),
   defaultShipping: z.number().min(0, "Phí >= 0"),
@@ -33,6 +36,7 @@ export const defaultsSchema = z.object({
 
 export const categorySchema = z.object({
   name: z.string().min(1, "Nhập tên danh mục"),
+  sortOrder: z.number().int(),
 });
 
 export const unitSchema = z.object({
@@ -40,5 +44,6 @@ export const unitSchema = z.object({
 });
 
 export type CompanyInfoFormData = z.infer<typeof companyInfoSchema>;
+export type BankingFormData = z.infer<typeof bankingSchema>;
 export type QuoteTemplateFormData = z.infer<typeof quoteTemplateSchema>;
 export type DefaultsFormData = z.infer<typeof defaultsSchema>;

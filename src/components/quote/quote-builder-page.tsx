@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Loader2, Save } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { quoteFormSchema, type QuoteFormValues } from "@/lib/validations/quote-schemas";
-import { saveQuote } from "@/app/(dashboard)/bao-gia/actions";
+import { saveQuote } from "@/app/(dashboard)/quotes/actions";
 import { QuoteCustomerSection } from "./quote-customer-section";
 import { QuoteItemsTable } from "./quote-items-table";
 import { QuoteSummarySection } from "./quote-summary-section";
@@ -100,12 +100,12 @@ export function QuoteBuilderPage({ defaults, existingQuote, customer, company }:
   function onSubmit(data: QuoteFormValues) {
     startTransition(async () => {
       const result = await saveQuote(data, quoteId);
-      if (result.error) {
+      if (!result.ok) {
         toast.error(result.error);
       } else {
         toast.success(quoteId ? "Đã cập nhật báo giá" : "Đã tạo báo giá");
-        if (!quoteId && result.id) {
-          router.push(`/bao-gia/${result.id}`);
+        if (!quoteId && result.value?.id) {
+          router.push(`/quotes/${result.value.id}`);
         }
       }
     });
@@ -138,7 +138,7 @@ export function QuoteBuilderPage({ defaults, existingQuote, customer, company }:
             <QuoteSummarySection register={register} watch={watch} />
 
             <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={() => router.push("/bao-gia")}>
+              <Button type="button" variant="outline" onClick={() => router.push("/quotes")}>
                 Hủy
               </Button>
               <Button type="submit" disabled={isPending}>
@@ -167,7 +167,7 @@ export function QuoteBuilderPage({ defaults, existingQuote, customer, company }:
                 otherFees: watch("otherFees"),
                 otherFeesLabel: watch("otherFeesLabel"),
                 terms: watch("terms"),
-                validUntil: watch("validUntil"),
+                validUntil: watch("validUntil") ?? "",
               }}
               company={company}
             />

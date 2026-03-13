@@ -9,7 +9,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { searchProducts } from "@/app/(dashboard)/bao-gia/actions";
+import { searchProducts } from "@/app/(dashboard)/quotes/actions";
 import { formatCurrency } from "@/lib/format-currency";
 import { calculateUnitPrice, type PricingProduct } from "@/lib/pricing-engine";
 
@@ -43,8 +43,8 @@ export function QuoteProductSearch({ open, onOpenChange, onSelect }: Props) {
   const [results, setResults] = useState<ProductResult[]>([]);
 
   const doSearch = useCallback(async (q: string) => {
-    const data = await searchProducts(q);
-    setResults(data);
+    const result = await searchProducts(q);
+    setResults(result.ok ? (result.value as unknown as ProductResult[]) : []);
   }, []);
 
   // Load default products when dialog opens

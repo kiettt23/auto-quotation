@@ -40,7 +40,7 @@ export function DocEntryTemplatePickerDialog({ open, onOpenChange, templates }: 
   function handleConfirm() {
     if (!selectedId) return;
     onOpenChange(false);
-    router.push(`/chung-tu/tao-moi?templateId=${selectedId}`);
+    router.push(`/documents/new?templateId=${selectedId}`);
   }
 
   return (

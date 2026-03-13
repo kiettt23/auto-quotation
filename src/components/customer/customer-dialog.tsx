@@ -16,22 +16,19 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import {
-  customerSchema,
+  customerFormSchema,
   type CustomerFormData,
 } from "@/lib/validations/customer-schemas";
-import {
-  createCustomer,
-  updateCustomer,
-} from "@/app/(dashboard)/khach-hang/actions";
-import type { CustomerWithCount } from "./customer-page-client";
+import { saveCustomer } from "@/app/(dashboard)/customers/actions";
+import type { CustomerWithQuoteCount } from "@/services/customer-service";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  customer: CustomerWithCount | null;
+  customer: CustomerWithQuoteCount | null;
 };
 
-function getDefaults(c: CustomerWithCount | null): CustomerFormData {
+function getDefaults(c: CustomerWithQuoteCount | null): CustomerFormData {
   if (!c) {
     return { name: "", company: "", phone: "", email: "", address: "", notes: "" };
   }
@@ -55,7 +52,7 @@ export function CustomerDialog({ open, onOpenChange, customer }: Props) {
     formState: { errors },
     reset,
   } = useForm<CustomerFormData>({
-    resolver: zodResolver(customerSchema),
+    resolver: zodResolver(customerFormSchema),
     defaultValues: getDefaults(customer),
   });
 
@@ -65,15 +62,11 @@ export function CustomerDialog({ open, onOpenChange, customer }: Props) {
 
   function onSubmit(data: CustomerFormData) {
     startTransition(async () => {
-      const result = isEditing
-        ? await updateCustomer(customer.id, data)
-        : await createCustomer(data);
-      if (result.error) {
+      const result = await saveCustomer(data, customer?.id);
+      if (!result.ok) {
         toast.error(result.error);
       } else {
-        toast.success(
-          isEditing ? "Đã cập nhật khách hàng" : "Đã thêm khách hàng"
-        );
+        toast.success(isEditing ? "Đã cập nhật khách hàng" : "Đã thêm khách hàng");
         onOpenChange(false);
       }
     });

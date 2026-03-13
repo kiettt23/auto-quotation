@@ -8,28 +8,25 @@ import { useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   companyInfoSchema,
+  bankingSchema,
   type CompanyInfoFormData,
+  type BankingFormData,
 } from "@/lib/validations/settings-schemas";
-import { updateCompanyInfo, uploadLogo } from "@/app/(dashboard)/cai-dat/actions";
-import type { Settings } from "@/generated/prisma/client";
+import { updateCompanyInfo, updateBanking, uploadLogo } from "@/app/(dashboard)/settings/actions";
+import type { Tenant } from "@/db/schema";
 
-type Props = { settings: Settings };
+type Props = { settings: Tenant; bankingOnly?: boolean };
 
-export function CompanyInfoForm({ settings }: Props) {
+export function CompanyInfoForm({ settings, bankingOnly = false }: Props) {
   const [isPending, startTransition] = useTransition();
   const [logoUrl, setLogoUrl] = useState(settings.logoUrl);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<CompanyInfoFormData>({
+  const companyForm = useForm<CompanyInfoFormData>({
     resolver: zodResolver(companyInfoSchema),
     defaultValues: {
       companyName: settings.companyName,
@@ -38,20 +35,31 @@ export function CompanyInfoForm({ settings }: Props) {
       email: settings.email,
       taxCode: settings.taxCode,
       website: settings.website,
+    },
+  });
+
+  const bankingForm = useForm<BankingFormData>({
+    resolver: zodResolver(bankingSchema),
+    defaultValues: {
       bankName: settings.bankName,
       bankAccount: settings.bankAccount,
       bankOwner: settings.bankOwner,
     },
   });
 
-  function onSubmit(data: CompanyInfoFormData) {
+  function onSubmitCompany(data: CompanyInfoFormData) {
     startTransition(async () => {
       const result = await updateCompanyInfo(data);
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("Đã lưu thông tin công ty");
-      }
+      if (!result.ok) toast.error(result.error);
+      else toast.success("Đã lưu thông tin công ty");
+    });
+  }
+
+  function onSubmitBanking(data: BankingFormData) {
+    startTransition(async () => {
+      const result = await updateBanking(data);
+      if (!result.ok) toast.error(result.error);
+      else toast.success("Đã lưu thông tin ngân hàng");
     });
   }
 
@@ -60,34 +68,60 @@ export function CompanyInfoForm({ settings }: Props) {
     if (!file) return;
     setUploading(true);
     const formData = new FormData();
-    formData.append("logo", file);
+    formData.append("file", file);
     const result = await uploadLogo(formData);
     setUploading(false);
-    if (result.error) {
-      toast.error(result.error);
-    } else {
-      setLogoUrl(result.url ?? "");
+    if (!result.ok) toast.error(result.error);
+    else {
+      setLogoUrl(result.value.url);
       toast.success("Đã tải logo lên");
     }
   }
 
+  if (bankingOnly) {
+    return (
+      <form onSubmit={bankingForm.handleSubmit(onSubmitBanking)} className="space-y-6">
+        <Card>
+          <CardHeader><CardTitle>Thông tin ngân hàng</CardTitle></CardHeader>
+          <CardContent>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <FieldInput
+                label="Tên ngân hàng"
+                error={bankingForm.formState.errors.bankName?.message}
+                {...bankingForm.register("bankName")}
+              />
+              <FieldInput
+                label="Số tài khoản"
+                error={bankingForm.formState.errors.bankAccount?.message}
+                {...bankingForm.register("bankAccount")}
+              />
+              <FieldInput
+                label="Chủ tài khoản"
+                error={bankingForm.formState.errors.bankOwner?.message}
+                {...bankingForm.register("bankOwner")}
+              />
+            </div>
+          </CardContent>
+        </Card>
+        <Button type="submit" disabled={isPending}>
+          {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}
+          Lưu thông tin ngân hàng
+        </Button>
+      </form>
+    );
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form onSubmit={companyForm.handleSubmit(onSubmitCompany)} className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle>Thông tin công ty</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Thông tin công ty</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          {/* Logo */}
+          {/* Logo upload */}
           <div className="space-y-2">
             <Label>Logo</Label>
             <div className="flex items-center gap-4">
               {logoUrl && (
-                <img
-                  src={logoUrl}
-                  alt="Logo"
-                  className="h-16 w-16 rounded-md border object-contain"
-                />
+                <img src={logoUrl} alt="Logo" className="h-16 w-16 rounded-md border object-contain" />
               )}
               <Button
                 type="button"
@@ -96,11 +130,7 @@ export function CompanyInfoForm({ settings }: Props) {
                 disabled={uploading}
                 onClick={() => fileInputRef.current?.click()}
               >
-                {uploading ? (
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                ) : (
-                  <Upload className="mr-2 size-4" />
-                )}
+                {uploading ? <Loader2 className="mr-2 size-4 animate-spin" /> : <Upload className="mr-2 size-4" />}
                 {uploading ? "Đang tải..." : "Tải logo"}
               </Button>
               <input
@@ -114,25 +144,28 @@ export function CompanyInfoForm({ settings }: Props) {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <FieldInput label="Tên công ty *" error={errors.companyName?.message} {...register("companyName")} />
-            <FieldInput label="Số điện thoại *" error={errors.phone?.message} {...register("phone")} />
-            <FieldInput label="Địa chỉ *" error={errors.address?.message} {...register("address")} />
-            <FieldInput label="Email" error={errors.email?.message} {...register("email")} />
-            <FieldInput label="Mã số thuế" {...register("taxCode")} />
-            <FieldInput label="Website" {...register("website")} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Thông tin ngân hàng</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FieldInput label="Tên ngân hàng" {...register("bankName")} />
-            <FieldInput label="Số tài khoản" {...register("bankAccount")} />
-            <FieldInput label="Chủ tài khoản" {...register("bankOwner")} />
+            <FieldInput
+              label="Tên công ty *"
+              error={companyForm.formState.errors.companyName?.message}
+              {...companyForm.register("companyName")}
+            />
+            <FieldInput
+              label="Số điện thoại"
+              error={companyForm.formState.errors.phone?.message}
+              {...companyForm.register("phone")}
+            />
+            <FieldInput
+              label="Địa chỉ"
+              error={companyForm.formState.errors.address?.message}
+              {...companyForm.register("address")}
+            />
+            <FieldInput
+              label="Email"
+              error={companyForm.formState.errors.email?.message}
+              {...companyForm.register("email")}
+            />
+            <FieldInput label="Mã số thuế" {...companyForm.register("taxCode")} />
+            <FieldInput label="Website" {...companyForm.register("website")} />
           </div>
         </CardContent>
       </Card>
@@ -145,7 +178,6 @@ export function CompanyInfoForm({ settings }: Props) {
   );
 }
 
-// Reusable field wrapper
 function FieldInput({
   label,
   error,

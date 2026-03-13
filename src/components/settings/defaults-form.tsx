@@ -13,10 +13,10 @@ import {
   defaultsSchema,
   type DefaultsFormData,
 } from "@/lib/validations/settings-schemas";
-import { updateDefaults } from "@/app/(dashboard)/cai-dat/actions";
-import type { Settings } from "@/generated/prisma/client";
+import { updateDefaults } from "@/app/(dashboard)/settings/actions";
+import type { Tenant } from "@/db/schema";
 
-type Props = { settings: Settings };
+type Props = { settings: Tenant };
 
 export function DefaultsForm({ settings }: Props) {
   const [isPending, startTransition] = useTransition();
@@ -29,7 +29,6 @@ export function DefaultsForm({ settings }: Props) {
     resolver: zodResolver(defaultsSchema),
     defaultValues: {
       quotePrefix: settings.quotePrefix,
-      quoteNextNumber: settings.quoteNextNumber,
       defaultVatPercent: Number(settings.defaultVatPercent),
       defaultValidityDays: settings.defaultValidityDays,
       defaultShipping: Number(settings.defaultShipping),
@@ -39,51 +38,31 @@ export function DefaultsForm({ settings }: Props) {
   function onSubmit(data: DefaultsFormData) {
     startTransition(async () => {
       const result = await updateDefaults(data);
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("Đã lưu giá trị mặc định");
-      }
+      if (!result.ok) toast.error(result.error);
+      else toast.success("Đã lưu giá trị mặc định");
     });
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle>Mã báo giá</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Mã báo giá</CardTitle></CardHeader>
         <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-1">
-              <Label>Tiền tố mã báo giá</Label>
-              <Input {...register("quotePrefix")} />
-              <p className="text-xs text-muted-foreground">
-                Ví dụ: BG-&#123;YYYY&#125;- sẽ tạo mã BG-2026-001
-              </p>
-              {errors.quotePrefix && (
-                <p className="text-xs text-destructive">{errors.quotePrefix.message}</p>
-              )}
-            </div>
-            <div className="space-y-1">
-              <Label>Số bắt đầu</Label>
-              <Input
-                type="number"
-                min={1}
-                {...register("quoteNextNumber", { valueAsNumber: true })}
-              />
-              {errors.quoteNextNumber && (
-                <p className="text-xs text-destructive">{errors.quoteNextNumber.message}</p>
-              )}
-            </div>
+          <div className="space-y-1">
+            <Label>Tiền tố mã báo giá</Label>
+            <Input {...register("quotePrefix")} />
+            <p className="text-xs text-muted-foreground">
+              Ví dụ: BG-&#123;YYYY&#125;- sẽ tạo mã BG-2026-001
+            </p>
+            {errors.quotePrefix && (
+              <p className="text-xs text-destructive">{errors.quotePrefix.message}</p>
+            )}
           </div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Giá trị mặc định</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Giá trị mặc định</CardTitle></CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-1">

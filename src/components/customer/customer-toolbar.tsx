@@ -25,7 +25,7 @@ export function CustomerToolbar({ currentSearch, onAddCustomer }: Props) {
         params.delete("search");
       }
       params.delete("page");
-      router.push(`/khach-hang?${params.toString()}`);
+      router.push(`/customers?${params.toString()}`);
     },
     [router, searchParams]
   );

@@ -15,46 +15,40 @@ import {
   quoteTemplateSchema,
   type QuoteTemplateFormData,
 } from "@/lib/validations/settings-schemas";
-import { updateQuoteTemplate } from "@/app/(dashboard)/cai-dat/actions";
-import type { Settings } from "@/generated/prisma/client";
+import { updateQuoteTemplate } from "@/app/(dashboard)/settings/actions";
+import type { Tenant } from "@/db/schema";
 
-type Props = { settings: Settings };
+type Props = { settings: Tenant };
 
 export function QuoteTemplateForm({ settings }: Props) {
   const [isPending, startTransition] = useTransition();
 
-  const { register, handleSubmit, setValue, watch } =
-    useForm<QuoteTemplateFormData>({
-      resolver: zodResolver(quoteTemplateSchema),
-      defaultValues: {
-        primaryColor: settings.primaryColor,
-        greetingText: settings.greetingText,
-        defaultTerms: settings.defaultTerms,
-        showAmountInWords: settings.showAmountInWords,
-        showBankInfo: settings.showBankInfo,
-        showSignatureBlocks: settings.showSignatureBlocks,
-        showFooterNote: settings.showFooterNote,
-        footerNote: settings.footerNote,
-      },
-    });
+  const { register, handleSubmit, setValue, watch } = useForm<QuoteTemplateFormData>({
+    resolver: zodResolver(quoteTemplateSchema),
+    defaultValues: {
+      primaryColor: settings.primaryColor,
+      greetingText: settings.greetingText,
+      defaultTerms: settings.defaultTerms,
+      showAmountInWords: settings.showAmountInWords,
+      showBankInfo: settings.showBankInfo,
+      showSignatureBlocks: settings.showSignatureBlocks,
+      showFooterNote: settings.showFooterNote,
+      footerNote: settings.footerNote,
+    },
+  });
 
   function onSubmit(data: QuoteTemplateFormData) {
     startTransition(async () => {
       const result = await updateQuoteTemplate(data);
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("Đã lưu mẫu báo giá");
-      }
+      if (!result.ok) toast.error(result.error);
+      else toast.success("Đã lưu mẫu báo giá");
     });
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle>Giao diện</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Giao diện</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-1">
             <Label>Màu chính</Label>
@@ -71,9 +65,7 @@ export function QuoteTemplateForm({ settings }: Props) {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Nội dung</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Nội dung</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-1">
             <Label>Lời chào</Label>
@@ -87,29 +79,27 @@ export function QuoteTemplateForm({ settings }: Props) {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Hiển thị</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Hiển thị</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           <CheckboxField
             label="Hiển thị số tiền bằng chữ"
             checked={watch("showAmountInWords")}
-            onCheckedChange={(v) => setValue("showAmountInWords", !!v)}
+            onCheckedChange={(v) => setValue("showAmountInWords", v)}
           />
           <CheckboxField
             label="Hiển thị thông tin ngân hàng"
             checked={watch("showBankInfo")}
-            onCheckedChange={(v) => setValue("showBankInfo", !!v)}
+            onCheckedChange={(v) => setValue("showBankInfo", v)}
           />
           <CheckboxField
             label="Hiển thị ô chữ ký"
             checked={watch("showSignatureBlocks")}
-            onCheckedChange={(v) => setValue("showSignatureBlocks", !!v)}
+            onCheckedChange={(v) => setValue("showSignatureBlocks", v)}
           />
           <CheckboxField
             label="Hiển thị ghi chú cuối trang"
             checked={watch("showFooterNote")}
-            onCheckedChange={(v) => setValue("showFooterNote", !!v)}
+            onCheckedChange={(v) => setValue("showFooterNote", v)}
           />
           {watch("showFooterNote") && (
             <div className="ml-7 space-y-1">
@@ -138,7 +128,7 @@ function CheckboxField({
   onCheckedChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex items-center gap-3 cursor-pointer">
+    <label className="flex cursor-pointer items-center gap-3">
       <Checkbox checked={checked} onCheckedChange={onCheckedChange} />
       <span className="text-sm">{label}</span>
     </label>

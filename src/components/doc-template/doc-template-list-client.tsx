@@ -20,7 +20,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { EmptyState } from "@/components/empty-state";
-import { deleteDocTemplate } from "@/app/(dashboard)/mau-chung-tu/actions";
+import { deleteDocTemplate } from "@/app/(dashboard)/templates/actions";
 import type { Placeholder } from "@/lib/validations/doc-template-schemas";
 
 type DocTemplateItem = {
@@ -67,7 +67,7 @@ function TemplateCard({ template }: { template: DocTemplateItem }) {
           </div>
           <div className="flex items-center gap-1 shrink-0">
             <Button variant="ghost" size="icon" className="size-8" asChild>
-              <Link href={`/mau-chung-tu/${template.id}`}>
+              <Link href={`/templates/${template.id}`}>
                 <Pencil className="size-4" />
               </Link>
             </Button>
@@ -113,7 +113,7 @@ export function DocTemplateListClient({ templates }: Props) {
       <div className="space-y-4">
         <div className="flex justify-end">
           <Button asChild>
-            <Link href="/mau-chung-tu/tao-moi">
+            <Link href="/templates/new">
               <Plus className="mr-2 size-4" />
               Tạo mẫu mới
             </Link>
@@ -124,7 +124,7 @@ export function DocTemplateListClient({ templates }: Props) {
           title="Chưa có mẫu chứng từ"
           description="Tạo mẫu đầu tiên từ file Excel của bạn"
           actionLabel="Tạo mẫu mới"
-          actionHref="/mau-chung-tu/tao-moi"
+          actionHref="/templates/new"
         />
       </div>
     );
@@ -134,7 +134,7 @@ export function DocTemplateListClient({ templates }: Props) {
     <div className="space-y-4">
       <div className="flex justify-end">
         <Button asChild>
-          <Link href="/mau-chung-tu/tao-moi">
+          <Link href="/templates/new">
             <Plus className="mr-2 size-4" />
             Tạo mẫu mới
           </Link>

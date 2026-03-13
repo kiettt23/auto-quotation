@@ -45,7 +45,7 @@ export function ProductPricingFields({
 
   return (
     <div className="space-y-4">
-      {/* Pricing type toggle */}
+      {/* Pricing type selector */}
       <Field>
         <FieldLabel>Hình thức giá *</FieldLabel>
         <div className="flex gap-2">
@@ -68,7 +68,7 @@ export function ProductPricingFields({
         </div>
       </Field>
 
-      {/* Fixed price */}
+      {/* Fixed base price */}
       {pricingType === "FIXED" && (
         <Field>
           <FieldLabel>Giá bán (VNĐ) *</FieldLabel>
@@ -83,7 +83,7 @@ export function ProductPricingFields({
         </Field>
       )}
 
-      {/* Tiered pricing */}
+      {/* Tiered pricing rows */}
       {pricingType === "TIERED" && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
@@ -101,9 +101,7 @@ export function ProductPricingFields({
             </Button>
           </div>
           {tierFields.length === 0 && (
-            <p className="text-sm text-muted-foreground">
-              Chưa có bậc giá nào
-            </p>
+            <p className="text-sm text-muted-foreground">Chưa có bậc giá nào</p>
           )}
           {tierFields.map((field, index) => (
             <div key={field.id} className="flex items-end gap-2">
@@ -125,7 +123,7 @@ export function ProductPricingFields({
                   placeholder="∞"
                   {...register(`pricingTiers.${index}.maxQuantity`, {
                     setValueAs: (v: string) =>
-                      v === "" || v === undefined ? null : parseInt(v, 10),
+                      v === "" || v === undefined ? null : Number(v),
                   })}
                 />
               </div>
@@ -153,7 +151,7 @@ export function ProductPricingFields({
         </div>
       )}
 
-      {/* Volume discounts */}
+      {/* Volume discount rows */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <FieldLabel>Chiết khấu theo số lượng</FieldLabel>
@@ -170,9 +168,7 @@ export function ProductPricingFields({
           </Button>
         </div>
         {discountFields.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            Chưa có chiết khấu nào
-          </p>
+          <p className="text-sm text-muted-foreground">Chưa có chiết khấu nào</p>
         )}
         {discountFields.map((field, index) => (
           <div key={field.id} className="flex items-end gap-2">
@@ -187,9 +183,7 @@ export function ProductPricingFields({
               />
             </div>
             <div className="flex-1 space-y-1">
-              <label className="text-xs text-muted-foreground">
-                Chiết khấu %
-              </label>
+              <label className="text-xs text-muted-foreground">Chiết khấu %</label>
               <Input
                 type="number"
                 min={0}

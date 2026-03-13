@@ -9,13 +9,14 @@ import { Separator } from "@/components/ui/separator";
 import {
   createDocEntry,
   updateDocEntry,
-} from "@/app/(dashboard)/chung-tu/actions";
+} from "@/app/(dashboard)/documents/actions";
 import { DocEntryFieldInputs } from "./doc-entry-field-inputs";
 import { DocEntryTableRegionEditor } from "./doc-entry-table-region-editor";
 import type { Placeholder, TableRegion, PdfRegion } from "@/lib/validations/doc-template-schemas";
-import type { JsonValue } from "@prisma/client/runtime/client";
+// Generic JSON value type replacing Prisma's JsonValue
+type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
-// Props accept Prisma's wider JSON types for JSON fields (JsonValue)
+// Props accept generic JSON types for JSON fields
 // and cast them internally to strongly-typed variants.
 type DocTemplateProp = {
   id: string;
@@ -104,7 +105,7 @@ export function DocEntryFormPage({ template, entry }: Props) {
             tableRows,
           });
           toast.success("Đã tạo chứng từ thành công");
-          router.push("/chung-tu");
+          router.push("/documents");
         }
       } catch {
         toast.error("Lưu thất bại, vui lòng thử lại");
@@ -121,7 +122,7 @@ export function DocEntryFormPage({ template, entry }: Props) {
             variant="ghost"
             size="sm"
             className="-ml-2 mb-2 text-muted-foreground"
-            onClick={() => router.push("/chung-tu")}
+            onClick={() => router.push("/documents")}
           >
             <ArrowLeft className="mr-2 size-4" />
             Quay lại

@@ -5,23 +5,8 @@ import { ProductToolbar } from "./product-toolbar";
 import { ProductDataTable } from "./product-data-table";
 import { ProductDialog } from "./product-dialog";
 import { ProductImportWizard } from "./product-import-wizard";
-import type { Category, Unit } from "@/generated/prisma/client";
-
-type ProductWithRelations = {
-  id: string;
-  code: string;
-  name: string;
-  description: string;
-  notes: string;
-  categoryId: string;
-  unitId: string;
-  basePrice: string;
-  pricingType: "FIXED" | "TIERED";
-  category: { id: string; name: string };
-  unit: { id: string; name: string };
-  pricingTiers: { id: string; minQuantity: number; maxQuantity: number | null; price: string }[];
-  volumeDiscounts: { id: string; minQuantity: number; discountPercent: string }[];
-};
+import type { ProductWithRelations } from "@/services/product-service";
+import type { Category, Unit } from "@/db/schema";
 
 type Props = {
   products: ProductWithRelations[];
@@ -32,8 +17,6 @@ type Props = {
   units: Unit[];
   currentCategoryId?: string;
   currentSearch?: string;
-  currentSort: string;
-  currentOrder: string;
 };
 
 export function ProductPageClient({
@@ -45,12 +28,11 @@ export function ProductPageClient({
   units,
   currentCategoryId,
   currentSearch,
-  currentSort,
-  currentOrder,
 }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<ProductWithRelations | null>(null);
+  const [editingProduct, setEditingProduct] =
+    useState<ProductWithRelations | null>(null);
 
   function handleAdd() {
     setEditingProduct(null);
@@ -77,8 +59,6 @@ export function ProductPageClient({
         total={total}
         page={page}
         totalPages={totalPages}
-        currentSort={currentSort}
-        currentOrder={currentOrder}
         onEdit={handleEdit}
       />
 
@@ -90,12 +70,7 @@ export function ProductPageClient({
         units={units}
       />
 
-      <ProductImportWizard
-        open={importOpen}
-        onOpenChange={setImportOpen}
-      />
+      <ProductImportWizard open={importOpen} onOpenChange={setImportOpen} />
     </div>
   );
 }
-
-export type { ProductWithRelations };

@@ -21,7 +21,7 @@ export async function parseExcelBuffer(buffer: ArrayBuffer): Promise<ParsedExcel
 
   sheet.eachRow((row, rowNumber) => {
     const values = row.values as (string | number | null)[];
-    // ExcelJS row.values is 1-indexed (index 0 is empty)
+    // ExcelJS row.values is 1-indexed — index 0 is always empty
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cells = values.slice(1).map((v: any) => {
       if (v === undefined || v === null) return null;
@@ -46,7 +46,7 @@ export async function parseExcelBuffer(buffer: ArrayBuffer): Promise<ParsedExcel
   return { headers, rows, rowCount: rows.length };
 }
 
-/** System fields available for column mapping */
+/** System fields available for column mapping in the import wizard */
 export const SYSTEM_FIELDS = [
   { key: "code", label: "Mã sản phẩm" },
   { key: "name", label: "Tên sản phẩm" },
@@ -58,19 +58,19 @@ export const SYSTEM_FIELDS = [
   { key: "skip", label: "-- Bỏ qua --" },
 ] as const;
 
-/** Auto-detect column mapping from Excel headers */
-export function autoDetectMapping(
-  headers: string[]
-): Record<string, number> {
+export type SystemFieldKey = (typeof SYSTEM_FIELDS)[number]["key"];
+
+/** Auto-detect column mapping from Excel header names */
+export function autoDetectMapping(headers: string[]): Record<string, number> {
   const mapping: Record<string, number> = {};
   const patterns: Record<string, RegExp> = {
     code: /m[aã]|code|sku/i,
-    name: /t[eê]n|name|s[aả]n ph[aẩ]m/i,
-    category: /danh m[uụ]c|nh[oó]m|category|lo[aạ]i/i,
-    price: /gi[aá]|price|đ[oơ]n gi[aá]/i,
-    unit: /đ[oơ]n v[iị]|dvt|unit/i,
-    description: /m[oô] t[aả]|desc/i,
-    notes: /ghi ch[uú]|note/i,
+    name: /t[eê]n|name|s[aả]n\s*ph[aẩ]m/i,
+    category: /danh\s*m[uụ]c|nh[oó]m|category|lo[aạ]i/i,
+    price: /gi[aá]|price|đ[oơ]n\s*gi[aá]/i,
+    unit: /đ[oơ]n\s*v[iị]|dvt|unit/i,
+    description: /m[oô]\s*t[aả]|desc/i,
+    notes: /ghi\s*ch[uú]|note/i,
   };
 
   for (const [field, regex] of Object.entries(patterns)) {

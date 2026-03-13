@@ -4,20 +4,10 @@ import { useState } from "react";
 import { CustomerToolbar } from "./customer-toolbar";
 import { CustomerDataTable } from "./customer-data-table";
 import { CustomerDialog } from "./customer-dialog";
-
-export type CustomerWithCount = {
-  id: string;
-  name: string;
-  company: string;
-  phone: string;
-  email: string;
-  address: string;
-  notes: string;
-  _count: { quotes: number };
-};
+import type { CustomerWithQuoteCount } from "@/services/customer-service";
 
 type Props = {
-  customers: CustomerWithCount[];
+  customers: CustomerWithQuoteCount[];
   total: number;
   page: number;
   totalPages: number;
@@ -33,14 +23,14 @@ export function CustomerPageClient({
 }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] =
-    useState<CustomerWithCount | null>(null);
+    useState<CustomerWithQuoteCount | null>(null);
 
   function handleAdd() {
     setEditingCustomer(null);
     setDialogOpen(true);
   }
 
-  function handleEdit(customer: CustomerWithCount) {
+  function handleEdit(customer: CustomerWithQuoteCount) {
     setEditingCustomer(customer);
     setDialogOpen(true);
   }

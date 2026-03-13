@@ -23,13 +23,13 @@ import {
 } from "@/components/ui/select";
 import { Field, FieldLabel, FieldError } from "@/components/ui/field";
 import {
-  productSchema,
+  productFormSchema,
   type ProductFormData,
 } from "@/lib/validations/product-schemas";
-import { createProduct, updateProduct } from "@/app/(dashboard)/san-pham/actions";
+import { saveProductAction } from "@/app/(dashboard)/products/actions";
 import { ProductPricingFields } from "./product-pricing-fields";
-import type { ProductWithRelations } from "./product-page-client";
-import type { Category, Unit } from "@/generated/prisma/client";
+import type { ProductWithRelations } from "@/services/product-service";
+import type { Category, Unit } from "@/db/schema";
 
 type Props = {
   open: boolean;
@@ -39,15 +39,15 @@ type Props = {
   units: Unit[];
 };
 
-function getDefaults(product: ProductWithRelations | null): ProductFormData {
+function buildDefaults(product: ProductWithRelations | null): ProductFormData {
   if (!product) {
     return {
       code: "",
       name: "",
-      categoryId: "",
-      unitId: "",
       description: "",
       notes: "",
+      categoryId: null,
+      unitId: null,
       pricingType: "FIXED",
       basePrice: 0,
       pricingTiers: [],
@@ -57,20 +57,20 @@ function getDefaults(product: ProductWithRelations | null): ProductFormData {
   return {
     code: product.code,
     name: product.name,
-    categoryId: product.categoryId,
-    unitId: product.unitId,
     description: product.description,
     notes: product.notes,
+    categoryId: product.categoryId ?? null,
+    unitId: product.unitId ?? null,
     pricingType: product.pricingType,
-    basePrice: parseFloat(product.basePrice),
+    basePrice: Number(product.basePrice),
     pricingTiers: product.pricingTiers.map((t) => ({
       minQuantity: t.minQuantity,
       maxQuantity: t.maxQuantity,
-      price: parseFloat(t.price),
+      price: t.price,
     })),
     volumeDiscounts: product.volumeDiscounts.map((d) => ({
       minQuantity: d.minQuantity,
-      discountPercent: parseFloat(d.discountPercent),
+      discountPercent: d.discountPercent,
     })),
   };
 }
@@ -94,20 +94,18 @@ export function ProductDialog({
     reset,
     control,
   } = useForm<ProductFormData>({
-    resolver: zodResolver(productSchema),
-    defaultValues: getDefaults(product),
+    resolver: zodResolver(productFormSchema),
+    defaultValues: buildDefaults(product),
   });
 
   useEffect(() => {
-    reset(getDefaults(product));
+    reset(buildDefaults(product));
   }, [product, reset]);
 
   function onSubmit(data: ProductFormData) {
     startTransition(async () => {
-      const result = isEditing
-        ? await updateProduct(product.id, data)
-        : await createProduct(data);
-      if (result.error) {
+      const result = await saveProductAction(data, product?.id);
+      if (!result.ok) {
         toast.error(result.error);
       } else {
         toast.success(isEditing ? "Đã cập nhật sản phẩm" : "Đã thêm sản phẩm");
@@ -129,19 +127,23 @@ export function ProductDialog({
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
               <FieldLabel>Mã sản phẩm *</FieldLabel>
-              <Input {...register("code")} />
+              <Input {...register("code")} placeholder="VD: SP-001" />
               {errors.code && <FieldError>{errors.code.message}</FieldError>}
             </Field>
+
             <Field>
               <FieldLabel>Tên sản phẩm *</FieldLabel>
               <Input {...register("name")} />
               {errors.name && <FieldError>{errors.name.message}</FieldError>}
             </Field>
+
             <Field>
-              <FieldLabel>Danh mục *</FieldLabel>
+              <FieldLabel>Danh mục</FieldLabel>
               <Select
-                value={watch("categoryId")}
-                onValueChange={(v) => setValue("categoryId", v)}
+                value={watch("categoryId") ?? ""}
+                onValueChange={(v) =>
+                  setValue("categoryId", v || null)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn danh mục" />
@@ -154,15 +156,13 @@ export function ProductDialog({
                   ))}
                 </SelectContent>
               </Select>
-              {errors.categoryId && (
-                <FieldError>{errors.categoryId.message}</FieldError>
-              )}
             </Field>
+
             <Field>
-              <FieldLabel>Đơn vị tính *</FieldLabel>
+              <FieldLabel>Đơn vị tính</FieldLabel>
               <Select
-                value={watch("unitId")}
-                onValueChange={(v) => setValue("unitId", v)}
+                value={watch("unitId") ?? ""}
+                onValueChange={(v) => setValue("unitId", v || null)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Chọn đơn vị" />
@@ -175,9 +175,6 @@ export function ProductDialog({
                   ))}
                 </SelectContent>
               </Select>
-              {errors.unitId && (
-                <FieldError>{errors.unitId.message}</FieldError>
-              )}
             </Field>
           </div>
 
@@ -205,7 +202,7 @@ export function ProductDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Hủy
+              Huỷ
             </Button>
             <Button type="submit" disabled={isPending}>
               {isPending && <Loader2 className="mr-2 size-4 animate-spin" />}

@@ -31,15 +31,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deleteCustomer } from "@/app/(dashboard)/khach-hang/actions";
-import type { CustomerWithCount } from "./customer-page-client";
+import { deleteCustomer } from "@/app/(dashboard)/customers/actions";
+import type { CustomerWithQuoteCount } from "@/services/customer-service";
 
 type Props = {
-  customers: CustomerWithCount[];
+  customers: CustomerWithQuoteCount[];
   total: number;
   page: number;
   totalPages: number;
-  onEdit: (customer: CustomerWithCount) => void;
+  onEdit: (customer: CustomerWithQuoteCount) => void;
 };
 
 export function CustomerDataTable({
@@ -56,13 +56,13 @@ export function CustomerDataTable({
   function goToPage(p: number) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", p.toString());
-    router.push(`/khach-hang?${params.toString()}`);
+    router.push(`/customers?${params.toString()}`);
   }
 
   function handleDelete(id: string) {
     startTransition(async () => {
       const result = await deleteCustomer(id);
-      if (result.error) {
+      if (!result.ok) {
         toast.error(result.error);
       } else {
         toast.success("Đã xóa khách hàng");
@@ -106,7 +106,7 @@ export function CustomerDataTable({
                     {c.email || "—"}
                   </TableCell>
                   <TableCell className="text-center">
-                    <Badge variant="secondary">{c._count.quotes}</Badge>
+                    <Badge variant="secondary">{c.quoteCount}</Badge>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -121,16 +121,14 @@ export function CustomerDataTable({
                           Chỉnh sửa
                         </DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() =>
-                            router.push(`/bao-gia?customer=${c.id}`)
-                          }
+                          onClick={() => router.push(`/quotes?customer=${c.id}`)}
                         >
                           <FileText className="mr-2 size-4" />
                           Xem báo giá
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() =>
-                            router.push(`/bao-gia/tao-moi?customerId=${c.id}`)
+                            router.push(`/quotes/new?customerId=${c.id}`)
                           }
                         >
                           <Plus className="mr-2 size-4" />
@@ -152,8 +150,8 @@ export function CustomerDataTable({
                               <AlertDialogDescription>
                                 Bạn có chắc muốn xóa khách hàng &quot;
                                 {c.name}&quot;?
-                                {c._count.quotes > 0 &&
-                                  ` Khách hàng có ${c._count.quotes} báo giá liên quan.`}
+                                {c.quoteCount > 0 &&
+                                  ` Khách hàng có ${c.quoteCount} báo giá liên quan.`}
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>

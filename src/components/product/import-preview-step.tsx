@@ -28,8 +28,12 @@ function applyMapping(
 ): MappedRow[] {
   return rows
     .map((row) => ({
-      code: mapping.code !== undefined ? String(row[mapping.code] ?? "") : undefined,
-      name: mapping.name !== undefined ? String(row[mapping.name] ?? "") : "",
+      code:
+        mapping.code !== undefined
+          ? String(row[mapping.code] ?? "")
+          : undefined,
+      name:
+        mapping.name !== undefined ? String(row[mapping.name] ?? "") : "",
       category:
         mapping.category !== undefined
           ? String(row[mapping.category] ?? "")
@@ -58,8 +62,6 @@ export function ImportPreviewStep({ rows, mapping, onBack, onDone }: Props) {
   const [importing, setImporting] = useState(false);
   const mapped = applyMapping(rows, mapping);
   const preview = mapped.slice(0, 5);
-
-  // Stats
   const total = mapped.length;
   const withCode = mapped.filter((r) => r.code).length;
   const missingPrice = mapped.filter((r) => !r.price).length;
@@ -108,7 +110,7 @@ export function ImportPreviewStep({ rows, mapping, onBack, onDone }: Props) {
       </div>
 
       {/* Preview table */}
-      <div className="rounded-md border">
+      <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -136,6 +138,7 @@ export function ImportPreviewStep({ rows, mapping, onBack, onDone }: Props) {
           </TableBody>
         </Table>
       </div>
+
       {total > 5 && (
         <p className="text-xs text-muted-foreground text-center">
           Hiển thị 5/{total} dòng đầu

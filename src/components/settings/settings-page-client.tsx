@@ -5,10 +5,10 @@ import { CompanyInfoForm } from "./company-info-form";
 import { QuoteTemplateForm } from "./quote-template-form";
 import { DefaultsForm } from "./defaults-form";
 import { CategoriesUnitsManager } from "./categories-units-manager";
-import type { Settings, Category, Unit } from "@/generated/prisma/client";
+import type { Tenant, Category, Unit } from "@/db/schema";
 
 type Props = {
-  settings: Settings;
+  settings: Tenant;
   categories: Category[];
   units: Unit[];
 };
@@ -16,8 +16,9 @@ type Props = {
 export function SettingsPageClient({ settings, categories, units }: Props) {
   return (
     <Tabs defaultValue="company" className="w-full">
-      <TabsList className="grid w-full grid-cols-4">
+      <TabsList className="grid w-full grid-cols-5">
         <TabsTrigger value="company">Công ty</TabsTrigger>
+        <TabsTrigger value="banking">Ngân hàng</TabsTrigger>
         <TabsTrigger value="template">Mẫu báo giá</TabsTrigger>
         <TabsTrigger value="defaults">Mặc định</TabsTrigger>
         <TabsTrigger value="categories">Danh mục & ĐVT</TabsTrigger>
@@ -25,6 +26,10 @@ export function SettingsPageClient({ settings, categories, units }: Props) {
 
       <TabsContent value="company" className="mt-6">
         <CompanyInfoForm settings={settings} />
+      </TabsContent>
+
+      <TabsContent value="banking" className="mt-6">
+        <CompanyInfoForm settings={settings} bankingOnly />
       </TabsContent>
 
       <TabsContent value="template" className="mt-6">

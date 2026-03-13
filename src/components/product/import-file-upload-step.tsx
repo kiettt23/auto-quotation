@@ -74,9 +74,7 @@ export function ImportFileUploadStep({ onParsed }: Props) {
           <>
             <FileSpreadsheet className="size-10 text-muted-foreground" />
             <div className="text-center">
-              <p className="font-medium">
-                Kéo thả file hoặc click để chọn
-              </p>
+              <p className="font-medium">Kéo thả file hoặc click để chọn</p>
               <p className="text-sm text-muted-foreground mt-1">
                 Hỗ trợ .xlsx, .xls, .csv (tối đa 5MB)
               </p>

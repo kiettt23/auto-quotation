@@ -30,7 +30,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { deleteDocEntry } from "@/app/(dashboard)/chung-tu/actions";
+import { deleteDocEntry } from "@/app/(dashboard)/documents/actions";
 
 export type EntryRow = {
   id: string;
@@ -91,7 +91,7 @@ export function DocEntryTable({ entries }: Props) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem asChild>
-                        <Link href={`/chung-tu/${entry.id}`}>
+                        <Link href={`/documents/${entry.id}`}>
                           <Pencil className="mr-2 size-4" />
                           Chỉnh sửa
                         </Link>

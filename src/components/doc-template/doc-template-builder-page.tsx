@@ -14,7 +14,7 @@ import {
   type PdfRegionDraft,
 } from "./doc-template-configure-step";
 import { DocTemplateStepIndicator } from "./doc-template-step-indicator";
-import { createDocTemplate, updateDocTemplate } from "@/app/(dashboard)/mau-chung-tu/actions";
+import { createDocTemplate, updateDocTemplate } from "@/app/(dashboard)/templates/actions";
 import type { Placeholder, TableRegion, TableColumn, PdfRegion } from "@/lib/validations/doc-template-schemas";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -174,7 +174,7 @@ export function DocTemplateBuilderPage({ template }: Props) {
           });
           toast.success("Đã tạo mẫu chứng từ");
         }
-        router.push("/mau-chung-tu");
+        router.push("/templates");
       } catch {
         toast.error("Có lỗi xảy ra, vui lòng thử lại");
       }
@@ -213,7 +213,7 @@ export function DocTemplateBuilderPage({ template }: Props) {
       </div>
 
       <div className="flex items-center justify-between">
-        <Button variant="outline" onClick={() => step > 0 ? setStep(step - 1) : router.push("/mau-chung-tu")}>
+        <Button variant="outline" onClick={() => step > 0 ? setStep(step - 1) : router.push("/templates")}>
           <ChevronLeft className="mr-1 size-4" />
           {step === 0 ? "Hủy" : "Quay lại"}
         </Button>

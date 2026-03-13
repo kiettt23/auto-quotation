@@ -31,7 +31,7 @@ export function QuoteListToolbar({ currentStatus, currentSearch }: Props) {
       if (value) params.set(key, value);
       else params.delete(key);
       params.delete("page");
-      router.push(`/bao-gia?${params.toString()}`);
+      router.push(`/quotes?${params.toString()}`);
     },
     [router, searchParams]
   );
@@ -76,7 +76,7 @@ export function QuoteListToolbar({ currentStatus, currentSearch }: Props) {
       </div>
 
       <Button size="sm" asChild>
-        <Link href="/bao-gia/tao-moi">
+        <Link href="/quotes/new">
           <Plus className="mr-2 size-4" />
           Tạo báo giá
         </Link>

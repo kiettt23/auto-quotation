@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Category } from "@/generated/prisma/client";
+import type { Category } from "@/db/schema";
 
 type Props = {
   categories: Category[];
@@ -41,8 +41,8 @@ export function ProductToolbar({
       } else {
         params.delete(key);
       }
-      params.delete("page"); // Reset to page 1 on filter change
-      router.push(`/san-pham?${params.toString()}`);
+      params.delete("page");
+      router.push(`/products?${params.toString()}`);
     },
     [router, searchParams]
   );
@@ -62,7 +62,9 @@ export function ProductToolbar({
       <div className="flex flex-1 gap-3">
         <Select
           value={currentCategoryId ?? "all"}
-          onValueChange={(v) => updateParams("category", v === "all" ? undefined : v)}
+          onValueChange={(v) =>
+            updateParams("category", v === "all" ? undefined : v)
+          }
         >
           <SelectTrigger className="w-[200px]">
             <SelectValue placeholder="Tất cả danh mục" />
@@ -91,7 +93,7 @@ export function ProductToolbar({
       <div className="flex gap-2">
         <Button variant="outline" size="sm" onClick={onImport}>
           <Upload className="mr-2 size-4" />
-          Import Excel
+          Nhập Excel
         </Button>
         <Button size="sm" onClick={onAddProduct}>
           <Plus className="mr-2 size-4" />

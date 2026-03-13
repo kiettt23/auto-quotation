@@ -8,11 +8,13 @@ import { Button } from "@/components/ui/button";
 
 const pageTitles: Record<string, string> = {
   "/": "Tổng quan",
-  "/bao-gia": "Báo giá",
-  "/bao-gia/tao-moi": "Tạo báo giá mới",
-  "/san-pham": "Sản phẩm",
-  "/khach-hang": "Khách hàng",
-  "/cai-dat": "Cài đặt",
+  "/quotes": "Báo giá",
+  "/quotes/new": "Tạo báo giá mới",
+  "/products": "Sản phẩm",
+  "/customers": "Khách hàng",
+  "/settings": "Cài đặt",
+  "/templates": "Mẫu chứng từ",
+  "/documents": "Chứng từ",
 };
 
 export function AppHeader() {
@@ -20,7 +22,7 @@ export function AppHeader() {
 
   const title =
     pageTitles[pathname] ??
-    (pathname.startsWith("/bao-gia/") ? "Chi tiết báo giá" : "");
+    (pathname.startsWith("/quotes/") ? "Chi tiết báo giá" : "");
 
   return (
     <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">

@@ -27,7 +27,7 @@ export function useKeyboardShortcuts(shortcuts?: ShortcutMap) {
           break;
         case "n":
           e.preventDefault();
-          router.push("/bao-gia/tao-moi");
+          router.push("/quotes/new");
           break;
       }
     }

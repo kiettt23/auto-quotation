@@ -1,0 +1,80 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { getTenantContext } from "@/lib/tenant-context";
+import { ok, err } from "@/lib/result";
+import type { Result } from "@/lib/result";
+import {
+  getProducts,
+  getProductById,
+  saveProduct,
+  deleteProduct,
+} from "@/services/product-service";
+import { productFormSchema } from "@/lib/validations/product-schemas";
+import type { ProductWithRelations } from "@/services/product-service";
+
+type PaginatedProducts = {
+  products: ProductWithRelations[];
+  total: number;
+  page: number;
+  totalPages: number;
+};
+
+export async function getProductsAction(params: {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  categoryId?: string;
+}): Promise<Result<PaginatedProducts>> {
+  try {
+    const { tenantId } = await getTenantContext();
+    const result = await getProducts(tenantId, params);
+    return ok(result);
+  } catch (e) {
+    return err(e instanceof Error ? e.message : "Lỗi tải danh sách sản phẩm");
+  }
+}
+
+export async function getProductByIdAction(
+  id: string
+): Promise<Result<ProductWithRelations>> {
+  try {
+    const { tenantId } = await getTenantContext();
+    const product = await getProductById(tenantId, id);
+    if (!product) return err("Không tìm thấy sản phẩm");
+    return ok(product);
+  } catch (e) {
+    return err(e instanceof Error ? e.message : "Lỗi tải sản phẩm");
+  }
+}
+
+export async function saveProductAction(
+  data: unknown,
+  id?: string
+): Promise<Result<ProductWithRelations>> {
+  try {
+    const { tenantId } = await getTenantContext();
+    const parsed = productFormSchema.safeParse(data);
+    if (!parsed.success) {
+      return err("Dữ liệu không hợp lệ");
+    }
+    const product = await saveProduct(tenantId, parsed.data, id);
+    revalidatePath("/products");
+    revalidatePath("/products");
+    return ok(product);
+  } catch (e) {
+    return err(e instanceof Error ? e.message : "Lỗi lưu sản phẩm");
+  }
+}
+
+export async function deleteProductAction(id: string): Promise<Result<null>> {
+  try {
+    const { tenantId } = await getTenantContext();
+    await deleteProduct(tenantId, id);
+    revalidatePath("/products");
+    revalidatePath("/products");
+    return ok(null);
+  } catch (e) {
+    return err(e instanceof Error ? e.message : "Lỗi xoá sản phẩm");
+  }
+}

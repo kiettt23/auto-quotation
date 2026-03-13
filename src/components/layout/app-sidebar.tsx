@@ -20,8 +20,8 @@ import { navItems } from "./nav-items";
 export function AppSidebar() {
   const pathname = usePathname();
 
-  const mainItems = navItems.filter((item) => item.href !== "/cai-dat");
-  const settingsItem = navItems.find((item) => item.href === "/cai-dat");
+  const mainItems = navItems.filter((item) => item.href !== "/settings");
+  const settingsItem = navItems.find((item) => item.href === "/settings");
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";

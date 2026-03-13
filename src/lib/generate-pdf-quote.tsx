@@ -1,36 +1,19 @@
-import fs from "fs";
-import path from "path";
 import {
   Document,
   Page,
   Text,
   View,
   Image,
-  Font,
   StyleSheet,
   renderToBuffer,
 } from "@react-pdf/renderer";
 import { calculateLineTotal, calculateQuoteTotals } from "./pricing-engine";
 import { formatCurrency } from "./format-currency";
 import { numberToVietnameseWords } from "./format-number-to-words";
+import { registerFonts } from "./pdf/font-registration";
 
-// Read font as base64 data URL — works on both local and Vercel serverless
-function fontDataUrl(filename: string): string {
-  const filePath = path.join(process.cwd(), "public", "fonts", filename);
-  const buf = fs.readFileSync(filePath);
-  return `data:font/truetype;base64,${buf.toString("base64")}`;
-}
-
-// Register fonts once at module level — include italic variants to avoid resolution errors
-Font.register({
-  family: "Roboto",
-  fonts: [
-    { src: fontDataUrl("Roboto-Regular.ttf"), fontWeight: "normal", fontStyle: "normal" },
-    { src: fontDataUrl("Roboto-Regular.ttf"), fontWeight: "normal", fontStyle: "italic" },
-    { src: fontDataUrl("Roboto-Bold.ttf"), fontWeight: "bold", fontStyle: "normal" },
-    { src: fontDataUrl("Roboto-Bold.ttf"), fontWeight: "bold", fontStyle: "italic" },
-  ],
-});
+// Register fonts via shared module — safe to call multiple times
+registerFonts();
 
 type QuoteItem = {
   name: string;

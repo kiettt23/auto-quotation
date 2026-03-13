@@ -1,34 +1,32 @@
-import { FileText, Clock, DollarSign } from "lucide-react";
+import { FileText, CheckCircle, Users, Package, TrendingUp } from "lucide-react";
 import { formatCurrency } from "@/lib/format-currency";
 import { StatCard } from "./stat-card";
+import type { DashboardStats } from "@/services/dashboard-service";
 
-type Props = {
-  monthlyCount: number;
-  pendingCount: number;
-  monthlyTotal: number;
-};
+type Props = { stats: DashboardStats };
 
-export function DashboardStatsCards({
-  monthlyCount,
-  pendingCount,
-  monthlyTotal,
-}: Props) {
+export function DashboardStatsCards({ stats }: Props) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard
-        title="Báo giá tháng này"
-        value={monthlyCount.toString()}
+        title="Tổng báo giá"
+        value={stats.totalQuotes.toString()}
         icon={FileText}
       />
       <StatCard
-        title="Đang chờ phản hồi"
-        value={pendingCount.toString()}
-        icon={Clock}
+        title="Đã chấp nhận"
+        value={stats.byStatus.ACCEPTED.toString()}
+        icon={CheckCircle}
       />
       <StatCard
-        title="Tổng giá trị tháng"
-        value={formatCurrency(monthlyTotal)}
-        icon={DollarSign}
+        title="Doanh thu"
+        value={formatCurrency(stats.revenue)}
+        icon={TrendingUp}
+      />
+      <StatCard
+        title="Khách hàng"
+        value={stats.totalCustomers.toString()}
+        icon={Users}
       />
     </div>
   );

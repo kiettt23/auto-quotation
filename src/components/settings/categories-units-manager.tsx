@@ -18,14 +18,13 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
-  createCategory,
-  updateCategory,
+  saveCategory,
   deleteCategory,
-  createUnit,
-  updateUnit,
+  saveUnit,
   deleteUnit,
-} from "@/app/(dashboard)/cai-dat/actions";
-import type { Category, Unit } from "@/generated/prisma/client";
+} from "@/app/(dashboard)/settings/actions";
+import type { Result } from "@/lib/result";
+import type { Category, Unit } from "@/db/schema";
 
 type Props = {
   categories: Category[];
@@ -38,16 +37,16 @@ export function CategoriesUnitsManager({ categories, units }: Props) {
       <InlineList
         title="Danh mục sản phẩm"
         items={categories}
-        onCreate={createCategory}
-        onUpdate={updateCategory}
+        onCreate={(name) => saveCategory({ name })}
+        onUpdate={(id, name) => saveCategory({ name }, id)}
         onDelete={deleteCategory}
         placeholder="Tên danh mục mới"
       />
       <InlineList
         title="Đơn vị tính"
         items={units}
-        onCreate={createUnit}
-        onUpdate={updateUnit}
+        onCreate={(name) => saveUnit({ name })}
+        onUpdate={(id, name) => saveUnit({ name }, id)}
         onDelete={deleteUnit}
         placeholder="Tên đơn vị mới"
       />
@@ -58,20 +57,13 @@ export function CategoriesUnitsManager({ categories, units }: Props) {
 type InlineListProps = {
   title: string;
   items: { id: string; name: string }[];
-  onCreate: (name: string) => Promise<{ error?: string; success?: boolean }>;
-  onUpdate: (id: string, name: string) => Promise<{ error?: string; success?: boolean }>;
-  onDelete: (id: string) => Promise<{ error?: string; success?: boolean }>;
+  onCreate: (name: string) => Promise<Result<unknown>>;
+  onUpdate: (id: string, name: string) => Promise<Result<unknown>>;
+  onDelete: (id: string) => Promise<Result<unknown>>;
   placeholder: string;
 };
 
-function InlineList({
-  title,
-  items,
-  onCreate,
-  onUpdate,
-  onDelete,
-  placeholder,
-}: InlineListProps) {
+function InlineList({ title, items, onCreate, onUpdate, onDelete, placeholder }: InlineListProps) {
   const [newName, setNewName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
@@ -81,49 +73,31 @@ function InlineList({
     if (!newName.trim()) return;
     startTransition(async () => {
       const result = await onCreate(newName.trim());
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        setNewName("");
-        toast.success("Đã thêm");
-      }
+      if (!result.ok) toast.error(result.error);
+      else { setNewName(""); toast.success("Đã thêm"); }
     });
-  }
-
-  function startEdit(item: { id: string; name: string }) {
-    setEditingId(item.id);
-    setEditName(item.name);
   }
 
   function handleUpdate(id: string) {
     if (!editName.trim()) return;
     startTransition(async () => {
       const result = await onUpdate(id, editName.trim());
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        setEditingId(null);
-        toast.success("Đã cập nhật");
-      }
+      if (!result.ok) toast.error(result.error);
+      else { setEditingId(null); toast.success("Đã cập nhật"); }
     });
   }
 
   function handleDelete(id: string) {
     startTransition(async () => {
       const result = await onDelete(id);
-      if (result.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("Đã xóa");
-      }
+      if (!result.ok) toast.error(result.error);
+      else toast.success("Đã xóa");
     });
   }
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-      </CardHeader>
+      <CardHeader><CardTitle>{title}</CardTitle></CardHeader>
       <CardContent className="space-y-3">
         {/* Add new */}
         <div className="flex gap-2">
@@ -146,10 +120,7 @@ function InlineList({
         {/* List */}
         <div className="space-y-1">
           {items.map((item) => (
-            <div
-              key={item.id}
-              className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted/50"
-            >
+            <div key={item.id} className="flex items-center gap-2 rounded-md px-3 py-2 hover:bg-muted/50">
               {editingId === item.id ? (
                 <>
                   <Input
@@ -162,20 +133,10 @@ function InlineList({
                     className="h-8"
                     autoFocus
                   />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-7"
-                    onClick={() => handleUpdate(item.id)}
-                  >
+                  <Button variant="ghost" size="icon" className="size-7" onClick={() => handleUpdate(item.id)}>
                     <Check className="size-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="size-7"
-                    onClick={() => setEditingId(null)}
-                  >
+                  <Button variant="ghost" size="icon" className="size-7" onClick={() => setEditingId(null)}>
                     <X className="size-4" />
                   </Button>
                 </>
@@ -186,7 +147,7 @@ function InlineList({
                     variant="ghost"
                     size="icon"
                     className="size-7"
-                    onClick={() => startEdit(item)}
+                    onClick={() => { setEditingId(item.id); setEditName(item.name); }}
                   >
                     <Pencil className="size-3.5" />
                   </Button>
@@ -205,9 +166,7 @@ function InlineList({
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Hủy</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(item.id)}>
-                          Xóa
-                        </AlertDialogAction>
+                        <AlertDialogAction onClick={() => handleDelete(item.id)}>Xóa</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
@@ -216,9 +175,7 @@ function InlineList({
             </div>
           ))}
           {items.length === 0 && (
-            <p className="py-4 text-center text-sm text-muted-foreground">
-              Chưa có mục nào
-            </p>
+            <p className="py-4 text-center text-sm text-muted-foreground">Chưa có mục nào</p>
           )}
         </div>
       </CardContent>

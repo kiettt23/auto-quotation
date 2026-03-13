@@ -1,9 +1,9 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { toast } from "sonner";
 import { useTransition } from "react";
-import { ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -32,16 +32,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { formatCurrency } from "@/lib/format-currency";
-import { deleteProduct } from "@/app/(dashboard)/san-pham/actions";
-import type { ProductWithRelations } from "./product-page-client";
+import { deleteProductAction } from "@/app/(dashboard)/products/actions";
+import type { ProductWithRelations } from "@/services/product-service";
 
 type Props = {
   products: ProductWithRelations[];
   total: number;
   page: number;
   totalPages: number;
-  currentSort: string;
-  currentOrder: string;
   onEdit: (product: ProductWithRelations) => void;
 };
 
@@ -50,54 +48,27 @@ export function ProductDataTable({
   total,
   page,
   totalPages,
-  currentSort,
-  currentOrder,
   onEdit,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
 
-  function toggleSort(field: string) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (currentSort === field && currentOrder === "asc") {
-      params.set("order", "desc");
-    } else {
-      params.set("order", "asc");
-    }
-    params.set("sort", field);
-    router.push(`/san-pham?${params.toString()}`);
-  }
-
   function goToPage(p: number) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", p.toString());
-    router.push(`/san-pham?${params.toString()}`);
+    router.push(`/products?${params.toString()}`);
   }
 
   function handleDelete(id: string) {
     startTransition(async () => {
-      const result = await deleteProduct(id);
-      if (result.error) {
+      const result = await deleteProductAction(id);
+      if (!result.ok) {
         toast.error(result.error);
       } else {
-        toast.success("Đã xóa sản phẩm");
+        toast.success("Đã xoá sản phẩm");
       }
     });
-  }
-
-  function SortButton({ field, children }: { field: string; children: React.ReactNode }) {
-    return (
-      <Button
-        variant="ghost"
-        size="sm"
-        className="-ml-3 h-8"
-        onClick={() => toggleSort(field)}
-      >
-        {children}
-        <ArrowUpDown className="ml-1 size-3.5" />
-      </Button>
-    );
   }
 
   return (
@@ -106,24 +77,22 @@ export function ProductDataTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[120px]">
-                <SortButton field="code">Mã</SortButton>
-              </TableHead>
-              <TableHead>
-                <SortButton field="name">Tên sản phẩm</SortButton>
-              </TableHead>
-              <TableHead className="w-[140px]">Danh mục</TableHead>
-              <TableHead className="w-[140px] text-right">
-                <SortButton field="basePrice">Giá bán</SortButton>
-              </TableHead>
+              <TableHead className="w-[120px]">Mã</TableHead>
+              <TableHead>Tên sản phẩm</TableHead>
+              <TableHead className="w-[150px]">Danh mục</TableHead>
               <TableHead className="w-[80px]">ĐVT</TableHead>
+              <TableHead className="w-[140px] text-right">Giá</TableHead>
+              <TableHead className="w-[100px]">Loại giá</TableHead>
               <TableHead className="w-[50px]" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {products.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                <TableCell
+                  colSpan={7}
+                  className="h-24 text-center text-muted-foreground"
+                >
                   Chưa có sản phẩm nào
                 </TableCell>
               </TableRow>
@@ -144,20 +113,47 @@ export function ProductDataTable({
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="secondary">{product.category.name}</Badge>
+                    {product.category ? (
+                      <Badge variant="secondary">{product.category.name}</Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-xs">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-sm">
+                    {product.unit?.name ?? "—"}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
                     {product.pricingType === "TIERED" ? (
-                      <span className="text-xs text-muted-foreground">Bậc thang</span>
+                      <span className="text-xs text-muted-foreground">
+                        Bậc thang
+                      </span>
                     ) : (
                       formatCurrency(product.basePrice)
                     )}
                   </TableCell>
-                  <TableCell>{product.unit.name}</TableCell>
+                  <TableCell>
+                    <Badge
+                      variant={
+                        product.pricingType === "TIERED"
+                          ? "outline"
+                          : "secondary"
+                      }
+                      className="text-xs"
+                    >
+                      {product.pricingType === "TIERED"
+                        ? "Bậc thang"
+                        : "Cố định"}
+                    </Badge>
+                  </TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="size-8">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-8"
+                          disabled={isPending}
+                        >
                           <MoreHorizontal className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -173,23 +169,24 @@ export function ProductDataTable({
                               onSelect={(e) => e.preventDefault()}
                             >
                               <Trash2 className="mr-2 size-4" />
-                              Xóa
+                              Xoá
                             </DropdownMenuItem>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
+                              <AlertDialogTitle>Xác nhận xoá</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Bạn có chắc muốn xóa sản phẩm &quot;{product.name}&quot;?
+                                Bạn có chắc muốn xoá sản phẩm &quot;
+                                {product.name}&quot;? Hành động này không thể
+                                hoàn tác.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Hủy</AlertDialogCancel>
+                              <AlertDialogCancel>Huỷ</AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleDelete(product.id)}
-                                disabled={isPending}
                               >
-                                Xóa
+                                Xoá
                               </AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
@@ -207,9 +204,7 @@ export function ProductDataTable({
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            {total} sản phẩm
-          </p>
+          <p className="text-sm text-muted-foreground">{total} sản phẩm</p>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"

@@ -46,7 +46,7 @@ import {
   deleteQuote,
   cloneQuote,
   generateShareLink,
-} from "@/app/(dashboard)/bao-gia/actions";
+} from "@/app/(dashboard)/quotes/actions";
 import type { QuoteListItem } from "./quote-list-page-client";
 
 type Props = {
@@ -87,7 +87,7 @@ export function QuoteDataTable({
   function handleDelete(id: string) {
     startTransition(async () => {
       const result = await deleteQuote(id);
-      if (result.error) toast.error(result.error);
+      if (!result.ok) toast.error(result.error);
       else toast.success("Đã xóa báo giá");
     });
   }
@@ -95,18 +95,18 @@ export function QuoteDataTable({
   function handleClone(id: string) {
     startTransition(async () => {
       const result = await cloneQuote(id);
-      if (result.error) toast.error(result.error);
+      if (!result.ok) toast.error(result.error);
       else {
         toast.success("Đã nhân bản báo giá");
-        if (result.id) router.push(`/bao-gia/${result.id}`);
+        if (result.value?.id) router.push(`/quotes/${result.value.id}`);
       }
     });
   }
 
   async function handleShare(id: string) {
     const result = await generateShareLink(id);
-    if (result.error) { toast.error(result.error); return; }
-    const url = `${window.location.origin}/chia-se/${result.token}`;
+    if (!result.ok) { toast.error(result.error); return; }
+    const url = `${window.location.origin}/share/${result.value.token}`;
     await navigator.clipboard.writeText(url);
     toast.success("Đã sao chép link chia sẻ");
   }
@@ -171,7 +171,7 @@ export function QuoteDataTable({
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => router.push(`/bao-gia/${q.id}`)}>
+                        <DropdownMenuItem onClick={() => router.push(`/quotes/${q.id}`)}>
                           <Eye className="mr-2 size-4" /> Xem / Sửa
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleClone(q.id)} disabled={isPending}>
