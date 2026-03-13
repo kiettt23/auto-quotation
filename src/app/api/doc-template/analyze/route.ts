@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import ExcelJS from "exceljs";
+import { getTenantContext } from "@/lib/tenant-context";
 
 type CellInfo = {
   sheet: string;
@@ -16,6 +17,7 @@ type CellInfo = {
 
 export async function POST(req: NextRequest) {
   try {
+    await getTenantContext(); // Auth guard
     const { fileBase64 } = await req.json() as { fileBase64: string };
     if (!fileBase64) {
       return NextResponse.json({ error: "fileBase64 là bắt buộc" }, { status: 400 });

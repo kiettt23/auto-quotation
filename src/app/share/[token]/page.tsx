@@ -19,8 +19,17 @@ export default async function ShareQuotePage({ params }: Props) {
 
   if (!quote) notFound();
 
+  // Only select fields needed for the public share view — avoid leaking
+  // internal settings (taxCode, bankAccount, quotePrefix, etc.)
   const tenant = await db.query.tenants.findFirst({
     where: eq(tenants.id, quote.tenantId),
+    columns: {
+      companyName: true,
+      name: true,
+      logoUrl: true,
+      primaryColor: true,
+      phone: true,
+    },
   });
 
   if (!tenant) notFound();

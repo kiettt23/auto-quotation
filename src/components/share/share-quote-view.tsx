@@ -1,9 +1,18 @@
 import Image from "next/image";
-import type { Quote, QuoteItem, Tenant } from "@/db/schema";
+import type { Quote, QuoteItem } from "@/db/schema";
+
+/** Only the tenant fields needed for the public share view */
+type ShareTenant = {
+  companyName: string;
+  name: string;
+  logoUrl: string;
+  primaryColor: string;
+  phone: string;
+};
 
 type Props = {
   quote: Quote & { items: QuoteItem[] };
-  tenant: Tenant;
+  tenant: ShareTenant;
 };
 
 function formatCurrency(value: string | number) {

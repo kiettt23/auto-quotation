@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { PDFDocument } from "pdf-lib";
+import { getTenantContext } from "@/lib/tenant-context";
 
 type PageInfo = {
   pageIndex: number;
@@ -14,6 +15,7 @@ type PageInfo = {
 
 export async function POST(req: NextRequest) {
   try {
+    await getTenantContext(); // Auth guard
     const { fileBase64 } = await req.json() as { fileBase64: string };
     if (!fileBase64) {
       return NextResponse.json({ error: "fileBase64 là bắt buộc" }, { status: 400 });
