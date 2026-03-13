@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getTenantContext } from "@/lib/tenant-context";
 import { ok, err } from "@/lib/result";
+import { requireRole } from "@/lib/rbac";
 import * as customerService from "@/services/customer-service";
 import type { CustomerFormData } from "@/lib/validations/customer-schemas";
 
@@ -32,6 +33,7 @@ export async function searchCustomers(query: string) {
 export async function saveCustomer(data: CustomerFormData, id?: string) {
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "MEMBER");
     const result = await customerService.saveCustomer(ctx.tenantId, data, id);
     revalidatePath("/customers");
     return ok(result);
@@ -43,6 +45,7 @@ export async function saveCustomer(data: CustomerFormData, id?: string) {
 export async function deleteCustomer(id: string) {
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "MEMBER");
     await customerService.deleteCustomer(ctx.tenantId, id);
     revalidatePath("/customers");
     return ok(null);

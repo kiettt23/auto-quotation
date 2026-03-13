@@ -1,6 +1,7 @@
 "use server";
 
 import { getTenantContext } from "@/lib/tenant-context";
+import { requireRole } from "@/lib/rbac";
 import {
   createTemplate,
   updateTemplate,
@@ -19,7 +20,9 @@ export async function createDocTemplate(data: {
   docPrefix?: string;
   docNextNumber?: number;
 }) {
-  const { tenantId } = await getTenantContext();
+  const ctx = await getTenantContext();
+  requireRole(ctx.role, "ADMIN");
+  const { tenantId } = ctx;
   const result = await createTemplate(tenantId, {
     ...data,
     fileType: data.fileType as "excel" | "pdf",
@@ -40,7 +43,9 @@ export async function updateDocTemplate(
     docNextNumber?: number;
   }
 ) {
-  const { tenantId } = await getTenantContext();
+  const ctx = await getTenantContext();
+  requireRole(ctx.role, "ADMIN");
+  const { tenantId } = ctx;
   const result = await updateTemplate(tenantId, id, data);
   if (!result.ok) throw new Error(result.error);
   revalidatePath("/templates");
@@ -48,7 +53,9 @@ export async function updateDocTemplate(
 }
 
 export async function deleteDocTemplate(id: string) {
-  const { tenantId } = await getTenantContext();
+  const ctx = await getTenantContext();
+  requireRole(ctx.role, "ADMIN");
+  const { tenantId } = ctx;
   const result = await deleteTemplate(tenantId, id);
   if (!result.ok) throw new Error(result.error);
   revalidatePath("/templates");

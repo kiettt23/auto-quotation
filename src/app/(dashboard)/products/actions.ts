@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { getTenantContext } from "@/lib/tenant-context";
 import { ok, err } from "@/lib/result";
 import type { Result } from "@/lib/result";
+import { requireRole } from "@/lib/rbac";
 import {
   getProducts,
   getProductById,
@@ -53,7 +54,9 @@ export async function saveProductAction(
   id?: string
 ): Promise<Result<ProductWithRelations>> {
   try {
-    const { tenantId } = await getTenantContext();
+    const ctx = await getTenantContext();
+    requireRole(ctx.role, "MEMBER");
+    const { tenantId } = ctx;
     const parsed = productFormSchema.safeParse(data);
     if (!parsed.success) {
       return err("Dữ liệu không hợp lệ");
@@ -69,7 +72,9 @@ export async function saveProductAction(
 
 export async function deleteProductAction(id: string): Promise<Result<null>> {
   try {
-    const { tenantId } = await getTenantContext();
+    const ctx = await getTenantContext();
+    requireRole(ctx.role, "MEMBER");
+    const { tenantId } = ctx;
     await deleteProduct(tenantId, id);
     revalidatePath("/products");
     revalidatePath("/products");

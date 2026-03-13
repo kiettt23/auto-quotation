@@ -4,6 +4,8 @@ import {
   Package,
   Users,
   Settings,
+  FileStack,
+  FolderOpen,
   type LucideIcon,
 } from "lucide-react";
 
@@ -12,6 +14,8 @@ export type NavItem = {
   icon: LucideIcon;
   href: string;
   showInBottomNav: boolean;
+  /** Minimum role required to see this item. Defaults to VIEWER (everyone). */
+  minRole?: "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
 };
 
 export const navItems: NavItem[] = [
@@ -40,9 +44,23 @@ export const navItems: NavItem[] = [
     showInBottomNav: true,
   },
   {
+    label: "Mẫu tài liệu",
+    icon: FileStack,
+    href: "/templates",
+    showInBottomNav: false,
+    minRole: "ADMIN",
+  },
+  {
+    label: "Tài liệu",
+    icon: FolderOpen,
+    href: "/documents",
+    showInBottomNav: false,
+  },
+  {
     label: "Cài đặt",
     icon: Settings,
     href: "/settings",
     showInBottomNav: false,
+    minRole: "ADMIN",
   },
 ];

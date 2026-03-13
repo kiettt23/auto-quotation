@@ -1,6 +1,7 @@
 "use server";
 
 import { getTenantContext } from "@/lib/tenant-context";
+import { requireRole } from "@/lib/rbac";
 import {
   createDocument,
   updateDocument,
@@ -13,7 +14,9 @@ export async function createDocEntry(data: {
   fieldData: unknown;
   tableRows: unknown;
 }) {
-  const { tenantId } = await getTenantContext();
+  const ctx = await getTenantContext();
+  requireRole(ctx.role, "MEMBER");
+  const { tenantId } = ctx;
   const result = await createDocument(tenantId, data.templateId, {
     fieldData: (data.fieldData ?? {}) as Record<string, string>,
     tableRows: (data.tableRows ?? []) as Record<string, string>[],
@@ -27,7 +30,9 @@ export async function updateDocEntry(
   id: string,
   data: { fieldData: unknown; tableRows: unknown }
 ) {
-  const { tenantId } = await getTenantContext();
+  const ctx = await getTenantContext();
+  requireRole(ctx.role, "MEMBER");
+  const { tenantId } = ctx;
   const result = await updateDocument(tenantId, id, {
     fieldData: (data.fieldData ?? {}) as Record<string, string>,
     tableRows: (data.tableRows ?? []) as Record<string, string>[],

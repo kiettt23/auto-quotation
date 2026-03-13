@@ -8,6 +8,7 @@ export type TenantContext = {
   userId: string;
   tenantId: string;
   tenantSlug: string;
+  role: string;
 };
 
 /**
@@ -39,5 +40,6 @@ export async function getTenantContext(): Promise<TenantContext> {
     userId,
     tenantId: membership.tenantId,
     tenantSlug: (membership as typeof membership & { tenant: { slug: string } }).tenant.slug,
+    role: membership.role,
   };
 }

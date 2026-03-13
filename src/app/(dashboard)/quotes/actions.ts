@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getTenantContext } from "@/lib/tenant-context";
 import { ok, err } from "@/lib/result";
+import { requireRole } from "@/lib/rbac";
 import { quoteFormSchema } from "@/lib/validations/quote-schemas";
 import * as quoteService from "@/services/quote-service";
 import * as customerService from "@/services/customer-service";
@@ -50,6 +51,7 @@ export async function saveQuote(data: unknown, quoteId?: string) {
 
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "MEMBER");
     const result = await quoteService.saveQuote(ctx.tenantId, parsed.data, quoteId);
     revalidatePath("/quotes");
     revalidatePath("/");
@@ -62,6 +64,7 @@ export async function saveQuote(data: unknown, quoteId?: string) {
 export async function deleteQuote(quoteId: string) {
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "MEMBER");
     await quoteService.deleteQuote(ctx.tenantId, quoteId);
     revalidatePath("/quotes");
     revalidatePath("/");
@@ -74,6 +77,7 @@ export async function deleteQuote(quoteId: string) {
 export async function cloneQuote(quoteId: string) {
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "MEMBER");
     const result = await quoteService.cloneQuote(ctx.tenantId, quoteId);
     revalidatePath("/quotes");
     revalidatePath("/");
@@ -89,6 +93,7 @@ export async function updateQuoteStatus(
 ) {
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "MEMBER");
     await quoteService.updateQuoteStatus(ctx.tenantId, quoteId, status);
     revalidatePath("/quotes");
     revalidatePath("/");

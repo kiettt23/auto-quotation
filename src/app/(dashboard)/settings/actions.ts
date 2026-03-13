@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { getTenantContext } from "@/lib/tenant-context";
 import { ok, err } from "@/lib/result";
+import { requireRole } from "@/lib/rbac";
 import * as settingsService from "@/services/settings-service";
 import type {
   CompanyInfoFormData,
@@ -16,6 +17,7 @@ import path from "path";
 export async function updateCompanyInfo(data: CompanyInfoFormData) {
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "ADMIN");
     await settingsService.updateCompanyInfo(ctx.tenantId, data);
     revalidatePath("/settings");
     return ok(null);
@@ -27,6 +29,7 @@ export async function updateCompanyInfo(data: CompanyInfoFormData) {
 export async function updateBanking(data: BankingFormData) {
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "ADMIN");
     await settingsService.updateBanking(ctx.tenantId, data);
     revalidatePath("/settings");
     return ok(null);
@@ -38,6 +41,7 @@ export async function updateBanking(data: BankingFormData) {
 export async function updateQuoteTemplate(data: QuoteTemplateFormData) {
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "ADMIN");
     await settingsService.updateQuoteTemplate(ctx.tenantId, data);
     revalidatePath("/settings");
     return ok(null);
@@ -49,6 +53,7 @@ export async function updateQuoteTemplate(data: QuoteTemplateFormData) {
 export async function updateDefaults(data: DefaultsFormData) {
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "ADMIN");
     await settingsService.updateDefaults(ctx.tenantId, data);
     revalidatePath("/settings");
     return ok(null);
@@ -60,6 +65,7 @@ export async function updateDefaults(data: DefaultsFormData) {
 export async function saveCategory(data: { name: string; sortOrder?: number }, id?: string) {
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "ADMIN");
     const result = await settingsService.saveCategory(ctx.tenantId, data, id);
     revalidatePath("/settings");
     return ok(result);
@@ -71,6 +77,7 @@ export async function saveCategory(data: { name: string; sortOrder?: number }, i
 export async function deleteCategory(id: string) {
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "ADMIN");
     await settingsService.deleteCategory(ctx.tenantId, id);
     revalidatePath("/settings");
     return ok(null);
@@ -82,6 +89,7 @@ export async function deleteCategory(id: string) {
 export async function saveUnit(data: { name: string }, id?: string) {
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "ADMIN");
     const result = await settingsService.saveUnit(ctx.tenantId, data, id);
     revalidatePath("/settings");
     return ok(result);
@@ -93,6 +101,7 @@ export async function saveUnit(data: { name: string }, id?: string) {
 export async function deleteUnit(id: string) {
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "ADMIN");
     await settingsService.deleteUnit(ctx.tenantId, id);
     revalidatePath("/settings");
     return ok(null);
@@ -104,6 +113,7 @@ export async function deleteUnit(id: string) {
 export async function uploadLogo(formData: FormData) {
   try {
     const ctx = await getTenantContext();
+    requireRole(ctx.role, "ADMIN");
     const file = formData.get("file") as File | null;
     if (!file) return err("Không có file");
 

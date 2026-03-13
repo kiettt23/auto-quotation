@@ -16,12 +16,22 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { navItems } from "./nav-items";
+import { hasPermission } from "@/lib/rbac";
 
-export function AppSidebar() {
+type Props = {
+  role?: string;
+};
+
+export function AppSidebar({ role = "VIEWER" }: Props) {
   const pathname = usePathname();
 
-  const mainItems = navItems.filter((item) => item.href !== "/settings");
-  const settingsItem = navItems.find((item) => item.href === "/settings");
+  // Filter nav items by role permission
+  const visibleItems = navItems.filter((item) =>
+    hasPermission(role, item.minRole ?? "VIEWER")
+  );
+
+  const mainItems = visibleItems.filter((item) => item.href !== "/settings");
+  const settingsItem = visibleItems.find((item) => item.href === "/settings");
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
@@ -34,7 +44,7 @@ export function AppSidebar() {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild tooltip="Auto Quotation">
-              <Link href="/">
+              <Link href="/quotes">
                 <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <FileText className="size-4" />
                 </div>
