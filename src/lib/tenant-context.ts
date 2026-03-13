@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { auth } from "@/auth";
 import { db } from "@/db";
-import { tenantMembers, tenants } from "@/db/schema";
+import { tenantMembers } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export type TenantContext = {

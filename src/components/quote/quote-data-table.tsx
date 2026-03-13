@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
@@ -58,6 +59,23 @@ type Props = {
   currentOrder: string;
 };
 
+function SortButton({
+  field,
+  children,
+  onSort,
+}: {
+  field: string;
+  children: React.ReactNode;
+  onSort: (field: string) => void;
+}) {
+  return (
+    <Button variant="ghost" size="sm" className="-ml-3 h-8" onClick={() => onSort(field)}>
+      {children}
+      <ArrowUpDown className="ml-1 size-3.5" />
+    </Button>
+  );
+}
+
 export function QuoteDataTable({
   quotes,
   total,
@@ -75,13 +93,13 @@ export function QuoteDataTable({
     if (currentSort === field && currentOrder === "asc") params.set("order", "desc");
     else params.set("order", "asc");
     params.set("sort", field);
-    router.push(`/bao-gia?${params.toString()}`);
+    router.push(`/quotes?${params.toString()}`);
   }
 
   function goToPage(p: number) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", p.toString());
-    router.push(`/bao-gia?${params.toString()}`);
+    router.push(`/quotes?${params.toString()}`);
   }
 
   function handleDelete(id: string) {
@@ -111,25 +129,16 @@ export function QuoteDataTable({
     toast.success("Đã sao chép link chia sẻ");
   }
 
-  function SortButton({ field, children }: { field: string; children: React.ReactNode }) {
-    return (
-      <Button variant="ghost" size="sm" className="-ml-3 h-8" onClick={() => toggleSort(field)}>
-        {children}
-        <ArrowUpDown className="ml-1 size-3.5" />
-      </Button>
-    );
-  }
-
   return (
     <div className="space-y-4">
       <div className="rounded-md border overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[130px]"><SortButton field="quoteNumber">Mã BG</SortButton></TableHead>
-              <TableHead><SortButton field="customerName">Khách hàng</SortButton></TableHead>
-              <TableHead className="w-[140px] text-right"><SortButton field="total">Tổng tiền</SortButton></TableHead>
-              <TableHead className="w-[100px]"><SortButton field="createdAt">Ngày</SortButton></TableHead>
+              <TableHead className="w-[130px]"><SortButton field="quoteNumber" onSort={toggleSort}>Mã BG</SortButton></TableHead>
+              <TableHead><SortButton field="customerName" onSort={toggleSort}>Khách hàng</SortButton></TableHead>
+              <TableHead className="w-[140px] text-right"><SortButton field="total" onSort={toggleSort}>Tổng tiền</SortButton></TableHead>
+              <TableHead className="w-[100px]"><SortButton field="createdAt" onSort={toggleSort}>Ngày</SortButton></TableHead>
               <TableHead className="w-[100px]">Trạng thái</TableHead>
               <TableHead className="w-[50px]" />
             </TableRow>

@@ -328,31 +328,5 @@ export async function generateShareLink(
   return token;
 }
 
-/** Search products for quote builder (tenant-scoped) */
-export async function searchProductsForQuote(tenantId: string, query: string) {
-  const { products, pricingTiers: tiers, volumeDiscounts: vd, units } = await import("@/db/schema");
-  const { ilike: ilikeFn, or: orFn, and: andFn, eq: eqFn, asc: ascFn } = await import("drizzle-orm");
-
-  const where = query
-    ? andFn(
-        eqFn(products.tenantId, tenantId),
-        orFn(
-          ilikeFn(products.name, `%${query}%`),
-          ilikeFn(products.code, `%${query}%`)
-        )
-      )
-    : eqFn(products.tenantId, tenantId);
-
-  return db.query.products.findMany({
-    where,
-    with: {
-      unit: true,
-      pricingTiers: { orderBy: [ascFn(tiers.minQuantity)] },
-      volumeDiscounts: { orderBy: [ascFn(vd.minQuantity)] },
-    },
-    limit: 20,
-  });
-}
-
 // Re-export for convenience
 export { sql };

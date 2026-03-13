@@ -49,7 +49,9 @@ export function QuoteProductSearch({ open, onOpenChange, onSelect }: Props) {
 
   // Load default products when dialog opens
   useEffect(() => {
-    if (open) doSearch("");
+    if (!open) return;
+    const timer = setTimeout(() => doSearch(""), 0);
+    return () => clearTimeout(timer);
   }, [open, doSearch]);
 
   useEffect(() => {

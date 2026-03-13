@@ -53,7 +53,6 @@ export function ImportColumnMappingStep({
   }
 
   const hasNameMapping = Object.keys(mapping).includes("name");
-  const nameColIdx = mapping["name"];
   const priceColIdx = mapping["price"];
 
   const missingPrice =

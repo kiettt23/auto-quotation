@@ -63,7 +63,6 @@ export async function saveProductAction(
     }
     const product = await saveProduct(tenantId, parsed.data, id);
     revalidatePath("/products");
-    revalidatePath("/products");
     return ok(product);
   } catch (e) {
     return err(e instanceof Error ? e.message : "Lỗi lưu sản phẩm");
@@ -76,7 +75,6 @@ export async function deleteProductAction(id: string): Promise<Result<null>> {
     requireRole(ctx.role, "MEMBER");
     const { tenantId } = ctx;
     await deleteProduct(tenantId, id);
-    revalidatePath("/products");
     revalidatePath("/products");
     return ok(null);
   } catch (e) {

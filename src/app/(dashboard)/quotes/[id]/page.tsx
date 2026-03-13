@@ -21,9 +21,10 @@ export default async function EditQuotePage({ params }: Props) {
 
   if (!quote) notFound();
 
-  const validUntil = new Date(
-    Date.now() + (tenant?.defaultValidityDays ?? 30) * 86400000
-  ).toISOString().split("T")[0];
+  const days = tenant?.defaultValidityDays ?? 30;
+  const expires = new Date();
+  expires.setDate(expires.getDate() + days);
+  const validUntil = expires.toISOString().split("T")[0];
 
   return (
     <QuoteBuilderPage

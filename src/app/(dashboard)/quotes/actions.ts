@@ -7,15 +7,7 @@ import { requireRole } from "@/lib/rbac";
 import { quoteFormSchema } from "@/lib/validations/quote-schemas";
 import * as quoteService from "@/services/quote-service";
 import * as customerService from "@/services/customer-service";
-
-// Product service may not be fully migrated yet — graceful stub
-async function getProductService() {
-  try {
-    return await import("@/services/product-service");
-  } catch {
-    return null;
-  }
-}
+import * as productService from "@/services/product-service";
 
 export async function getQuotes(params: {
   page?: number;
@@ -116,12 +108,7 @@ export async function generateShareLink(quoteId: string) {
 export async function searchProducts(query: string) {
   try {
     const ctx = await getTenantContext();
-    const svc = await getProductService();
-    if (svc && typeof svc.searchProducts === "function") {
-      return ok(await svc.searchProducts(ctx.tenantId, query));
-    }
-    // Fallback: use quote service helper
-    const results = await quoteService.searchProductsForQuote(ctx.tenantId, query);
+    const results = await productService.searchProducts(ctx.tenantId, query);
     return ok(results);
   } catch (e) {
     return err(e instanceof Error ? e.message : "Lỗi tìm sản phẩm");

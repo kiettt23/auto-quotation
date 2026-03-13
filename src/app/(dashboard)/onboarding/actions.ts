@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/db";
-import { tenants, tenantMembers, products } from "@/db/schema";
+import { tenants, products } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";

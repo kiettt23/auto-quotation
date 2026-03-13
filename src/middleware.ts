@@ -2,9 +2,6 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
-// Routes that require authentication
-const PROTECTED_PREFIX = "/(dashboard)";
-
 // Paths exempt from auth check
 function isPublicPath(pathname: string): boolean {
   return (

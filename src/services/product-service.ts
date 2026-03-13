@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { products, pricingTiers, volumeDiscounts, categories, units, quoteItems } from "@/db/schema";
 import type { Product } from "@/db/schema";
-import { eq, and, or, ilike, count, desc, asc, inArray } from "drizzle-orm";
+import { eq, and, or, ilike, count, desc, asc } from "drizzle-orm";
 import type { ProductFormData } from "@/lib/validations/product-schemas";
 
 export type ProductWithRelations = Product & {

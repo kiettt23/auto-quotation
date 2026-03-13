@@ -1,4 +1,4 @@
-import { FileText, CheckCircle, Users, Package, TrendingUp } from "lucide-react";
+import { FileText, CheckCircle, Users, TrendingUp } from "lucide-react";
 import { formatCurrency } from "@/lib/format-currency";
 import { StatCard } from "./stat-card";
 import type { DashboardStats } from "@/services/dashboard-service";
