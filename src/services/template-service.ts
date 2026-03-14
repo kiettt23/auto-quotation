@@ -73,7 +73,7 @@ export async function createTemplate(
       .returning();
     return ok(template);
   } catch (e) {
-    return err(e instanceof Error ? e.message : "Không thể tạo mẫu chứng từ");
+    return err(e instanceof Error ? e.message : "Không thể tạo mẫu tài liệu");
   }
 }
 
@@ -96,10 +96,10 @@ export async function updateTemplate(
       .where(and(eq(documentTemplates.id, id), eq(documentTemplates.tenantId, tenantId)))
       .returning();
 
-    if (!updated) return err("Không tìm thấy mẫu chứng từ");
+    if (!updated) return err("Không tìm thấy mẫu tài liệu");
     return ok(updated);
   } catch (e) {
-    return err(e instanceof Error ? e.message : "Không thể cập nhật mẫu chứng từ");
+    return err(e instanceof Error ? e.message : "Không thể cập nhật mẫu tài liệu");
   }
 }
 
@@ -113,7 +113,7 @@ export async function deleteTemplate(
       where: and(eq(documentTemplates.id, id), eq(documentTemplates.tenantId, tenantId)),
     });
 
-    if (!template) return err("Không tìm thấy mẫu chứng từ");
+    if (!template) return err("Không tìm thấy mẫu tài liệu");
 
     await db
       .delete(documentTemplates)
@@ -121,6 +121,6 @@ export async function deleteTemplate(
 
     return ok(undefined);
   } catch (e) {
-    return err(e instanceof Error ? e.message : "Không thể xóa mẫu chứng từ");
+    return err(e instanceof Error ? e.message : "Không thể xóa mẫu tài liệu");
   }
 }

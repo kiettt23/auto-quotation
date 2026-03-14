@@ -5,6 +5,7 @@ import { getSessionCookie } from "better-auth/cookies";
 // Paths exempt from auth check
 function isPublicPath(pathname: string): boolean {
   return (
+    pathname === "/" ||
     pathname.startsWith("/api/auth") ||
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
@@ -18,21 +19,22 @@ function isPublicPath(pathname: string): boolean {
 function isDashboardPath(pathname: string): boolean {
   // Dashboard routes are at root level (not under a route group in URL)
   const dashboardRoutes = [
-    "/",
+    "/dashboard",
     "/quotes",
     "/products",
     "/customers",
     "/settings",
     "/templates",
     "/documents",
-    "/share",
+    "/onboarding",
+    "/create-company",
   ];
   return dashboardRoutes.some(
     (route) => pathname === route || pathname.startsWith(route + "/")
   );
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public paths through without auth check
@@ -54,6 +56,7 @@ export function middleware(request: NextRequest) {
     const requestHeaders = new Headers(request.headers);
     // Session token available — actual user/tenant resolution happens in getTenantContext()
     requestHeaders.set("x-session-token", sessionCookie);
+    requestHeaders.set("x-pathname", pathname);
 
     return NextResponse.next({ request: { headers: requestHeaders } });
   }

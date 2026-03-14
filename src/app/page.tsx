@@ -12,7 +12,7 @@ export default async function RootPage() {
   const session = await auth.api.getSession({ headers: headersList });
 
   if (session?.user) {
-    redirect("/quotes");
+    redirect("/dashboard");
   }
 
   return (

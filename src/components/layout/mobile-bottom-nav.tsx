@@ -4,10 +4,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { navItems } from "./nav-items";
+import { hasPermission } from "@/lib/rbac";
 
-export function MobileBottomNav() {
+interface MobileBottomNavProps {
+  role?: string;
+}
+
+export function MobileBottomNav({ role = "VIEWER" }: MobileBottomNavProps) {
   const pathname = usePathname();
-  const bottomItems = navItems.filter((item) => item.showInBottomNav);
+
+  // Filter to bottom-nav items the current role can see
+  const bottomItems = navItems.filter(
+    (item) =>
+      item.showInBottomNav &&
+      (!item.minRole || hasPermission(role, item.minRole))
+  );
 
   function isActive(href: string) {
     if (href === "/") return pathname === "/";

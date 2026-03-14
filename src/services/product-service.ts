@@ -3,6 +3,9 @@ import { products, pricingTiers, volumeDiscounts, categories, units, quoteItems 
 import type { Product } from "@/db/schema";
 import { eq, and, or, ilike, count, desc, asc } from "drizzle-orm";
 import type { ProductFormData } from "@/lib/validations/product-schemas";
+import { escapeIlike } from "@/lib/escape-ilike";
+import { ok, err } from "@/lib/result";
+import type { Result } from "@/lib/result";
 
 export type ProductWithRelations = Product & {
   category: { id: string; name: string } | null;
@@ -53,8 +56,8 @@ export async function getProducts(
 
   const searchFilter = params.search
     ? or(
-        ilike(products.name, `%${params.search}%`),
-        ilike(products.code, `%${params.search}%`)
+        ilike(products.name, `%${escapeIlike(params.search)}%`),
+        ilike(products.code, `%${escapeIlike(params.search)}%`)
       )
     : undefined;
 
@@ -111,8 +114,8 @@ export async function searchProducts(
     where: and(
       eq(products.tenantId, tenantId),
       or(
-        ilike(products.name, `%${query}%`),
-        ilike(products.code, `%${query}%`)
+        ilike(products.name, `%${escapeIlike(query)}%`),
+        ilike(products.code, `%${escapeIlike(query)}%`)
       )
     ),
     with: { category: true, unit: true, pricingTiers: true, volumeDiscounts: true },
@@ -130,6 +133,18 @@ export async function saveProduct(
   tenantId: string,
   data: ProductFormData,
   id?: string
+): Promise<Result<ProductWithRelations>> {
+  try {
+    return ok(await saveProductInternal(tenantId, data, id));
+  } catch (e) {
+    return err(e instanceof Error ? e.message : "Lỗi lưu sản phẩm");
+  }
+}
+
+async function saveProductInternal(
+  tenantId: string,
+  data: ProductFormData,
+  id?: string
 ): Promise<ProductWithRelations> {
   const payload = {
     code: data.code,
@@ -142,7 +157,7 @@ export async function saveProduct(
     pricingType: data.pricingType,
   };
 
-  let productId: string;
+  let productId!: string;
 
   if (id) {
     // Verify ownership
@@ -183,14 +198,15 @@ export async function saveProduct(
 
     productId = id;
   } else {
-    const [created] = await db
-      .insert(products)
-      .values({ ...payload, tenantId })
-      .returning({ id: products.id });
-
-    productId = created.id;
-
+    // Single transaction — product insert + pricing tiers + volume discounts atomically
     await db.transaction(async (tx) => {
+      const [created] = await tx
+        .insert(products)
+        .values({ ...payload, tenantId })
+        .returning({ id: products.id });
+
+      productId = created.id;
+
       if (data.pricingTiers?.length) {
         await tx.insert(pricingTiers).values(
           data.pricingTiers.map((t) => ({
@@ -221,25 +237,31 @@ export async function saveProduct(
 /**
  * Delete a product. Rejects if it is referenced in any quote items.
  */
-export async function deleteProduct(tenantId: string, id: string): Promise<void> {
-  // Verify ownership
-  const existing = await db.query.products.findFirst({
-    where: and(eq(products.id, id), eq(products.tenantId, tenantId)),
-  });
-  if (!existing) throw new Error("Không tìm thấy sản phẩm");
+export async function deleteProduct(tenantId: string, id: string): Promise<Result<void>> {
+  try {
+    // Verify ownership
+    const existing = await db.query.products.findFirst({
+      where: and(eq(products.id, id), eq(products.tenantId, tenantId)),
+    });
+    if (!existing) return err("Không tìm thấy sản phẩm");
 
-  const [{ usageCount }] = await db
-    .select({ usageCount: count() })
-    .from(quoteItems)
-    .where(eq(quoteItems.productId, id));
+    const [{ usageCount }] = await db
+      .select({ usageCount: count() })
+      .from(quoteItems)
+      .where(eq(quoteItems.productId, id));
 
-  if (usageCount > 0) {
-    throw new Error("Không thể xoá sản phẩm đang có trong báo giá");
+    if (usageCount > 0) {
+      return err("Không thể xoá sản phẩm đang có trong báo giá");
+    }
+
+    await db
+      .delete(products)
+      .where(and(eq(products.id, id), eq(products.tenantId, tenantId)));
+
+    return ok(undefined);
+  } catch (e) {
+    return err(e instanceof Error ? e.message : "Lỗi xoá sản phẩm");
   }
-
-  await db
-    .delete(products)
-    .where(and(eq(products.id, id), eq(products.tenantId, tenantId)));
 }
 
 /**

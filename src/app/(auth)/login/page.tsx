@@ -19,24 +19,24 @@ export default function LoginPage() {
     try {
       const result = await signIn.email({ email, password });
       if (result.error) {
-        setError(result.error.message ?? "Sign in failed");
+        setError(result.error.message ?? "Đăng nhập thất bại");
       } else {
         router.push("/");
         router.refresh();
       }
     } catch {
-      setError("An unexpected error occurred");
+      setError("Đã xảy ra lỗi không mong muốn");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <div className="rounded-xl border bg-white p-8 shadow-sm">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Sign in</h1>
+    <div className="rounded-xl border bg-card p-8 shadow-sm">
+      <h1 className="mb-6 text-2xl font-bold text-foreground">Đăng nhập</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
+          <label className="mb-1 block text-sm font-medium text-muted-foreground">
             Email
           </label>
           <input
@@ -44,20 +44,20 @@ export default function LoginPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="you@example.com"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
-            Password
+          <label className="mb-1 block text-sm font-medium text-muted-foreground">
+            Mật khẩu
           </label>
           <input
             type="password"
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="••••••••"
           />
         </div>
@@ -65,15 +65,15 @@ export default function LoginPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
         >
-          {loading ? "Signing in…" : "Sign in"}
+          {loading ? "Đang đăng nhập..." : "Đăng nhập"}
         </button>
       </form>
-      <p className="mt-4 text-center text-sm text-gray-500">
-        No account?{" "}
-        <a href="/register" className="text-blue-600 hover:underline">
-          Register
+      <p className="mt-4 text-center text-sm text-muted-foreground">
+        Chưa có tài khoản?{" "}
+        <a href="/register" className="text-primary hover:underline">
+          Đăng ký
         </a>
       </p>
     </div>

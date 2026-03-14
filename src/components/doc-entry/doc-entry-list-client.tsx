@@ -55,7 +55,7 @@ export function DocEntryListClient({ entries, templates }: Props) {
 
         <Button onClick={() => setPickerOpen(true)}>
           <Plus className="mr-2 size-4" />
-          Tạo chứng từ
+          Tạo tài liệu
         </Button>
       </div>
 
@@ -63,9 +63,9 @@ export function DocEntryListClient({ entries, templates }: Props) {
       {entries.length === 0 ? (
         <EmptyState
           icon={FileX}
-          title="Chưa có chứng từ"
-          description="Tạo chứng từ đầu tiên từ một mẫu đã định nghĩa"
-          actionLabel="Tạo chứng từ"
+          title="Chưa có tài liệu"
+          description="Tạo tài liệu đầu tiên từ một mẫu đã định nghĩa"
+          actionLabel="Tạo tài liệu"
           actionHref="#"
         />
       ) : (

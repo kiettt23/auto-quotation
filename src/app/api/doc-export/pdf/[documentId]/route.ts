@@ -19,7 +19,7 @@ export async function GET(
 
     const doc = await getDocumentById(tenantId, documentId);
     if (!doc) {
-      return NextResponse.json({ error: "Không tìm thấy chứng từ" }, { status: 404 });
+      return NextResponse.json({ error: "Không tìm thấy tài liệu" }, { status: 404 });
     }
 
     if (doc.template.fileType !== "pdf" && !doc.template.name.toLowerCase().includes("pdf")) {

@@ -49,7 +49,7 @@ export function DocEntryTable({ entries }: Props) {
     startTransition(async () => {
       try {
         await deleteDocEntry(id);
-        toast.success(`Đã xóa chứng từ ${docNumber}`);
+        toast.success(`Đã xóa tài liệu ${docNumber}`);
       } catch {
         toast.error("Xóa thất bại, vui lòng thử lại");
       }
@@ -61,7 +61,7 @@ export function DocEntryTable({ entries }: Props) {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[160px]">Số chứng từ</TableHead>
+            <TableHead className="w-[160px]">Số tài liệu</TableHead>
             <TableHead>Mẫu</TableHead>
             <TableHead className="w-[160px]">Ngày tạo</TableHead>
             <TableHead className="w-[50px]" />
@@ -71,7 +71,7 @@ export function DocEntryTable({ entries }: Props) {
           {entries.length === 0 ? (
             <TableRow>
               <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                Không có chứng từ nào
+                Không có tài liệu nào
               </TableCell>
             </TableRow>
           ) : (
@@ -122,7 +122,7 @@ export function DocEntryTable({ entries }: Props) {
                           <AlertDialogHeader>
                             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Bạn có chắc muốn xóa chứng từ &quot;{entry.docNumber}&quot;?
+                              Bạn có chắc muốn xóa tài liệu &quot;{entry.docNumber}&quot;?
                               Hành động này không thể hoàn tác.
                             </AlertDialogDescription>
                           </AlertDialogHeader>

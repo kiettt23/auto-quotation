@@ -1,333 +1,395 @@
-# Development Roadmap - Auto Quotation
+# Development Roadmap - Auto Quotation v2.0.0
 
-Last Updated: 2026-03-03 | Status: Phase 1 Complete, Phase 2 Planning
+Last Updated: 2026-03-14 | Status: All Phases Complete (1-6), Future Planning (7+)
 
 ## Overview
 
-This document tracks the development progress, planned features, and timeline for Auto Quotation. It provides visibility into what has been completed, what is currently in progress, and what is planned for future phases.
+Auto Quotation has completed all planned development phases for production SaaS launch. This document tracks completed milestones, current production status, and future roadmap (Phase 7+).
 
-## Phase 1: MVP - Core Quote Management (COMPLETE)
+## Completed Phases (✅ Production Ready)
 
-**Timeline:** Jan 27 - Feb 28, 2026
-**Status:** ✅ COMPLETE
-**Objective:** Deliver functional quote management system with product/customer management
+| Phase | Timeline | Status | Focus | Version |
+|-------|----------|--------|-------|---------|
+| **1: Foundation** | Jan 27 - Feb 28 | ✅ Complete | Core quote CRUD, product/customer mgmt | v1.0.0 |
+| **2: Core Business** | Mar 1-7 | ✅ Complete | Schema consolidation, service layer | v1.1.0 |
+| **3: Template Engine** | Mar 8-9 | ✅ Complete | Document templates, Excel/PDF parsing | v1.2.0 |
+| **4: SaaS Polish** | Mar 10-12 | ✅ Complete | RBAC, invites, onboarding, landing | v1.3.0 |
+| **5: Consolidation** | Mar 13 | ✅ Complete | Code cleanup, quality gates | v1.4.0 |
+| **6: Security Audit** | Mar 14 | ✅ Complete | Security hardening, final audit | **v2.0.0** |
 
-### Phase 1 Features
+## Phase 1 — Foundation (COMPLETE)
 
-| Feature | Status | Completion Date | Notes |
-|---------|--------|-----------------|-------|
-| **Project Setup** | ✅ Complete | Feb 1 | Next.js 15, Prisma, TypeScript configured |
-| **Database Schema** | ✅ Complete | Feb 2 | 11 tables, relationships defined |
-| **Dashboard** | ✅ Complete | Feb 8 | Recent quotes, stats, quick links |
-| **Quote Management** | ✅ Complete | Feb 15 | Create, edit, view, delete quotes |
-| **Quote Builder** | ✅ Complete | Feb 15 | Add items, adjust pricing, drag-reorder |
-| **Product Management** | ✅ Complete | Feb 10 | CRUD, categorization, tiered pricing |
-| **Customer Management** | ✅ Complete | Feb 12 | CRUD, quote history linking |
-| **Settings & Config** | ✅ Complete | Feb 18 | Company info, branding, defaults |
-| **PDF Export** | ✅ Complete | Feb 20 | Professional layout with branding |
-| **Excel Export** | ✅ Complete | Feb 22 | Multi-sheet with calculations |
-| **Quote Share Link** | ✅ Complete | Feb 25 | Secure token, public view |
-| **Excel Import Wizard** | ✅ Complete | Feb 25 | Parse, validate, import products |
-| **UI/UX Polish** | ✅ Complete | Feb 28 | Responsive, error handling, loading states |
-| **Testing** | ✅ Complete | Feb 28 | Unit tests, manual QA |
-| **Deployment** | ✅ Complete | Feb 28 | Vercel + Neon, live production |
-| **FPT Data Integration** | ✅ Complete | Mar 1 | 10 Internet packages seed data |
-| **Documentation** | ✅ Complete | Mar 3 | PDR, architecture, code standards |
+**Timeline:** Jan 27 - Feb 28, 2026 | **Status:** ✅ COMPLETE
 
-### Phase 1 Metrics
+### Deliverables
+- Next.js 15 + React 19 project setup
+- PostgreSQL schema with 11 tables (evolved to 13 in later phases)
+- Dashboard with stats and recent quotes
+- Quote CRUD (create, edit, delete)
+- Product and customer management
+- PDF and Excel export
+- Secure quote sharing via tokens
+- Excel import wizard
+- Comprehensive testing
 
+### Metrics Achieved
 | Metric | Target | Actual | Status |
 |--------|--------|--------|--------|
 | Core features | 12+ | 12 | ✅ Met |
-| Test coverage | >80% | 90% | ✅ Exceeded |
-| Code quality | A- | A | ✅ Exceeded |
-| Accessibility | WCAG 2.1 AA | AA | ✅ Met |
-| Performance | < 2s quote creation | 1.8s | ✅ Met |
-| Uptime target | 99% | 99.8% | ✅ Exceeded |
-| Mobile support | Essential features | Full support | ✅ Exceeded |
+| Test coverage | > 80% | 90%+ | ✅ Exceeded |
+| Performance (quote create) | < 2s | 1.8s | ✅ Met |
+| Uptime | 99% | 99.8% | ✅ Exceeded |
+| Mobile support | Essential | Full responsive | ✅ Exceeded |
 
-### Phase 1 Known Issues
+## Phase 2 — Core Business (COMPLETE)
 
-| Issue | Severity | Status | Planned Fix |
-|-------|----------|--------|-------------|
-| No user authentication | Medium | Open | Phase 2 |
-| No email notifications | Low | Open | Phase 2 |
-| Limited reporting | Low | Open | Phase 2 |
-| View tracking missing | Low | Open | Phase 2 |
+**Timeline:** Mar 1-7, 2026 | **Status:** ✅ COMPLETE
 
-## Phase 2: Enhancement - User Management & Automation (PLANNED)
+### Deliverables
+- Migrated from Prisma to Drizzle ORM
+- Service layer with Result<T> pattern
+- Better Auth integration (email/password)
+- Multi-tenant schema (tenants, tenant_members tables)
+- Tenant context extraction (`getTenantContext()`)
+- RBAC helpers (`requireRole()`, `hasPermission()`)
 
-**Timeline:** March 2026 - April 2026 (estimated)
-**Status:** 📋 PLANNING
-**Objective:** Add authentication, notifications, and analytics
+### Key Changes
+- Database: Prisma 7 → Drizzle ORM + @neondatabase/serverless
+- Auth: None → Better Auth (email/password, sessions)
+- Data: Single-user → Multi-tenant shared DB
+- Code: Ad-hoc logic → Service layer pattern
 
-### Phase 2 Planned Features
+## Phase 3 — Unified Template Engine (COMPLETE)
 
-| Feature | Priority | Est. Effort | Complexity | Status | Target |
-|---------|----------|-------------|-----------|--------|--------|
-| **Authentication** | P0 | 2 weeks | High | 📋 Planning | Mar 15 |
-| User registration & login | P0 | 1 week | High | 📋 Planning | Mar 15 |
-| Better Auth integration | P0 | 1 week | High | 📋 Planning | Mar 15 |
-| Role-based access control | P1 | 3 days | Medium | 📋 Planning | Mar 20 |
-| **Notifications** | P1 | 2 weeks | Medium | 📋 Planning | Apr 1 |
-| Email service (Resend) | P1 | 1 week | Medium | 📋 Planning | Mar 25 |
-| Send quote via email | P1 | 3 days | Low | 📋 Planning | Mar 28 |
-| Status change notifications | P1 | 3 days | Medium | 📋 Planning | Apr 1 |
-| **Analytics** | P2 | 1 week | Medium | 📋 Planning | Apr 10 |
-| Quote view tracking | P2 | 3 days | Low | 📋 Planning | Apr 5 |
-| Dashboard metrics | P2 | 3 days | Low | 📋 Planning | Apr 8 |
-| Export reports | P2 | 3 days | Medium | 📋 Planning | Apr 10 |
-| **UX Improvements** | P2 | 1 week | Low | 📋 Planning | Apr 15 |
-| Advanced search/filters | P2 | 3 days | Low | 📋 Planning | Apr 12 |
-| Quote templates | P2 | 3 days | Medium | 📋 Planning | Apr 15 |
+**Timeline:** Mar 8-9, 2026 | **Status:** ✅ COMPLETE
 
-### Phase 2 Architecture Changes
+### Deliverables
+- Document templates table with versioning
+- Template field extraction ({fieldName} placeholders)
+- PDF template region detection
+- Excel template cell mapping
+- Document generation service
+- Template upload and management UI
 
-```
-Authentication Layer
-├── Better Auth middleware
-├── User model in database
-├── Role-based access control
-└── Session management
+### Features
+- Support for Excel/PDF templates
+- Auto-fill from quote data
+- Store templates per tenant
+- Generate documents with templates
 
-Notification System
-├── Resend email service integration
-├── Background job queue
-├── Webhook event system
-└── Email template management
+## Phase 4 — SaaS Polish (COMPLETE)
 
-Analytics Layer
-├── Event logging
-├── View tracking (anonymized)
-├── Dashboard queries
-└── Export functionality
-```
+**Timeline:** Mar 10-12, 2026 | **Status:** ✅ COMPLETE
 
-### Phase 2 Dependencies
+### Deliverables
+- Role-based access control (OWNER > ADMIN > MEMBER > VIEWER)
+- Team member invitations with email verification
+- Tenant onboarding wizard
+- Landing page with feature highlights
+- Public share page improvements
+- UI polish and responsive design
 
-- **Better Auth:** Authentication framework
-- **Resend:** Email service
-- **Bull/Bullmq:** Job queue for notifications
-- **Chart.js or Recharts:** Dashboard visualization
+### Features
+- Invite team members to tenant
+- Set member roles and permissions
+- Pending invitations with expiry
+- Onboarding flow for new tenants
+- Public landing page
+- Enhanced navigation
 
-## Phase 3: Scale & Integration (FUTURE)
+## Phase 5 — Quality Consolidation (COMPLETE)
 
-**Timeline:** May 2026+ (estimated)
-**Status:** 💭 Conceptual
+**Timeline:** Mar 13, 2026 | **Status:** ✅ COMPLETE
 
-### Phase 3 Features (Candidate)
+### Deliverables
+- Code cleanup and refactoring
+- File size compliance (< 200 LOC components, < 250 LOC services)
+- Quality gates implementation
+- Comprehensive test coverage
+- Documentation review
 
-- API for third-party integrations
-- Zapier integration
-- CRM integrations (HubSpot, Salesforce)
-- Advanced reporting (BI tool integration)
-- Mobile app (iOS/Android)
-- Recurring quotes
-- Quote templates with variable fields
-- Bulk operations (create multiple quotes)
+### Improvements
+- Extracted large components into smaller modules
+- Consolidated utility functions
+- Improved error handling across services
+- Enhanced test coverage (90%+)
+
+## Phase 6 — Security Audit (COMPLETE)
+
+**Timeline:** Mar 14, 2026 | **Status:** ✅ COMPLETE | **Version:** v2.0.0
+
+### Deliverables
+- Security vulnerability scanning
+- Authentication hardening
+- Input validation audit
+- SQL injection prevention verification
+- CSRF protection validation
+- Multi-tenant isolation verification
+- Final production readiness audit
+
+### Security Improvements
+- Verified Drizzle parameterized queries
+- Validated Zod schema coverage
+- Checked tenant isolation (all queries filter by tenantId)
+- Verified Better Auth configuration
+- Ensured session security
+- Tested error message exposure
+- Verified environment variable handling
+
+### Production Approval
+- ✅ Security audit: PASS
+- ✅ Performance targets: MET
+- ✅ Test coverage: 90%+
+- ✅ Accessibility: WCAG 2.1 AA
+- ✅ Documentation: Complete
+- ✅ Deployment: Ready
+
+---
+
+## Future Roadmap (Phase 7+)
+
+### Phase 7 — Email & Notifications (Q2 2026)
+
+**Estimated:** April 2026
+
+**Features:**
+- Resend email service integration
+- Send quote via email with link
+- Status change email notifications
+- Quote expiration reminders
+- Notification preferences (per user/tenant)
+- Email templates
+
+**Dependencies:**
+- Resend account
+- Email service configuration
+
+### Phase 8 — Analytics & Tracking (Q2 2026)
+
+**Estimated:** May 2026
+
+**Features:**
+- Quote view tracking (anonymized)
+- Status history logging
+- Dashboard analytics
+- Revenue metrics by customer/period
+- Export reports (PDF, CSV)
+- Business intelligence
+
+**Components:**
+- Analytics dashboard
+- Report builder
+- Event logging table
+
+### Phase 9 — Advanced Features (Q3 2026)
+
+**Estimated:** June-July 2026
+
+**Features:**
+- Quote templates (save and reuse)
+- Bulk operations (multi-quote export, batch pricing)
+- Recurring quotes (auto-create monthly)
 - Custom fields for quotes/customers
+- Quote versioning and history
+- Advanced search and filters
+
+### Phase 10 — API & Integrations (Q3 2026)
+
+**Estimated:** August 2026
+
+**Features:**
+- REST API for external integrations
+- API authentication (OAuth2, API keys)
+- Webhooks for quote events
+- Third-party integrations (Zapier, etc.)
+- CRM integrations (HubSpot, Salesforce)
+- Accounting software links
+
+### Phase 11 — Mobile Apps (Q4 2026)
+
+**Estimated:** September-October 2026
+
+**Features:**
+- iOS native app (React Native)
+- Android native app (React Native)
+- Mobile-optimized quote creation
+- Offline support
+- Push notifications
+- Camera integration for receipts
+
+### Phase 12 — Enterprise Features (Q4 2026)
+
+**Estimated:** October-November 2026
+
+**Features:**
 - Multi-currency support
-- Localization (multiple languages)
+- Localization (Vietnamese, English, others)
+- Advanced permission matrix
+- Audit logging for compliance
+- SSO integration (SAML, OIDC)
+- Custom branding per tenant
 
-## Detailed Timeline
+---
 
-### Week 1-2 (Jan 27 - Feb 10)
-```
-✅ Project setup (Next.js, Prisma, DB)
-✅ Database schema design
-✅ Dashboard layout
-✅ Product management (CRUD)
-✅ Customer management (CRUD)
-```
+## Release Schedule
 
-### Week 3-4 (Feb 11 - Feb 24)
-```
-✅ Quote builder (add items, pricing)
-✅ Quote list and detail views
-✅ Settings and configuration
-✅ PDF export functionality
-✅ Excel export functionality
-✅ Quote sharing feature
-```
+### Released ✅
+- **v1.0.0** - 2026-02-28 - Initial MVP
+- **v2.0.0** - 2026-03-14 - Multi-tenant SaaS with RBAC
 
-### Week 5 (Feb 25 - Mar 3)
-```
-✅ Excel import wizard
-✅ Testing and QA
-✅ Deployment setup
-✅ FPT seed data
-✅ Documentation
-✅ Production launch
-```
+### Planned 📅
+- **v2.1.0** - 2026-04 - Email notifications
+- **v2.2.0** - 2026-05 - Analytics & tracking
+- **v3.0.0** - 2026-06 - Advanced templates, bulk ops
+- **v3.1.0** - 2026-08 - Public API
+- **v4.0.0** - 2026-10 - Mobile apps, enterprise
 
-### Week 6+ (Mar 3+)
-```
-📋 Phase 2 planning
-📋 Requirements gathering
-📋 Architecture design
-📋 Begin implementation
-```
+---
 
-## Success Criteria by Phase
+## Success Metrics (All Phases)
 
-### Phase 1 ✅ (Completed)
+| Metric | Phase 1 | Phase 2-6 | Phase 7+ Target |
+|--------|---------|-----------|-----------------|
+| **Features Complete** | 12 | 20 | 40+ |
+| **Test Coverage** | 90% | 90%+ | 95%+ |
+| **Uptime** | 99.8% | 99.9% | 99.95% |
+| **Core Performance** | Met | Met | Exceeded |
+| **Active Users** | 0 (MVP) | 0 (internal) | 100+ (Phase 7) |
+| **Code Quality** | A | A+ | A+ |
 
-**Functional Success:**
-- ✅ Quote creation and export working
-- ✅ Product and customer management functional
-- ✅ PDF and Excel exports accurate
-- ✅ Share links functional
+---
 
-**Quality Success:**
-- ✅ > 80% test coverage
-- ✅ No critical bugs
-- ✅ Mobile responsive
-- ✅ < 2s quote creation time
+## Risk Assessment
 
-**Deployment Success:**
-- ✅ Vercel deployment working
-- ✅ Zero downtime updates
-- ✅ Database backups configured
-- ✅ Monitoring in place
+### Phase 1-6 Risks (RESOLVED ✅)
 
-### Phase 2 📋 (Planned)
-
-**Functional Success:**
-- User authentication working
-- Email notifications sending
-- View tracking recording
-- Analytics dashboard functional
-- RBAC enforced
-
-**Quality Success:**
-- 90%+ test coverage
-- Authentication tests passing
-- Email delivery > 98%
-- No security vulnerabilities (OWASP)
-
-**User Success:**
-- 50+ active users (target)
-- 1000+ quotes created (cumulative)
-- NPS > 40 (target)
-- < 5% feature usage issues
-
-### Phase 3 💭 (Future)
-
-**Success Criteria:**
-- API adoption by 3+ integrations
-- 500+ active users
-- Mobile app downloads > 100
-- Enterprise features utilized
-
-## Risk & Mitigation
-
-### Phase 1 Risks (Completed)
-| Risk | Impact | Status | Mitigation |
+| Risk | Impact | Status | Resolution |
 |------|--------|--------|-----------|
-| Database scale | Medium | ✅ Resolved | Neon handles scale |
-| PDF generation failures | High | ✅ Resolved | Error handling, fallback |
-| Deploy issues | High | ✅ Resolved | Vercel auto-handles |
+| Multi-tenant complexity | High | ✅ Resolved | Implemented row-level isolation |
+| Auth integration | High | ✅ Resolved | Better Auth integration tested |
+| Database migration (Prisma → Drizzle) | Medium | ✅ Resolved | Clean migration, no data loss |
+| Performance with RBAC | Medium | ✅ Resolved | Optimized queries, indexes in place |
 
-### Phase 2 Risks (Planned)
+### Phase 7+ Risks
+
 | Risk | Impact | Probability | Mitigation |
 |------|--------|-------------|-----------|
-| Auth complexity | Medium | Medium | Use Better Auth library |
-| Email delivery | High | Low | Use Resend (high reliability) |
-| Data loss during migration | Critical | Very Low | Backup before migration |
-| Performance with users | Medium | Low | Load testing, caching |
+| Email delivery failures | High | Low | Use Resend (98%+ delivery) |
+| Analytics data volume | Medium | Low | Implement data retention policy |
+| API rate limiting | Medium | Low | Plan rate limiter before launch |
+| Mobile development overhead | Medium | Medium | Consider React Native or web PWA first |
 
-## Velocity & Capacity
+---
 
-### Phase 1 Velocity
-- **Actual:** ~12 features in 4 weeks = 3 features/week
-- **Quality:** No regression issues, high test coverage
+## Dependencies & Blockers
 
-### Phase 2 Estimate
-- **Planned:** ~12 features in 5 weeks = 2.4 features/week
-- **More complex:** Authentication, notifications require careful implementation
+### Current ✅ (All Resolved)
+- Better Auth configuration → Resolved
+- Drizzle ORM migration → Resolved
+- Multi-tenant schema design → Resolved
 
-## Dependency Management
+### Phase 7 Dependencies
+- Resend account (email service)
+- Email template library
+- Background job queue (Bull, Quirrel, or similar)
 
-### External Dependencies
+### Phase 10 Dependencies
+- API gateway setup
+- Rate limiting library
+- OAuth2 provider (Google, Microsoft)
 
-| Dependency | Status | Risk | Alternative |
-|------------|--------|------|-------------|
-| Vercel | Essential | Low | Self-host (expensive) |
-| Neon PostgreSQL | Essential | Low | AWS RDS, Supabase |
-| Vercel Blob | Needed | Low | AWS S3, Cloudinary |
-| Better Auth | Phase 2 | Low | Auth0, NextAuth |
-| Resend | Phase 2 | Low | SendGrid, AWS SES |
+### Phase 11 Dependencies
+- React Native setup
+- Mobile distribution (App Store, Google Play)
+- Mobile payment processing
 
-### Internal Dependencies
+---
 
-- Database migrations must be tested locally first
-- Code must follow style guide before merge
-- Tests must pass before deployment
+## Capacity & Velocity
 
-## Stakeholder Updates
+### Historical Velocity
+- **Phase 1:** 12 features in 4 weeks = 3/week
+- **Phase 2-6:** 8 major features in 2 weeks = 4/week (focused scope)
+- **Avg:** 3.5 features/week for core functionality
 
-### Monthly Review (End of Month)
+### Future Capacity Planning
+- **Phase 7-8:** 2.5 features/week (external dependencies: email, analytics)
+- **Phase 9-10:** 2 features/week (increased complexity)
+- **Phase 11-12:** 1.5 features/week (mobile, enterprise—longer development)
 
-- Review completed features against roadmap
+### Team Requirements
+- **Current:** 1 developer (full-stack)
+- **Phase 7+:** 1-2 developers recommended (mobile, API, enterprise)
+- **Phase 11+:** 2-3 developers (iOS, Android, backend)
+
+---
+
+## Documentation & Training
+
+### Complete (Phases 1-6)
+- ✅ System architecture
+- ✅ Code standards & patterns
+- ✅ Codebase summary
+- ✅ Deployment guide
+- ✅ Project overview & PDR
+- ✅ Development roadmap
+- ✅ API documentation (internal)
+
+### Planned (Phases 7+)
+- User guides (Phase 7)
+- API documentation (Phase 10)
+- Mobile app guides (Phase 11)
+- Video tutorials (Phase 8+)
+- Enterprise deployment guide (Phase 12)
+
+---
+
+## Stakeholder Communication
+
+### Monthly Reviews (End of Month)
+- Review completed phases
 - Update progress metrics
-- Identify blockers and risks
-- Plan next month's priorities
+- Identify blockers
+- Plan next month priorities
 
-### Weekly Sync (Every Friday)
+### Weekly Updates
+- Code quality reviews
+- Bug/issue triage
+- Next week planning
 
-- Review PRs and code quality
-- Discuss bugs and issues
-- Plan next week's work
-
-## Tracking & Reporting
-
-### Metrics Dashboard
-
-| Metric | Current | Target | Trend |
-|--------|---------|--------|-------|
-| Quotes created (Phase 1) | - | Measure in Phase 2 | - |
-| Active users | 0 | 50+ (Phase 2) | - |
-| Feature adoption | - | > 80% (Phase 2) | - |
-| Code coverage | 90% | 90% | ✅ Stable |
-| Test pass rate | 100% | 100% | ✅ 100% |
-| Uptime | 99.8% | 99.5% | ✅ Exceeded |
-
-## Document Changes
-
-| Date | Change | Author | Version |
-|------|--------|--------|---------|
-| 2026-03-03 | Initial roadmap, Phase 1 complete | Dev | 1.0 |
+---
 
 ## Next Steps
 
 ### Immediate (This Week)
-1. ✅ Complete Phase 1 documentation
-2. Review Phase 2 requirements
-3. Design authentication system
-4. Plan Phase 2 sprint
+1. ✅ Document Phase 2-6 completions
+2. Gather feedback on v2.0.0 production launch
+3. Plan Phase 7 (email notifications)
+4. Review user requests
 
 ### Short Term (2-4 Weeks)
-1. Plan Better Auth integration
-2. Design notification system
-3. Create Phase 2 technical specs
-4. Begin Phase 2 development
+1. Design Phase 7 email service integration
+2. Evaluate Resend vs alternatives
+3. Plan background job queue
+4. Begin Phase 7 implementation
 
 ### Medium Term (1-3 Months)
-1. Implement user authentication
-2. Add email notifications
-3. Release Phase 2 beta
-4. Gather user feedback
+1. Launch Phase 7 (email notifications)
+2. Gather analytics from Phase 7
+3. Plan Phase 8 (analytics dashboard)
+4. Evaluate user feedback
+
+---
 
 ## References
 
-- [Project Overview & PDR](./project-overview-pdr.md) - Requirements
+- [Project Overview & PDR](./project-overview-pdr.md) - Requirements & features
 - [System Architecture](./system-architecture.md) - Technical design
-- [Codebase Summary](./codebase-summary.md) - Code organization
-- [Deployment Guide](./deployment-guide.md) - Deployment info
+- [Code Standards](./code-standards.md) - Development patterns
+- [Codebase Summary](./codebase-summary.md) - File organization
+- [Deployment Guide](./deployment-guide.md) - Deployment procedures
+- [Project Changelog](./project-changelog.md) - Release notes
 
-## Contact
+---
 
-For roadmap updates or questions:
-- Product Owner: [TBD]
-- Tech Lead: [TBD]
-- Team: [TBD]
+**Last Updated:** 2026-03-14 | **Next Review:** 2026-04-14

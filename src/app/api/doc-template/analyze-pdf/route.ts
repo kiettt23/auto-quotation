@@ -16,12 +16,14 @@ type PageInfo = {
 export async function POST(req: NextRequest) {
   try {
     await getTenantContext(); // Auth guard
-    const { fileBase64 } = await req.json() as { fileBase64: string };
-    if (!fileBase64) {
-      return NextResponse.json({ error: "fileBase64 là bắt buộc" }, { status: 400 });
+
+    const formData = await req.formData();
+    const file = formData.get("file") as File | null;
+    if (!file) {
+      return NextResponse.json({ error: "File là bắt buộc" }, { status: 400 });
     }
 
-    const pdfBytes = Buffer.from(fileBase64, "base64");
+    const pdfBytes = Buffer.from(await file.arrayBuffer());
     const pdfDoc = await PDFDocument.load(pdfBytes);
     const pages = pdfDoc.getPages();
 

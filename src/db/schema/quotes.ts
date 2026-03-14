@@ -1,4 +1,4 @@
-import { pgTable, text, numeric, integer, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, text, numeric, integer, boolean, timestamp, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { tenants } from "./tenants";
@@ -14,7 +14,7 @@ export const quotes = pgTable(
     tenantId: text("tenant_id")
       .notNull()
       .references(() => tenants.id, { onDelete: "cascade" }),
-    quoteNumber: text("quote_number").notNull().unique(),
+    quoteNumber: text("quote_number").notNull(),
     customerId: text("customer_id").references(() => customers.id, { onDelete: "set null" }),
     // Denormalized customer snapshot at time of quote creation
     customerName: text("customer_name").default("").notNull(),
@@ -36,6 +36,7 @@ export const quotes = pgTable(
     terms: text("terms").default("").notNull(),
     // Sharing
     shareToken: text("share_token").unique(),
+    shareTokenExpiresAt: timestamp("share_token_expires_at"),
     // Stored computed totals for fast reads
     subtotal: numeric("subtotal", { precision: 15, scale: 0 }).default("0").notNull(),
     discountAmount: numeric("discount_amount", { precision: 15, scale: 0 }).default("0").notNull(),
@@ -49,6 +50,7 @@ export const quotes = pgTable(
     index("quotes_customer_idx").on(t.customerId),
     index("quotes_status_idx").on(t.status),
     index("quotes_share_token_idx").on(t.shareToken),
+    uniqueIndex("quotes_tenant_number_uniq").on(t.tenantId, t.quoteNumber),
   ]
 );
 
@@ -71,7 +73,7 @@ export const quoteItems = pgTable(
     unitPrice: numeric("unit_price", { precision: 15, scale: 0 }).default("0").notNull(),
     discountPercent: numeric("discount_percent", { precision: 5, scale: 2 }).default("0").notNull(),
     lineTotal: numeric("line_total", { precision: 15, scale: 0 }).default("0").notNull(),
-    isCustomItem: text("is_custom_item").default("false").notNull(),
+    isCustomItem: boolean("is_custom_item").default(false).notNull(),
   },
   (t) => [
     index("quote_items_quote_idx").on(t.quoteId),

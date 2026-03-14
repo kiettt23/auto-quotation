@@ -6,6 +6,7 @@ import { db } from "@/db";
 import { quotes, quoteItems, tenants } from "@/db/schema";
 import type { Quote, QuoteItem, Tenant } from "@/db/schema";
 import { eq, and, or, ilike, count, desc, asc, sql } from "drizzle-orm";
+import { escapeIlike } from "@/lib/escape-ilike";
 import { generateDocNumber } from "@/lib/generate-doc-number";
 import { calculateQuoteTotals, calculateLineTotal } from "@/lib/pricing-engine";
 import type { QuoteFormData } from "@/lib/validations/quote-schemas";
@@ -49,9 +50,9 @@ export async function getQuotes(
 
   const searchFilter = params.search
     ? or(
-        ilike(quotes.quoteNumber, `%${params.search}%`),
-        ilike(quotes.customerName, `%${params.search}%`),
-        ilike(quotes.customerCompany, `%${params.search}%`)
+        ilike(quotes.quoteNumber, `%${escapeIlike(params.search)}%`),
+        ilike(quotes.customerName, `%${escapeIlike(params.search)}%`),
+        ilike(quotes.customerCompany, `%${escapeIlike(params.search)}%`)
       )
     : undefined;
 
@@ -121,7 +122,7 @@ export async function saveQuote(
     unitPrice: String(item.unitPrice),
     discountPercent: String(item.discountPercent),
     lineTotal: String(calculateLineTotal(item.unitPrice, item.quantity, item.discountPercent)),
-    isCustomItem: item.isCustomItem ? "true" : "false",
+    isCustomItem: !!item.isCustomItem,
     sortOrder: item.sortOrder ?? i,
   }));
 
@@ -134,6 +135,12 @@ export async function saveQuote(
   );
 
   if (quoteId) {
+    // Verify the quote belongs to this tenant before mutating
+    const existing = await db.query.quotes.findFirst({
+      where: and(eq(quotes.id, quoteId), eq(quotes.tenantId, tenantId)),
+    });
+    if (!existing) throw new Error("Không tìm thấy báo giá");
+
     // Update existing quote
     await db.transaction(async (tx) => {
       await tx.delete(quoteItems).where(eq(quoteItems.quoteId, quoteId));
@@ -170,17 +177,12 @@ export async function saveQuote(
     return { id: quoteId };
   }
 
-  // New quote: generate number and increment counter
+  // New quote: fetch tenant for prefix/validity defaults
   const tenant = await db.query.tenants.findFirst({
     where: eq(tenants.id, tenantId),
   });
 
   if (!tenant) throw new Error("Tenant not found");
-
-  const quoteNumber = generateDocNumber(
-    tenant.quotePrefix,
-    tenant.quoteNextNumber
-  );
 
   // Calculate validUntil from tenant defaults if not provided
   const validUntil = data.validUntil
@@ -190,6 +192,16 @@ export async function saveQuote(
   let newId: string;
 
   await db.transaction(async (tx) => {
+    // Atomic increment — eliminates race condition under concurrent creates
+    const [numResult] = await tx
+      .update(tenants)
+      .set({ quoteNextNumber: sql`${tenants.quoteNextNumber} + 1` })
+      .where(eq(tenants.id, tenantId))
+      .returning({ quoteNextNumber: tenants.quoteNextNumber });
+
+    // quoteNextNumber is the NEW value after +1, subtract 1 to get claimed number
+    const quoteNumber = generateDocNumber(tenant.quotePrefix, numResult.quoteNextNumber - 1);
+
     const [created] = await tx.insert(quotes).values({
       tenantId,
       quoteNumber,
@@ -221,11 +233,6 @@ export async function saveQuote(
         itemsWithTotals.map((item) => ({ ...item, quoteId: newId }))
       );
     }
-
-    // Increment quote next number
-    await tx.update(tenants)
-      .set({ quoteNextNumber: tenant.quoteNextNumber + 1 })
-      .where(eq(tenants.id, tenantId));
   });
 
   return { id: newId! };
@@ -243,10 +250,18 @@ export async function cloneQuote(
   });
   if (!tenant) throw new Error("Tenant not found");
 
-  const quoteNumber = generateDocNumber(tenant.quotePrefix, tenant.quoteNextNumber);
   let newId: string;
 
   await db.transaction(async (tx) => {
+    // Atomic increment — eliminates race condition under concurrent clones
+    const [numResult] = await tx
+      .update(tenants)
+      .set({ quoteNextNumber: sql`${tenants.quoteNextNumber} + 1` })
+      .where(eq(tenants.id, tenantId))
+      .returning({ quoteNextNumber: tenants.quoteNextNumber });
+
+    const quoteNumber = generateDocNumber(tenant.quotePrefix, numResult.quoteNextNumber - 1);
+
     const [created] = await tx.insert(quotes).values({
       tenantId,
       quoteNumber,
@@ -290,10 +305,6 @@ export async function cloneQuote(
         }))
       );
     }
-
-    await tx.update(tenants)
-      .set({ quoteNextNumber: tenant.quoteNextNumber + 1 })
-      .where(eq(tenants.id, tenantId));
   });
 
   return { id: newId! };
@@ -322,8 +333,9 @@ export async function generateShareLink(
   quoteId: string
 ): Promise<string> {
   const token = crypto.randomUUID();
+  const shareTokenExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
   await db.update(quotes)
-    .set({ shareToken: token, updatedAt: new Date() })
+    .set({ shareToken: token, shareTokenExpiresAt, updatedAt: new Date() })
     .where(and(eq(quotes.id, quoteId), eq(quotes.tenantId, tenantId)));
   return token;
 }

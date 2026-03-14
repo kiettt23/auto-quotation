@@ -3,6 +3,9 @@ import { customers, quotes } from "@/db/schema";
 import type { Customer } from "@/db/schema";
 import { eq, and, or, ilike, count, desc, sql } from "drizzle-orm";
 import type { CustomerFormData } from "@/lib/validations/customer-schemas";
+import { escapeIlike } from "@/lib/escape-ilike";
+import { ok, err } from "@/lib/result";
+import type { Result } from "@/lib/result";
 
 export type CustomerWithQuoteCount = Customer & { quoteCount: number };
 
@@ -32,10 +35,10 @@ export async function getCustomers(
 
   const searchFilter = params.search
     ? or(
-        ilike(customers.name, `%${params.search}%`),
-        ilike(customers.company, `%${params.search}%`),
-        ilike(customers.phone, `%${params.search}%`),
-        ilike(customers.email, `%${params.search}%`)
+        ilike(customers.name, `%${escapeIlike(params.search)}%`),
+        ilike(customers.company, `%${escapeIlike(params.search)}%`),
+        ilike(customers.phone, `%${escapeIlike(params.search)}%`),
+        ilike(customers.email, `%${escapeIlike(params.search)}%`)
       )
     : undefined;
 
@@ -95,8 +98,8 @@ export async function searchCustomers(
       and(
         eq(customers.tenantId, tenantId),
         or(
-          ilike(customers.name, `%${query}%`),
-          ilike(customers.company, `%${query}%`)
+          ilike(customers.name, `%${escapeIlike(query)}%`),
+          ilike(customers.company, `%${escapeIlike(query)}%`)
         )
       )
     )
@@ -127,33 +130,37 @@ export async function saveCustomer(
   tenantId: string,
   data: CustomerFormData,
   id?: string
-): Promise<Customer> {
-  const payload = {
-    name: data.name,
-    company: data.company ?? "",
-    phone: data.phone ?? "",
-    email: data.email ?? "",
-    address: data.address ?? "",
-    notes: data.notes ?? "",
-  };
+): Promise<Result<Customer>> {
+  try {
+    const payload = {
+      name: data.name,
+      company: data.company ?? "",
+      phone: data.phone ?? "",
+      email: data.email ?? "",
+      address: data.address ?? "",
+      notes: data.notes ?? "",
+    };
 
-  if (id) {
-    const [updated] = await db
-      .update(customers)
-      .set({ ...payload, updatedAt: new Date() })
-      .where(and(eq(customers.id, id), eq(customers.tenantId, tenantId)))
+    if (id) {
+      const [updated] = await db
+        .update(customers)
+        .set({ ...payload, updatedAt: new Date() })
+        .where(and(eq(customers.id, id), eq(customers.tenantId, tenantId)))
+        .returning();
+
+      if (!updated) return err("Không tìm thấy khách hàng");
+      return ok(updated);
+    }
+
+    const [created] = await db
+      .insert(customers)
+      .values({ ...payload, tenantId })
       .returning();
 
-    if (!updated) throw new Error("Không tìm thấy khách hàng");
-    return updated;
+    return ok(created);
+  } catch (e) {
+    return err(e instanceof Error ? e.message : "Lỗi lưu khách hàng");
   }
-
-  const [created] = await db
-    .insert(customers)
-    .values({ ...payload, tenantId })
-    .returning();
-
-  return created;
 }
 
 /**
@@ -162,17 +169,23 @@ export async function saveCustomer(
 export async function deleteCustomer(
   tenantId: string,
   id: string
-): Promise<void> {
-  const [{ quoteCount }] = await db
-    .select({ quoteCount: count() })
-    .from(quotes)
-    .where(eq(quotes.customerId, id));
+): Promise<Result<void>> {
+  try {
+    const [{ quoteCount }] = await db
+      .select({ quoteCount: count() })
+      .from(quotes)
+      .where(and(eq(quotes.customerId, id), eq(quotes.tenantId, tenantId)));
 
-  if (quoteCount > 0) {
-    throw new Error("Không thể xoá khách hàng đang có báo giá");
+    if (quoteCount > 0) {
+      return err("Không thể xoá khách hàng đang có báo giá");
+    }
+
+    await db
+      .delete(customers)
+      .where(and(eq(customers.id, id), eq(customers.tenantId, tenantId)));
+
+    return ok(undefined);
+  } catch (e) {
+    return err(e instanceof Error ? e.message : "Lỗi xoá khách hàng");
   }
-
-  await db
-    .delete(customers)
-    .where(and(eq(customers.id, id), eq(customers.tenantId, tenantId)));
 }

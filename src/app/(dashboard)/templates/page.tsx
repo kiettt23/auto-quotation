@@ -22,7 +22,7 @@ export default async function TemplateListPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Mẫu chứng từ</h1>
+      <h1 className="text-2xl font-semibold">Mẫu tài liệu</h1>
       <DocTemplateListClient templates={items} />
     </div>
   );

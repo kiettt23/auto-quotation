@@ -61,6 +61,12 @@ export function DocTemplateUploadStep({ onAnalyzed }: Props) {
     setIsLoading(true);
 
     try {
+      // Convert file to base64 for storage and PDF canvas viewer
+      const arrayBuffer = await file.arrayBuffer();
+      const fileBase64 = btoa(
+        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), "")
+      );
+
       const formData = new FormData();
       formData.append("file", file);
 
@@ -74,7 +80,7 @@ export function DocTemplateUploadStep({ onAnalyzed }: Props) {
           throw new Error(body?.error ?? "Lỗi khi phân tích file PDF");
         }
         const data = await res.json();
-        onAnalyzed({ fileType: "pdf", ...data } as PdfAnalysisResult);
+        onAnalyzed({ fileType: "pdf", ...data, fileBase64, fileName: file.name } as PdfAnalysisResult);
       } else {
         const res = await fetch("/api/doc-template/analyze", {
           method: "POST",
@@ -85,7 +91,7 @@ export function DocTemplateUploadStep({ onAnalyzed }: Props) {
           throw new Error(body?.error ?? "Lỗi khi phân tích file Excel");
         }
         const data = await res.json();
-        onAnalyzed({ fileType: "excel", ...data } as ExcelAnalysisResult);
+        onAnalyzed({ fileType: "excel", ...data, fileBase64, fileName: file.name } as ExcelAnalysisResult);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Lỗi không xác định");

@@ -28,8 +28,8 @@ function RegisterForm() {
       }
 
       // If registering via invite link, accept the invite
-      if (inviteToken && result.data?.user?.id) {
-        await acceptInviteAction(inviteToken, result.data.user.id);
+      if (inviteToken) {
+        await acceptInviteAction(inviteToken);
       }
 
       router.push("/");
@@ -42,16 +42,16 @@ function RegisterForm() {
   }
 
   return (
-    <div className="rounded-xl border bg-white p-8 shadow-sm">
-      <h1 className="mb-2 text-2xl font-bold text-gray-900">Tạo tài khoản</h1>
+    <div className="rounded-xl border bg-card p-8 shadow-sm">
+      <h1 className="mb-2 text-2xl font-bold text-foreground">Tạo tài khoản</h1>
       {inviteToken && (
-        <p className="mb-5 text-sm text-blue-600 bg-blue-50 rounded-md px-3 py-2">
+        <p className="mb-5 text-sm text-primary bg-primary/10 rounded-md px-3 py-2">
           Bạn đang đăng ký qua lời mời. Tài khoản sẽ được tự động thêm vào nhóm sau khi đăng ký.
         </p>
       )}
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
+          <label className="mb-1 block text-sm font-medium text-muted-foreground">
             Họ và tên
           </label>
           <input
@@ -59,12 +59,12 @@ function RegisterForm() {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="Nguyễn Văn A"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
+          <label className="mb-1 block text-sm font-medium text-muted-foreground">
             Email
           </label>
           <input
@@ -72,12 +72,12 @@ function RegisterForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="you@example.com"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">
+          <label className="mb-1 block text-sm font-medium text-muted-foreground">
             Mật khẩu
           </label>
           <input
@@ -86,7 +86,7 @@ function RegisterForm() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full rounded-md border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="Tối thiểu 8 ký tự"
           />
         </div>
@@ -94,14 +94,14 @@ function RegisterForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
+          className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
         >
           {loading ? "Đang tạo tài khoản…" : "Tạo tài khoản"}
         </button>
       </form>
-      <p className="mt-4 text-center text-sm text-gray-500">
+      <p className="mt-4 text-center text-sm text-muted-foreground">
         Đã có tài khoản?{" "}
-        <a href="/login" className="text-blue-600 hover:underline">
+        <a href="/login" className="text-primary hover:underline">
           Đăng nhập
         </a>
       </p>
@@ -111,7 +111,7 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <Suspense fallback={<div className="rounded-xl border bg-white p-8 shadow-sm">Đang tải…</div>}>
+    <Suspense fallback={<div className="rounded-xl border bg-card p-8 shadow-sm">Đang tải…</div>}>
       <RegisterForm />
     </Suspense>
   );

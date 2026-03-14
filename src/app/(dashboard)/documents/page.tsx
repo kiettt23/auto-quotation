@@ -27,7 +27,7 @@ export default async function DocumentListPage() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-semibold">Chứng từ</h1>
+      <h1 className="text-2xl font-semibold">Tài liệu</h1>
       <DocEntryListClient entries={entries} templates={templateOptions} />
     </div>
   );

@@ -43,7 +43,9 @@ export async function updateDocEntry(
 }
 
 export async function deleteDocEntry(id: string) {
-  const { tenantId } = await getTenantContext();
+  const ctx = await getTenantContext();
+  requireRole(ctx.role, "MEMBER");
+  const { tenantId } = ctx;
   const result = await deleteDocument(tenantId, id);
   if (!result.ok) throw new Error(result.error);
   revalidatePath("/documents");

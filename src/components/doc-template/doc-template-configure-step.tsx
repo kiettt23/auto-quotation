@@ -119,7 +119,7 @@ function BasicInfoSection({ form, onChange }: BasicInfoProps) {
             id="cfg-name"
             value={form.name}
             onChange={(e) => onChange({ name: e.target.value })}
-            placeholder="Tên mẫu chứng từ"
+            placeholder="Tên mẫu tài liệu"
           />
         </div>
       </div>
@@ -299,7 +299,7 @@ function NumberingSection({ form, onChange }: BasicInfoProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <div className="space-y-1.5">
-        <Label htmlFor="cfg-prefix">Tiền tố số chứng từ</Label>
+        <Label htmlFor="cfg-prefix">Tiền tố số tài liệu</Label>
         <Input
           id="cfg-prefix"
           value={form.docPrefix}

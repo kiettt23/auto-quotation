@@ -5,6 +5,7 @@ import { getTenantContext } from "@/lib/tenant-context";
 import { ok, err } from "@/lib/result";
 import { requireRole } from "@/lib/rbac";
 import * as customerService from "@/services/customer-service";
+import { customerFormSchema } from "@/lib/validations/customer-schemas";
 import type { CustomerFormData } from "@/lib/validations/customer-schemas";
 
 type GetCustomersParams = {
@@ -32,11 +33,16 @@ export async function searchCustomers(query: string) {
 
 export async function saveCustomer(data: CustomerFormData, id?: string) {
   try {
+    const parsed = customerFormSchema.safeParse(data);
+    if (!parsed.success) {
+      return err(parsed.error.issues.map((i) => i.message).join(", "));
+    }
     const ctx = await getTenantContext();
     requireRole(ctx.role, "MEMBER");
-    const result = await customerService.saveCustomer(ctx.tenantId, data, id);
+    const result = await customerService.saveCustomer(ctx.tenantId, parsed.data, id);
+    if (!result.ok) return err(result.error);
     revalidatePath("/customers");
-    return ok(result);
+    return ok(result.value);
   } catch (e) {
     return err(e instanceof Error ? e.message : "Lỗi");
   }
@@ -46,7 +52,8 @@ export async function deleteCustomer(id: string) {
   try {
     const ctx = await getTenantContext();
     requireRole(ctx.role, "MEMBER");
-    await customerService.deleteCustomer(ctx.tenantId, id);
+    const result = await customerService.deleteCustomer(ctx.tenantId, id);
+    if (!result.ok) return err(result.error);
     revalidatePath("/customers");
     return ok(null);
   } catch (e) {

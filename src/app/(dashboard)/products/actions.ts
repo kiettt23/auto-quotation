@@ -61,9 +61,10 @@ export async function saveProductAction(
     if (!parsed.success) {
       return err("Dữ liệu không hợp lệ");
     }
-    const product = await saveProduct(tenantId, parsed.data, id);
+    const result = await saveProduct(tenantId, parsed.data, id);
+    if (!result.ok) return err(result.error);
     revalidatePath("/products");
-    return ok(product);
+    return ok(result.value);
   } catch (e) {
     return err(e instanceof Error ? e.message : "Lỗi lưu sản phẩm");
   }
@@ -74,7 +75,8 @@ export async function deleteProductAction(id: string): Promise<Result<null>> {
     const ctx = await getTenantContext();
     requireRole(ctx.role, "MEMBER");
     const { tenantId } = ctx;
-    await deleteProduct(tenantId, id);
+    const result = await deleteProduct(tenantId, id);
+    if (!result.ok) return err(result.error);
     revalidatePath("/products");
     return ok(null);
   } catch (e) {

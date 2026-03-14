@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText } from "lucide-react";
+import { LogOut } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -17,15 +17,30 @@ import {
 } from "@/components/ui/sidebar";
 import { navItems } from "./nav-items";
 import { hasPermission } from "@/lib/rbac";
+import { TenantSwitcher } from "./tenant-switcher";
+import { authClient } from "@/auth/client";
+import { logoutAction } from "@/app/(auth)/logout-action";
+
+type TenantInfo = {
+  tenantId: string;
+  name: string;
+  slug: string;
+};
 
 type Props = {
   role?: string;
+  currentTenantId: string;
+  tenants: TenantInfo[];
 };
 
-export function AppSidebar({ role = "VIEWER" }: Props) {
+export function AppSidebar({ role = "VIEWER", currentTenantId, tenants }: Props) {
   const pathname = usePathname();
 
-  // Filter nav items by role permission
+  async function handleLogout() {
+    await authClient.signOut();
+    await logoutAction();
+  }
+
   const visibleItems = navItems.filter((item) =>
     hasPermission(role, item.minRole ?? "VIEWER")
   );
@@ -41,23 +56,7 @@ export function AppSidebar({ role = "VIEWER" }: Props) {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton size="lg" asChild tooltip="Auto Quotation">
-              <Link href="/quotes">
-                <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-                  <FileText className="size-4" />
-                </div>
-                <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">Auto Quotation</span>
-                  <span className="text-xs text-muted-foreground">
-                    Báo giá nhanh
-                  </span>
-                </div>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <TenantSwitcher currentTenantId={currentTenantId} tenants={tenants} />
       </SidebarHeader>
 
       <SidebarContent>
@@ -83,9 +82,9 @@ export function AppSidebar({ role = "VIEWER" }: Props) {
         </SidebarGroup>
       </SidebarContent>
 
-      {settingsItem && (
-        <SidebarFooter>
-          <SidebarMenu>
+      <SidebarFooter>
+        <SidebarMenu>
+          {settingsItem && (
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
@@ -98,9 +97,19 @@ export function AppSidebar({ role = "VIEWER" }: Props) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      )}
+          )}
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={handleLogout}
+              tooltip="Đăng xuất"
+              className="text-muted-foreground hover:text-destructive"
+            >
+              <LogOut />
+              <span>Đăng xuất</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
 
       <SidebarRail />
     </Sidebar>

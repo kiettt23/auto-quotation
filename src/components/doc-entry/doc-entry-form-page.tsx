@@ -97,14 +97,14 @@ export function DocEntryFormPage({ template, entry }: Props) {
       try {
         if (isEditing && entry) {
           await updateDocEntry(entry.id, { fieldData, tableRows });
-          toast.success("Đã cập nhật chứng từ");
+          toast.success("Đã cập nhật tài liệu");
         } else {
           await createDocEntry({
             templateId: template.id,
             fieldData,
             tableRows,
           });
-          toast.success("Đã tạo chứng từ thành công");
+          toast.success("Đã tạo tài liệu thành công");
           router.push("/documents");
         }
       } catch {
@@ -128,13 +128,13 @@ export function DocEntryFormPage({ template, entry }: Props) {
             Quay lại
           </Button>
           <h1 className="text-2xl font-bold tracking-tight">
-            {isEditing ? `Chỉnh sửa: ${entry!.docNumber}` : "Tạo chứng từ mới"}
+            {isEditing ? `Chỉnh sửa: ${entry!.docNumber}` : "Tạo tài liệu mới"}
           </h1>
           <p className="text-muted-foreground mt-1">Mẫu: {template.name}</p>
         </div>
         <Button onClick={handleSave} disabled={isPending}>
           <Save className="mr-2 size-4" />
-          {isPending ? "Đang lưu..." : "Lưu chứng từ"}
+          {isPending ? "Đang lưu..." : "Lưu tài liệu"}
         </Button>
       </div>
 
@@ -143,7 +143,7 @@ export function DocEntryFormPage({ template, entry }: Props) {
       {/* Placeholder fields (Excel) or PDF region fields */}
       {placeholders.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-base font-semibold">Thông tin chứng từ</h2>
+          <h2 className="text-base font-semibold">Thông tin tài liệu</h2>
           <DocEntryFieldInputs
             placeholders={placeholders}
             values={fieldData}

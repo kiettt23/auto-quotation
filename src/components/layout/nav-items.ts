@@ -22,7 +22,7 @@ export const navItems: NavItem[] = [
   {
     label: "Tổng quan",
     icon: LayoutDashboard,
-    href: "/",
+    href: "/dashboard",
     showInBottomNav: true,
   },
   {

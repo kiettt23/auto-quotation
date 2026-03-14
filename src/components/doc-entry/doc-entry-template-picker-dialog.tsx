@@ -49,15 +49,15 @@ export function DocEntryTemplatePickerDialog({ open, onOpenChange, templates }: 
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="size-5" />
-            Chọn mẫu chứng từ
+            Chọn mẫu tài liệu
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3 py-2">
-          <Label htmlFor="template-select">Mẫu chứng từ</Label>
+          <Label htmlFor="template-select">Mẫu tài liệu</Label>
           {templates.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Chưa có mẫu nào. Hãy tạo mẫu chứng từ trước.
+              Chưa có mẫu nào. Hãy tạo mẫu tài liệu trước.
             </p>
           ) : (
             <Select value={selectedId} onValueChange={setSelectedId}>
@@ -69,7 +69,7 @@ export function DocEntryTemplatePickerDialog({ open, onOpenChange, templates }: 
                   <SelectItem key={t.id} value={t.id}>
                     {t.name}
                     <span className="ml-2 text-xs text-muted-foreground">
-                      ({t._count.entries} chứng từ)
+                      ({t._count.entries} tài liệu)
                     </span>
                   </SelectItem>
                 ))}

@@ -49,10 +49,10 @@ function TemplateCard({ template }: { template: DocTemplateItem }) {
     startTransition(async () => {
       try {
         await deleteDocTemplate(template.id);
-        toast.success("Đã xóa mẫu chứng từ");
+        toast.success("Đã xóa mẫu tài liệu");
         router.refresh();
       } catch {
-        toast.error("Không thể xóa mẫu chứng từ");
+        toast.error("Không thể xóa mẫu tài liệu");
       }
     });
   }
@@ -79,7 +79,7 @@ function TemplateCard({ template }: { template: DocTemplateItem }) {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Xóa mẫu chứng từ</AlertDialogTitle>
+                  <AlertDialogTitle>Xóa mẫu tài liệu</AlertDialogTitle>
                   <AlertDialogDescription>
                     Bạn có chắc muốn xóa mẫu &quot;{template.name}&quot;? Hành động này không thể hoàn tác.
                   </AlertDialogDescription>
@@ -121,7 +121,7 @@ export function DocTemplateListClient({ templates }: Props) {
         </div>
         <EmptyState
           icon={FileSpreadsheet}
-          title="Chưa có mẫu chứng từ"
+          title="Chưa có mẫu tài liệu"
           description="Tạo mẫu đầu tiên từ file Excel của bạn"
           actionLabel="Tạo mẫu mới"
           actionHref="/templates/new"

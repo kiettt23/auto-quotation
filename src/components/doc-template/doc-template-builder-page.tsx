@@ -159,7 +159,7 @@ export function DocTemplateBuilderPage({ template }: Props) {
             tableRegion,
             docPrefix: form.docPrefix, docNextNumber: form.docNextNumber,
           });
-          toast.success("Đã cập nhật mẫu chứng từ");
+          toast.success("Đã cập nhật mẫu tài liệu");
         } else {
           if (!analysis) { toast.error("Chưa có file để lưu"); return; }
           await createDocTemplate({
@@ -172,7 +172,7 @@ export function DocTemplateBuilderPage({ template }: Props) {
             tableRegion,
             docPrefix: form.docPrefix, docNextNumber: form.docNextNumber,
           });
-          toast.success("Đã tạo mẫu chứng từ");
+          toast.success("Đã tạo mẫu tài liệu");
         }
         router.push("/templates");
       } catch {
@@ -186,7 +186,7 @@ export function DocTemplateBuilderPage({ template }: Props) {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">
-            {isEdit ? `Chỉnh sửa: ${template.name}` : "Tạo mẫu chứng từ mới"}
+            {isEdit ? `Chỉnh sửa: ${template.name}` : "Tạo mẫu tài liệu mới"}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
             {isEdit ? "Cập nhật cấu hình mẫu" : "Tải lên file Excel hoặc PDF và cấu hình các trường dữ liệu"}

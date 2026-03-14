@@ -5,6 +5,12 @@ import { getTenantContext } from "@/lib/tenant-context";
 import { ok, err } from "@/lib/result";
 import { requireRole } from "@/lib/rbac";
 import * as settingsService from "@/services/settings-service";
+import {
+  companyInfoSchema,
+  bankingSchema,
+  quoteTemplateSchema,
+  defaultsSchema,
+} from "@/lib/validations/settings-schemas";
 import type {
   CompanyInfoFormData,
   BankingFormData,
@@ -16,9 +22,11 @@ import path from "path";
 
 export async function updateCompanyInfo(data: CompanyInfoFormData) {
   try {
+    const parsed = companyInfoSchema.safeParse(data);
+    if (!parsed.success) return err(parsed.error.issues.map((i) => i.message).join(", "));
     const ctx = await getTenantContext();
     requireRole(ctx.role, "ADMIN");
-    await settingsService.updateCompanyInfo(ctx.tenantId, data);
+    await settingsService.updateCompanyInfo(ctx.tenantId, parsed.data);
     revalidatePath("/settings");
     return ok(null);
   } catch (e) {
@@ -28,9 +36,11 @@ export async function updateCompanyInfo(data: CompanyInfoFormData) {
 
 export async function updateBanking(data: BankingFormData) {
   try {
+    const parsed = bankingSchema.safeParse(data);
+    if (!parsed.success) return err(parsed.error.issues.map((i) => i.message).join(", "));
     const ctx = await getTenantContext();
     requireRole(ctx.role, "ADMIN");
-    await settingsService.updateBanking(ctx.tenantId, data);
+    await settingsService.updateBanking(ctx.tenantId, parsed.data);
     revalidatePath("/settings");
     return ok(null);
   } catch (e) {
@@ -40,9 +50,11 @@ export async function updateBanking(data: BankingFormData) {
 
 export async function updateQuoteTemplate(data: QuoteTemplateFormData) {
   try {
+    const parsed = quoteTemplateSchema.safeParse(data);
+    if (!parsed.success) return err(parsed.error.issues.map((i) => i.message).join(", "));
     const ctx = await getTenantContext();
     requireRole(ctx.role, "ADMIN");
-    await settingsService.updateQuoteTemplate(ctx.tenantId, data);
+    await settingsService.updateQuoteTemplate(ctx.tenantId, parsed.data);
     revalidatePath("/settings");
     return ok(null);
   } catch (e) {
@@ -52,9 +64,11 @@ export async function updateQuoteTemplate(data: QuoteTemplateFormData) {
 
 export async function updateDefaults(data: DefaultsFormData) {
   try {
+    const parsed = defaultsSchema.safeParse(data);
+    if (!parsed.success) return err(parsed.error.issues.map((i) => i.message).join(", "));
     const ctx = await getTenantContext();
     requireRole(ctx.role, "ADMIN");
-    await settingsService.updateDefaults(ctx.tenantId, data);
+    await settingsService.updateDefaults(ctx.tenantId, parsed.data);
     revalidatePath("/settings");
     return ok(null);
   } catch (e) {
@@ -116,6 +130,15 @@ export async function uploadLogo(formData: FormData) {
     requireRole(ctx.role, "ADMIN");
     const file = formData.get("file") as File | null;
     if (!file) return err("Không có file");
+
+    const ALLOWED_MIME = ["image/png", "image/jpeg", "image/webp"];
+    if (!ALLOWED_MIME.includes(file.type)) {
+      return err("Chỉ chấp nhận file PNG, JPEG hoặc WebP");
+    }
+    const MAX_SIZE = 2 * 1024 * 1024; // 2 MB
+    if (file.size > MAX_SIZE) {
+      return err("Kích thước file không được vượt quá 2MB");
+    }
 
     const buffer = Buffer.from(await file.arrayBuffer());
     const ext = file.name.split(".").pop() ?? "png";

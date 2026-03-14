@@ -1,4 +1,4 @@
-import { pgTable, text, json, timestamp, index } from "drizzle-orm/pg-core";
+import { pgTable, text, json, timestamp, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { documentTemplates } from "./document-templates";
@@ -11,7 +11,7 @@ export const documents = pgTable(
     templateId: text("template_id")
       .notNull()
       .references(() => documentTemplates.id, { onDelete: "cascade" }),
-    docNumber: text("doc_number").notNull().unique(),
+    docNumber: text("doc_number").notNull(),
     // Key-value map of placeholder data: { placeholderCellRef: value }
     fieldData: json("field_data").default({}).notNull(),
     // Array of table row data: [{ colLetter: value }]
@@ -22,6 +22,7 @@ export const documents = pgTable(
   (t) => [
     index("doc_entries_template_idx").on(t.templateId),
     index("doc_entries_doc_number_idx").on(t.docNumber),
+    uniqueIndex("doc_entries_template_number_uniq").on(t.templateId, t.docNumber),
   ]
 );
 
