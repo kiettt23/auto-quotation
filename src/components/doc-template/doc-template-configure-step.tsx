@@ -68,10 +68,12 @@ type Props = {
   isEdit: boolean;
   fileType?: "excel" | "pdf";
   fileBase64?: string;
+  /** Preset mode — show placeholders & table config without PDF regions or sheet selector */
+  isPreset?: boolean;
 };
 
 /** Step 2: configure template name, sheet/regions, placeholders, numbering. */
-export function DocTemplateConfigureStep({ analysis, form, onChange, isEdit, fileType, fileBase64 }: Props) {
+export function DocTemplateConfigureStep({ analysis, form, onChange, isEdit, fileType, fileBase64, isPreset }: Props) {
   const effectiveFileType = fileType ?? (analysis?.fileType ?? "excel");
   const effectiveBase64 = fileBase64 ?? (analysis?.fileType === "pdf" ? analysis.fileBase64 : undefined);
 
@@ -80,8 +82,13 @@ export function DocTemplateConfigureStep({ analysis, form, onChange, isEdit, fil
       {/* Basic info */}
       <BasicInfoSection form={form} onChange={onChange} />
 
-      {/* PDF-specific: coordinate-based region editing */}
-      {effectiveFileType === "pdf" && effectiveBase64 && (
+      {/* Preset mode: show placeholders & table region (no PDF regions, no sheet selector) */}
+      {isPreset && (
+        <PresetFieldsSection form={form} onChange={onChange} />
+      )}
+
+      {/* PDF-specific: coordinate-based region editing (skip for presets) */}
+      {!isPreset && effectiveFileType === "pdf" && effectiveBase64 && (
         <PdfCoordinateSection
           fileBase64={effectiveBase64}
           regions={form.pdfRegions}
@@ -89,8 +96,8 @@ export function DocTemplateConfigureStep({ analysis, form, onChange, isEdit, fil
         />
       )}
 
-      {/* Excel-specific: sheet selector, placeholders, table region */}
-      {effectiveFileType === "excel" && (
+      {/* Excel-specific: sheet selector, placeholders, table region (skip for presets) */}
+      {!isPreset && effectiveFileType === "excel" && (
         <ExcelSection
           analysis={analysis?.fileType === "excel" ? analysis : null}
           form={form}
@@ -289,6 +296,56 @@ function ExcelSection({ analysis, form, onChange, isEdit }: ExcelSectionProps) {
           />
         </div>
       </div>
+    </>
+  );
+}
+
+// ─── Preset fields section (placeholders + table columns as simple lists) ─────
+
+type PresetFieldsProps = {
+  form: ConfigureFormState;
+  onChange: (p: Partial<ConfigureFormState>) => void;
+};
+
+function PresetFieldsSection({ form, onChange }: PresetFieldsProps) {
+  function handlePlaceholderChange(index: number, patch: Partial<PlaceholderDraft>) {
+    const updated = form.placeholders.map((p, i) => (i === index ? { ...p, ...patch } : p));
+    onChange({ placeholders: updated });
+  }
+
+  return (
+    <>
+      {/* Placeholder fields */}
+      {form.placeholders.length > 0 && (
+        <div>
+          <p className="text-sm font-medium mb-2">
+            Các trường dữ liệu ({form.placeholders.filter((p) => p.included).length} trường)
+          </p>
+          <div className="rounded-lg border px-4 py-1">
+            {form.placeholders.map((ph, i) => (
+              <DocTemplatePlaceholderRow
+                key={ph.cellRef}
+                item={ph}
+                index={i}
+                onChange={handlePlaceholderChange}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Table region */}
+      {form.tableRegion.columns.length > 0 && (
+        <div>
+          <p className="text-sm font-medium mb-2">Bảng dữ liệu</p>
+          <div className="rounded-lg border p-4">
+            <DocTemplateTableRegionConfig
+              tableRegion={form.tableRegion}
+              onChange={(patch) => onChange({ tableRegion: { ...form.tableRegion, ...patch } })}
+            />
+          </div>
+        </div>
+      )}
     </>
   );
 }

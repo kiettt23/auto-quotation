@@ -1,26 +1,20 @@
 /**
  * Template Engine — dispatch layer.
- * Decides which renderer to call based on template type (builtin vs custom, excel vs pdf).
- *
- * Built-in template names (case-insensitive prefix match):
- *   "Báo giá PDF"    → renderQuotePdf
- *   "Báo giá Excel"  → renderQuoteExcel
- *   "Phiếu Giao Nhận" → renderPghPdf
+ * Routes rendering: preset templates (auto-discovered) → builtin quotes → custom.
  */
 
 import type { DocumentTemplate, Document, Tenant } from "@/db/schema";
 import type { RenderResult } from "./types";
+import { findPresetRenderer } from "@/lib/preset-templates/preset-renderers";
 import { renderExcelCustom } from "./render-excel-custom";
 import { renderPdfCustom } from "./render-pdf-custom";
 import { renderQuotePdf } from "./render-quote-pdf";
 import { renderQuoteExcel } from "./render-quote-excel";
-import { renderPghPdf } from "./render-pgh-pdf";
 
-// ─── Builtin name matchers ────────────────────────────────
+// ─── Legacy builtin matchers (quotes — not yet migrated to presets) ──────────
 
 const BUILTIN_QUOTE_PDF_NAMES = ["báo giá pdf", "bao gia pdf"];
 const BUILTIN_QUOTE_EXCEL_NAMES = ["báo giá excel", "bao gia excel"];
-const BUILTIN_PGH_NAMES = ["phiếu giao nhận", "phieu giao nhan", "pgh"];
 
 function matchesBuiltin(name: string, patterns: string[]): boolean {
   const lower = name.toLowerCase().trim();
@@ -37,7 +31,13 @@ export async function renderDocument(
   const fieldData = (document.fieldData ?? {}) as Record<string, string>;
   const tableRows = (document.tableRows ?? []) as Record<string, string>[];
 
-  // Route built-in templates by name
+  // 1. Check preset templates (single source of truth)
+  const presetRenderer = findPresetRenderer(template.name);
+  if (presetRenderer) {
+    return presetRenderer(fieldData, tableRows, tenant, document.docNumber);
+  }
+
+  // 2. Legacy builtin quotes (will migrate to presets later)
   if (matchesBuiltin(template.name, BUILTIN_QUOTE_PDF_NAMES)) {
     return renderQuotePdf(fieldData, tableRows, tenant, document.docNumber);
   }
@@ -46,11 +46,7 @@ export async function renderDocument(
     return renderQuoteExcel(fieldData, tableRows, tenant, document.docNumber);
   }
 
-  if (matchesBuiltin(template.name, BUILTIN_PGH_NAMES)) {
-    return renderPghPdf(fieldData, tableRows, tenant, document.docNumber);
-  }
-
-  // Custom template rendering
+  // 3. Custom template rendering
   if (template.fileType === "excel") {
     const placeholders = (template.placeholders ?? []) as {
       cellRef: string;
@@ -74,7 +70,7 @@ export async function renderDocument(
     );
   }
 
-  // PDF custom
+  // PDF custom (coordinate-based overlay)
   const placeholders = (template.placeholders ?? []) as {
     id: string;
     label: string;

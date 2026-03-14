@@ -73,12 +73,14 @@ export function DocEntryFormPage({ template, entry }: Props) {
   const isEditing = !!entry;
 
   const isPdf = template.fileType === "pdf";
-  // For PDF templates, placeholders stores PdfRegion[]; normalize to Placeholder shape
-  const placeholders = isPdf
-    ? (Array.isArray(template.placeholders) ? (template.placeholders as unknown as PdfRegion[]) : [])
-        .map((r): Placeholder => ({ cellRef: r.id, label: r.label, type: r.type, originalFormula: "" }))
+  // Preset/built-in PDF templates store Placeholder[] (with cellRef);
+  // Custom PDF templates store PdfRegion[] (with id, x, y coordinates)
+  const rawPhs = Array.isArray(template.placeholders) ? template.placeholders : [];
+  const isCoordinateBased = isPdf && rawPhs.length > 0 && "x" in (rawPhs[0] as Record<string, unknown>);
+  const placeholders = isCoordinateBased
+    ? (rawPhs as unknown as PdfRegion[]).map((r): Placeholder => ({ cellRef: r.id, label: r.label, type: r.type, originalFormula: "" }))
     : castPlaceholders(template.placeholders);
-  const tableRegion = isPdf ? null : castTableRegion(template.tableRegion);
+  const tableRegion = isCoordinateBased ? null : castTableRegion(template.tableRegion);
 
   const [fieldData, setFieldData] = useState<Record<string, string>>(
     () => (entry ? castFieldData(entry.fieldData) : {})
