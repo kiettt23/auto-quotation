@@ -166,67 +166,64 @@ async function saveProductInternal(
     });
     if (!existing) throw new Error("Không tìm thấy sản phẩm");
 
-    await db.transaction(async (tx) => {
-      await tx.update(products)
-        .set({ ...payload, updatedAt: new Date() })
-        .where(and(eq(products.id, id), eq(products.tenantId, tenantId)));
+    // neon-http driver does not support transactions — use sequential queries
+    await db.update(products)
+      .set({ ...payload, updatedAt: new Date() })
+      .where(and(eq(products.id, id), eq(products.tenantId, tenantId)));
 
-      await tx.delete(pricingTiers).where(eq(pricingTiers.productId, id));
-      await tx.delete(volumeDiscounts).where(eq(volumeDiscounts.productId, id));
+    await db.delete(pricingTiers).where(eq(pricingTiers.productId, id));
+    await db.delete(volumeDiscounts).where(eq(volumeDiscounts.productId, id));
 
-      if (data.pricingTiers?.length) {
-        await tx.insert(pricingTiers).values(
-          data.pricingTiers.map((t) => ({
-            productId: id,
-            minQuantity: String(t.minQuantity),
-            maxQuantity: t.maxQuantity != null ? String(t.maxQuantity) : null,
-            price: String(t.price),
-          }))
-        );
-      }
+    if (data.pricingTiers?.length) {
+      await db.insert(pricingTiers).values(
+        data.pricingTiers.map((t) => ({
+          productId: id,
+          minQuantity: String(t.minQuantity),
+          maxQuantity: t.maxQuantity != null ? String(t.maxQuantity) : null,
+          price: String(t.price),
+        }))
+      );
+    }
 
-      if (data.volumeDiscounts?.length) {
-        await tx.insert(volumeDiscounts).values(
-          data.volumeDiscounts.map((d) => ({
-            productId: id,
-            minQuantity: String(d.minQuantity),
-            discountPercent: String(d.discountPercent),
-          }))
-        );
-      }
-    });
+    if (data.volumeDiscounts?.length) {
+      await db.insert(volumeDiscounts).values(
+        data.volumeDiscounts.map((d) => ({
+          productId: id,
+          minQuantity: String(d.minQuantity),
+          discountPercent: String(d.discountPercent),
+        }))
+      );
+    }
 
     productId = id;
   } else {
-    // Single transaction — product insert + pricing tiers + volume discounts atomically
-    await db.transaction(async (tx) => {
-      const [created] = await tx
-        .insert(products)
-        .values({ ...payload, tenantId })
-        .returning({ id: products.id });
+    // neon-http driver does not support transactions — use sequential queries
+    const [created] = await db
+      .insert(products)
+      .values({ ...payload, tenantId })
+      .returning({ id: products.id });
 
-      productId = created.id;
+    productId = created.id;
 
-      if (data.pricingTiers?.length) {
-        await tx.insert(pricingTiers).values(
-          data.pricingTiers.map((t) => ({
-            productId,
-            minQuantity: String(t.minQuantity),
-            maxQuantity: t.maxQuantity != null ? String(t.maxQuantity) : null,
-            price: String(t.price),
-          }))
-        );
-      }
-      if (data.volumeDiscounts?.length) {
-        await tx.insert(volumeDiscounts).values(
-          data.volumeDiscounts.map((d) => ({
-            productId,
-            minQuantity: String(d.minQuantity),
-            discountPercent: String(d.discountPercent),
-          }))
-        );
-      }
-    });
+    if (data.pricingTiers?.length) {
+      await db.insert(pricingTiers).values(
+        data.pricingTiers.map((t) => ({
+          productId,
+          minQuantity: String(t.minQuantity),
+          maxQuantity: t.maxQuantity != null ? String(t.maxQuantity) : null,
+          price: String(t.price),
+        }))
+      );
+    }
+    if (data.volumeDiscounts?.length) {
+      await db.insert(volumeDiscounts).values(
+        data.volumeDiscounts.map((d) => ({
+          productId,
+          minQuantity: String(d.minQuantity),
+          discountPercent: String(d.discountPercent),
+        }))
+      );
+    }
   }
 
   const result = await getProductById(tenantId, productId);

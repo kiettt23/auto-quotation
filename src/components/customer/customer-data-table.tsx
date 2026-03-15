@@ -32,14 +32,14 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { deleteCustomer } from "@/app/(dashboard)/customers/actions";
-import type { CustomerWithQuoteCount } from "@/services/customer-service";
+import type { CustomerWithDocCount } from "@/services/customer-service";
 
 type Props = {
-  customers: CustomerWithQuoteCount[];
+  customers: CustomerWithDocCount[];
   total: number;
   page: number;
   totalPages: number;
-  onEdit: (customer: CustomerWithQuoteCount) => void;
+  onEdit: (customer: CustomerWithDocCount) => void;
 };
 
 export function CustomerDataTable({
@@ -54,7 +54,7 @@ export function CustomerDataTable({
   const [isDeleting, startDeleteTransition] = useTransition();
 
   /* AlertDialog state — extracted outside dropdown for keyboard focus */
-  const [deleteTarget, setDeleteTarget] = useState<CustomerWithQuoteCount | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<CustomerWithDocCount | null>(null);
 
   function goToPage(p: number) {
     const params = new URLSearchParams(searchParams.toString());
@@ -82,9 +82,9 @@ export function CustomerDataTable({
           <TableHeader>
             <TableRow>
               <TableHead>Tên</TableHead>
-              <TableHead className="w-40">Công ty</TableHead>
+              <TableHead className="w-40 hidden sm:table-cell">Công ty</TableHead>
               <TableHead className="w-[130px]">Điện thoại</TableHead>
-              <TableHead className="w-[180px]">Email</TableHead>
+              <TableHead className="w-[180px] hidden md:table-cell">Email</TableHead>
               <TableHead className="w-[70px] text-center">Số TL</TableHead>
               <TableHead className="w-[50px]" />
             </TableRow>
@@ -103,15 +103,15 @@ export function CustomerDataTable({
               customers.map((c) => (
                 <TableRow key={c.id}>
                   <TableCell className="font-medium">{c.name}</TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-muted-foreground hidden sm:table-cell">
                     {c.company || "—"}
                   </TableCell>
                   <TableCell>{c.phone || "—"}</TableCell>
-                  <TableCell className="text-muted-foreground">
+                  <TableCell className="text-muted-foreground hidden md:table-cell">
                     {c.email || "—"}
                   </TableCell>
                   <TableCell className="text-center">
-                    <Badge variant="secondary">{c.quoteCount}</Badge>
+                    <Badge variant="secondary">{c.docCount}</Badge>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -177,8 +177,8 @@ export function CustomerDataTable({
             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
             <AlertDialogDescription>
               Bạn có chắc muốn xóa khách hàng &quot;{deleteTarget?.name}&quot;?
-              {(deleteTarget?.quoteCount ?? 0) > 0 &&
-                ` Khách hàng có ${deleteTarget!.quoteCount} tài liệu liên quan.`}
+              {(deleteTarget?.docCount ?? 0) > 0 &&
+                ` Khách hàng có ${deleteTarget!.docCount} tài liệu liên quan.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

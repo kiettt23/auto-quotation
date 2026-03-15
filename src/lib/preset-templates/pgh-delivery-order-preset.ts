@@ -18,7 +18,11 @@ export const pghDeliveryOrderPreset: PresetTemplate = {
     { key: "companyAddress", label: "Địa chỉ công ty", type: "text", autoFill: "tenant.address" },
     { key: "companyTaxCode", label: "Mã số thuế", type: "text", autoFill: "tenant.taxCode" },
     { key: "deliveryDate", label: "Ngày giao hàng", type: "date" },
-    { key: "buyerName", label: "Tên người mua", type: "text" },
+    {
+      key: "buyerName", label: "Tên người mua", type: "text",
+      dataSource: "customer",
+      linkedFields: { address: "buyerAddress", phone: "receiverPhone" },
+    },
     { key: "buyerAddress", label: "Địa chỉ người mua", type: "text" },
     { key: "deliveryTo", label: "Giao đến (người nhận)", type: "text" },
     { key: "deliveryAddress", label: "Địa chỉ giao hàng", type: "text" },
@@ -30,7 +34,10 @@ export const pghDeliveryOrderPreset: PresetTemplate = {
 
   tableColumns: [
     { key: "contractNo", label: "Số hợp đồng", type: "text" },
-    { key: "itemName", label: "Tên hàng", type: "text" },
+    {
+      key: "itemName", label: "Tên hàng", type: "text",
+      dataSource: "product",
+    },
     { key: "lotNo", label: "Số lô", type: "text" },
     { key: "boxQty", label: "Số thùng", type: "number" },
     { key: "netWeight", label: "Trọng lượng (KG)", type: "number" },

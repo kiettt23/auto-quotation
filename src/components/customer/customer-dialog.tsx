@@ -20,15 +20,15 @@ import {
   type CustomerFormData,
 } from "@/lib/validations/customer-schemas";
 import { saveCustomer } from "@/app/(dashboard)/customers/actions";
-import type { CustomerWithQuoteCount } from "@/services/customer-service";
+import type { CustomerWithDocCount } from "@/services/customer-service";
 
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  customer: CustomerWithQuoteCount | null;
+  customer: CustomerWithDocCount | null;
 };
 
-function getDefaults(c: CustomerWithQuoteCount | null): CustomerFormData {
+function getDefaults(c: CustomerWithDocCount | null): CustomerFormData {
   if (!c) {
     return { name: "", company: "", phone: "", email: "", address: "", notes: "" };
   }

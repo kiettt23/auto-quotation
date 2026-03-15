@@ -7,8 +7,7 @@ import { escapeIlike } from "@/lib/escape-ilike";
 import { ok, err } from "@/lib/result";
 import type { Result } from "@/lib/result";
 
-// quoteCount kept as 0 — quotes workflow removed; field retained for UI compatibility
-export type CustomerWithQuoteCount = Customer & { quoteCount: number };
+export type CustomerWithDocCount = Customer & { docCount: number };
 
 type GetCustomersParams = {
   page?: number;
@@ -17,7 +16,7 @@ type GetCustomersParams = {
 };
 
 type GetCustomersResult = {
-  customers: CustomerWithQuoteCount[];
+  customers: CustomerWithDocCount[];
   total: number;
   page: number;
   totalPages: number;
@@ -61,8 +60,7 @@ export async function getCustomers(
       .where(baseWhere),
   ]);
 
-  // quoteCount always 0 — quotes workflow removed
-  const withCount: CustomerWithQuoteCount[] = rows.map((r) => ({ ...r, quoteCount: 0 }));
+  const withCount: CustomerWithDocCount[] = rows.map((r) => ({ ...r, docCount: 0 }));
 
   return {
     customers: withCount,

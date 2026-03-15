@@ -68,6 +68,14 @@ export function DocEntryListClient({ entries, templates }: Props) {
           actionLabel="Tạo tài liệu"
           onAction={() => setPickerOpen(true)}
         />
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          icon={FileX}
+          title="Không tìm thấy tài liệu"
+          description="Không có tài liệu nào khớp với bộ lọc đã chọn"
+          actionLabel="Xóa bộ lọc"
+          onAction={() => setFilterTemplateId("all")}
+        />
       ) : (
         <DocEntryTable entries={filtered} />
       )}

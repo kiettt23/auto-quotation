@@ -1,13 +1,11 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import * as schema from "./schema";
-// quotes schema retained for share-page relational queries and migration compatibility
-import * as quotesSchema from "./schema/quotes";
 
 // Create typed Drizzle client with full schema for relational queries
 function createDb() {
   const sql = neon(process.env.DATABASE_URL!);
-  return drizzle(sql, { schema: { ...schema, ...quotesSchema } });
+  return drizzle(sql, { schema });
 }
 
 export type Db = ReturnType<typeof createDb>;

@@ -61,7 +61,7 @@ export default function LoginPage() {
             placeholder="••••••••"
           />
         </div>
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        {error && <p className="text-sm text-destructive">{error}</p>}
         <button
           type="submit"
           disabled={loading}

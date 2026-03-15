@@ -4,7 +4,8 @@ import { createAuthClient } from "better-auth/react";
 
 // Better Auth client — use in client components for sign-in, sign-out, useSession
 export const authClient = createAuthClient({
-  baseURL: process.env.NEXT_PUBLIC_APP_URL ?? "",
+  // Empty string = same origin; avoids CORS when dev port differs from NEXT_PUBLIC_APP_URL
+  baseURL: "",
 });
 
 export const {

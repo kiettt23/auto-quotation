@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,7 +30,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { formatCurrency } from "@/lib/format-currency";
 import { deleteProductAction } from "@/app/(dashboard)/products/actions";
@@ -52,7 +52,10 @@ export function ProductDataTable({
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
+  const [isDeleting, startDeleteTransition] = useTransition();
+
+  /* AlertDialog state — extracted outside dropdown for keyboard focus */
+  const [deleteTarget, setDeleteTarget] = useState<ProductWithRelations | null>(null);
 
   function goToPage(p: number) {
     const params = new URLSearchParams(searchParams.toString());
@@ -60,13 +63,15 @@ export function ProductDataTable({
     router.push(`/products?${params.toString()}`);
   }
 
-  function handleDelete(id: string) {
-    startTransition(async () => {
-      const result = await deleteProductAction(id);
+  function handleDelete() {
+    if (!deleteTarget) return;
+    startDeleteTransition(async () => {
+      const result = await deleteProductAction(deleteTarget.id);
       if (!result.ok) {
         toast.error(result.error);
       } else {
         toast.success("Đã xoá sản phẩm");
+        setDeleteTarget(null);
       }
     });
   }
@@ -77,13 +82,13 @@ export function ProductDataTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[120px]">Mã</TableHead>
+              <TableHead className="w-30">Mã</TableHead>
               <TableHead>Tên sản phẩm</TableHead>
-              <TableHead className="w-[150px]">Danh mục</TableHead>
-              <TableHead className="w-[80px]">ĐVT</TableHead>
-              <TableHead className="w-[140px] text-right">Giá</TableHead>
-              <TableHead className="w-[100px]">Loại giá</TableHead>
-              <TableHead className="w-[50px]" />
+              <TableHead className="w-37.5 hidden sm:table-cell">Danh mục</TableHead>
+              <TableHead className="w-20 hidden sm:table-cell">ĐVT</TableHead>
+              <TableHead className="w-35 text-right">Giá</TableHead>
+              <TableHead className="w-25 hidden md:table-cell">Loại giá</TableHead>
+              <TableHead className="w-12.5" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -112,14 +117,14 @@ export function ProductDataTable({
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden sm:table-cell">
                     {product.category ? (
                       <Badge variant="secondary">{product.category.name}</Badge>
                     ) : (
                       <span className="text-muted-foreground text-xs">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-sm">
+                  <TableCell className="text-sm hidden sm:table-cell">
                     {product.unit?.name ?? "—"}
                   </TableCell>
                   <TableCell className="text-right tabular-nums">
@@ -131,7 +136,7 @@ export function ProductDataTable({
                       formatCurrency(product.basePrice)
                     )}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <Badge
                       variant={
                         product.pricingType === "TIERED"
@@ -152,7 +157,8 @@ export function ProductDataTable({
                           variant="ghost"
                           size="icon"
                           className="size-8"
-                          disabled={isPending}
+                          disabled={isDeleting}
+                          aria-label="Tùy chọn"
                         >
                           <MoreHorizontal className="size-4" />
                         </Button>
@@ -162,35 +168,13 @@ export function ProductDataTable({
                           <Pencil className="mr-2 size-4" />
                           Sửa
                         </DropdownMenuItem>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem
-                              className="text-destructive"
-                              onSelect={(e) => e.preventDefault()}
-                            >
-                              <Trash2 className="mr-2 size-4" />
-                              Xoá
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Xác nhận xoá</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Bạn có chắc muốn xoá sản phẩm &quot;
-                                {product.name}&quot;? Hành động này không thể
-                                hoàn tác.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Huỷ</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(product.id)}
-                              >
-                                Xoá
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => setDeleteTarget(product)}
+                        >
+                          <Trash2 className="mr-2 size-4" />
+                          Xoá
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -201,10 +185,10 @@ export function ProductDataTable({
         </Table>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">{total} sản phẩm</p>
+      {/* Always show total; pagination only when multi-page */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">{total} sản phẩm</p>
+        {totalPages > 1 && (
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -226,8 +210,28 @@ export function ProductDataTable({
               Sau
             </Button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      {/* Delete confirmation — outside dropdown for proper keyboard focus */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xoá</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc muốn xoá sản phẩm &quot;{deleteTarget?.name}&quot;?
+              Hành động này không thể hoàn tác.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Huỷ</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting && <Loader2 className="mr-2 size-4 animate-spin" />}
+              Xoá
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -66,14 +66,14 @@ function TemplateCard({ template }: { template: DocTemplateItem }) {
             <CardTitle className="truncate text-base">{template.name}</CardTitle>
           </div>
           <div className="flex items-center gap-1 shrink-0">
-            <Button variant="ghost" size="icon" className="size-8" asChild>
+            <Button variant="ghost" size="icon" className="size-8" asChild aria-label="Chỉnh sửa">
               <Link href={`/templates/${template.id}`}>
                 <Pencil className="size-4" />
               </Link>
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="icon" className="size-8 text-destructive hover:text-destructive">
+                <Button variant="ghost" size="icon" className="size-8 text-destructive hover:text-destructive" aria-label="Xóa">
                   <Trash2 className="size-4" />
                 </Button>
               </AlertDialogTrigger>
@@ -81,7 +81,9 @@ function TemplateCard({ template }: { template: DocTemplateItem }) {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Xóa mẫu tài liệu</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Bạn có chắc muốn xóa mẫu &quot;{template.name}&quot;? Hành động này không thể hoàn tác.
+                    Bạn có chắc muốn xóa mẫu &quot;{template.name}&quot;?
+                    {template._count.entries > 0 && ` Mẫu này có ${template._count.entries} tài liệu liên quan.`}
+                    {" "}Hành động này không thể hoàn tác.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
