@@ -15,8 +15,8 @@ export function ShareDocumentView({ document: doc, tenant }: Props) {
   const tableRegion = doc.template.tableRegion as { columns: { col: string; label: string }[] } | null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
-      <div className="mx-auto max-w-3xl rounded-xl border bg-white shadow-sm">
+    <div className="min-h-screen bg-muted/40 py-10">
+      <div className="mx-auto max-w-3xl rounded-xl border bg-background shadow-sm">
         {/* Header */}
         <div className="rounded-t-xl px-8 py-6" style={{ backgroundColor: brandColor }}>
           <div className="flex items-center justify-between">
@@ -40,7 +40,7 @@ export function ShareDocumentView({ document: doc, tenant }: Props) {
                 if (!value) return null;
                 return (
                   <div key={ph.cellRef}>
-                    <p className="text-gray-500">{ph.label}</p>
+                    <p className="text-muted-foreground">{ph.label}</p>
                     <p className="font-medium">{value}</p>
                   </div>
                 );
@@ -52,7 +52,7 @@ export function ShareDocumentView({ document: doc, tenant }: Props) {
           {tableRegion && tableRows.length > 0 && (
             <div className="overflow-x-auto rounded-lg border">
               <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-gray-500">
+                <thead className="bg-muted text-muted-foreground">
                   <tr>
                     <th className="px-4 py-3 text-left w-10">#</th>
                     {tableRegion.columns.map((col) => (
@@ -63,7 +63,7 @@ export function ShareDocumentView({ document: doc, tenant }: Props) {
                 <tbody className="divide-y">
                   {tableRows.map((row, i) => (
                     <tr key={i}>
-                      <td className="px-4 py-3 text-gray-400">{i + 1}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
                       {tableRegion.columns.map((col) => (
                         <td key={col.col} className="px-4 py-3">{row[col.col] ?? ""}</td>
                       ))}
@@ -75,7 +75,7 @@ export function ShareDocumentView({ document: doc, tenant }: Props) {
           )}
 
           {/* Footer */}
-          <div className="border-t pt-4 text-center text-xs text-gray-400">
+          <div className="border-t pt-4 text-center text-xs text-muted-foreground">
             Tài liệu được tạo bởi <span className="font-medium">Auto Quotation</span>
           </div>
         </div>

@@ -15,7 +15,7 @@ type Props = {
 export function SettingsPageClient({ settings, categories, units }: Props) {
   return (
     <Tabs defaultValue="company" className="w-full">
-      <TabsList className="grid w-full grid-cols-4">
+      <TabsList className="flex w-full flex-wrap gap-1 h-auto">
         <TabsTrigger value="company">Công ty</TabsTrigger>
         <TabsTrigger value="banking">Ngân hàng</TabsTrigger>
         <TabsTrigger value="defaults">Mặc định</TabsTrigger>

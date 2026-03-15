@@ -1,9 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,7 +30,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { deleteCustomer } from "@/app/(dashboard)/customers/actions";
 import type { CustomerWithQuoteCount } from "@/services/customer-service";
@@ -51,7 +51,10 @@ export function CustomerDataTable({
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
+  const [isDeleting, startDeleteTransition] = useTransition();
+
+  /* AlertDialog state — extracted outside dropdown for keyboard focus */
+  const [deleteTarget, setDeleteTarget] = useState<CustomerWithQuoteCount | null>(null);
 
   function goToPage(p: number) {
     const params = new URLSearchParams(searchParams.toString());
@@ -59,13 +62,15 @@ export function CustomerDataTable({
     router.push(`/customers?${params.toString()}`);
   }
 
-  function handleDelete(id: string) {
-    startTransition(async () => {
-      const result = await deleteCustomer(id);
+  function handleDelete() {
+    if (!deleteTarget) return;
+    startDeleteTransition(async () => {
+      const result = await deleteCustomer(deleteTarget.id);
       if (!result.ok) {
         toast.error(result.error);
       } else {
         toast.success("Đã xóa khách hàng");
+        setDeleteTarget(null);
       }
     });
   }
@@ -77,10 +82,10 @@ export function CustomerDataTable({
           <TableHeader>
             <TableRow>
               <TableHead>Tên</TableHead>
-              <TableHead className="w-[160px]">Công ty</TableHead>
+              <TableHead className="w-40">Công ty</TableHead>
               <TableHead className="w-[130px]">Điện thoại</TableHead>
               <TableHead className="w-[180px]">Email</TableHead>
-              <TableHead className="w-[70px] text-center">Số BG</TableHead>
+              <TableHead className="w-[70px] text-center">Số TL</TableHead>
               <TableHead className="w-[50px]" />
             </TableRow>
           </TableHeader>
@@ -111,7 +116,7 @@ export function CustomerDataTable({
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="size-8">
+                        <Button variant="ghost" size="icon" className="size-8" aria-label="Tùy chọn">
                           <MoreHorizontal className="size-4" />
                         </Button>
                       </DropdownMenuTrigger>
@@ -120,37 +125,13 @@ export function CustomerDataTable({
                           <Pencil className="mr-2 size-4" />
                           Chỉnh sửa
                         </DropdownMenuItem>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <DropdownMenuItem
-                              className="text-destructive"
-                              onSelect={(e) => e.preventDefault()}
-                            >
-                              <Trash2 className="mr-2 size-4" />
-                              Xóa
-                            </DropdownMenuItem>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Bạn có chắc muốn xóa khách hàng &quot;
-                                {c.name}&quot;?
-                                {c.quoteCount > 0 &&
-                                  ` Khách hàng có ${c.quoteCount} báo giá liên quan.`}
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Hủy</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDelete(c.id)}
-                                disabled={isPending}
-                              >
-                                Xóa
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => setDeleteTarget(c)}
+                        >
+                          <Trash2 className="mr-2 size-4" />
+                          Xóa
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -161,9 +142,10 @@ export function CustomerDataTable({
         </Table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">{total} khách hàng</p>
+      {/* Always show total count; pagination controls only when multi-page */}
+      <div className="flex items-center justify-between">
+        <p className="text-sm text-muted-foreground">{total} khách hàng</p>
+        {totalPages > 1 && (
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -185,8 +167,29 @@ export function CustomerDataTable({
               Sau
             </Button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
+      {/* Delete confirmation — outside dropdown for proper keyboard focus */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
+            <AlertDialogDescription>
+              Bạn có chắc muốn xóa khách hàng &quot;{deleteTarget?.name}&quot;?
+              {(deleteTarget?.quoteCount ?? 0) > 0 &&
+                ` Khách hàng có ${deleteTarget!.quoteCount} tài liệu liên quan.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Hủy</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting && <Loader2 className="mr-2 size-4 animate-spin" />}
+              Xóa
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

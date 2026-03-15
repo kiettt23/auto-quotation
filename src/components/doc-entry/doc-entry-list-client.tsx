@@ -66,7 +66,7 @@ export function DocEntryListClient({ entries, templates }: Props) {
           title="Chưa có tài liệu"
           description="Tạo tài liệu đầu tiên từ một mẫu đã định nghĩa"
           actionLabel="Tạo tài liệu"
-          actionHref="#"
+          onAction={() => setPickerOpen(true)}
         />
       ) : (
         <DocEntryTable entries={filtered} />

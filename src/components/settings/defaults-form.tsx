@@ -47,8 +47,9 @@ export function DefaultsForm({ settings }: Props) {
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
-              <Label>VAT mặc định (%)</Label>
+              <Label htmlFor="defaultVatPercent">VAT mặc định (%)</Label>
               <Input
+                id="defaultVatPercent"
                 type="number"
                 min={0}
                 max={100}

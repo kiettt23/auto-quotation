@@ -181,13 +181,16 @@ export function CompanyInfoForm({ settings, bankingOnly = false }: Props) {
 function FieldInput({
   label,
   error,
+  id,
+  name,
   ...props
 }: React.ComponentProps<"input"> & { label: string; error?: string }) {
+  const fieldId = id ?? name ?? label;
   return (
     <div className="space-y-1">
-      <Label>{label}</Label>
-      <Input {...props} />
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      <Label htmlFor={fieldId}>{label}</Label>
+      <Input id={fieldId} name={name} {...props} />
+      {error && <p className="text-xs text-destructive" role="alert">{error}</p>}
     </div>
   );
 }

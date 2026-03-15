@@ -4,6 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   Command,
   CommandEmpty,
   CommandGroup,
@@ -33,7 +38,7 @@ export function CustomerAutocompleteCombobox({ onSelect }: Props) {
   const [results, setResults] = useState<CustomerResult[]>([]);
 
   const doSearch = useCallback(async (q: string) => {
-    if (q.length < 1) { setResults([]); return; }
+    if (q.length < 2) { setResults([]); return; }
     const result = await searchCustomers(q);
     setResults(result.ok ? (result.value as CustomerResult[]) : []);
   }, []);
@@ -43,30 +48,39 @@ export function CustomerAutocompleteCombobox({ onSelect }: Props) {
     return () => clearTimeout(timer);
   }, [query, doSearch]);
 
-  if (!open) {
-    return (
-      <Button type="button" variant="outline" size="sm" onClick={() => setOpen(true)}>
-        <Search className="mr-1 size-3.5" /> Tìm KH
-      </Button>
-    );
-  }
-
   return (
-    <Command className="rounded-lg border">
-      <CommandInput placeholder="Tìm khách hàng..." value={query} onValueChange={setQuery} />
-      <CommandList>
-        <CommandEmpty>Không tìm thấy</CommandEmpty>
-        <CommandGroup>
-          {results.map((c) => (
-            <CommandItem key={c.id} onSelect={() => { onSelect(c); setOpen(false); }}>
-              <div>
-                <p className="font-medium">{c.name}</p>
-                {c.company && <p className="text-xs text-muted-foreground">{c.company}</p>}
-              </div>
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      </CommandList>
-    </Command>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button type="button" variant="outline" size="sm">
+          <Search className="mr-1 size-3.5" /> Tìm KH
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[300px] p-0" align="end">
+        <Command shouldFilter={false}>
+          <CommandInput placeholder="Tìm khách hàng..." value={query} onValueChange={setQuery} />
+          <CommandList>
+            <CommandEmpty>Không tìm thấy</CommandEmpty>
+            <CommandGroup>
+              {results.map((c) => (
+                <CommandItem
+                  key={c.id}
+                  onSelect={() => {
+                    onSelect(c);
+                    setOpen(false);
+                    setQuery("");
+                    setResults([]);
+                  }}
+                >
+                  <div>
+                    <p className="font-medium">{c.name}</p>
+                    {c.company && <p className="text-xs text-muted-foreground">{c.company}</p>}
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

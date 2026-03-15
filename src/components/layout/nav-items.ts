@@ -41,13 +41,13 @@ export const navItems: NavItem[] = [
     label: "Sản phẩm",
     icon: Package,
     href: "/products",
-    showInBottomNav: false,
+    showInBottomNav: true,
   },
   {
     label: "Khách hàng",
     icon: Users,
     href: "/customers",
-    showInBottomNav: false,
+    showInBottomNav: true,
   },
   {
     label: "Cài đặt",

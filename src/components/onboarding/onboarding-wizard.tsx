@@ -59,14 +59,14 @@ export function OnboardingWizard({ defaultName, defaultSlug }: { defaultName: st
         {STEPS.map((s, i) => (
           <div key={s.id} className="flex items-center gap-3">
             <div className={`flex size-9 items-center justify-center rounded-full text-sm font-medium transition-colors ${
-              step > s.id ? "bg-green-500 text-white" :
+              step > s.id ? "bg-primary text-white" :
               step === s.id ? "bg-primary text-primary-foreground" :
               "bg-muted text-muted-foreground"
             }`}>
               {step > s.id ? <CheckCircle2 className="size-4" /> : s.id}
             </div>
             {i < STEPS.length - 1 && (
-              <div className={`h-px w-12 transition-colors ${step > s.id ? "bg-green-500" : "bg-muted"}`} />
+              <div className={`h-px w-12 transition-colors ${step > s.id ? "bg-primary" : "bg-muted"}`} />
             )}
           </div>
         ))}

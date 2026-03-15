@@ -36,8 +36,8 @@ export function ShareQuoteView({ quote, tenant }: Props) {
   const brandColor = tenant.primaryColor || "#0369A1";
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10">
-      <div className="mx-auto max-w-3xl rounded-xl border bg-white shadow-sm">
+    <div className="min-h-screen bg-muted/40 py-10">
+      <div className="mx-auto max-w-3xl rounded-xl border bg-background shadow-sm">
         {/* Header with branding */}
         <div className="rounded-t-xl px-8 py-6" style={{ backgroundColor: brandColor }}>
           <div className="flex items-center justify-between">
@@ -67,17 +67,17 @@ export function ShareQuoteView({ quote, tenant }: Props) {
           {/* Meta info */}
           <div className="flex flex-wrap justify-between gap-4 text-sm">
             <div>
-              <p className="font-medium text-gray-500">Khách hàng</p>
+              <p className="font-medium text-muted-foreground">Khách hàng</p>
               <p className="font-semibold">{quote.customerName || "—"}</p>
-              {quote.customerCompany && <p className="text-gray-600">{quote.customerCompany}</p>}
-              {quote.customerPhone && <p className="text-gray-600">{quote.customerPhone}</p>}
+              {quote.customerCompany && <p className="text-muted-foreground">{quote.customerCompany}</p>}
+              {quote.customerPhone && <p className="text-muted-foreground">{quote.customerPhone}</p>}
             </div>
             <div className="text-right">
-              <p className="text-gray-500">Ngày tạo: {formatDate(quote.createdAt)}</p>
+              <p className="text-muted-foreground">Ngày tạo: {formatDate(quote.createdAt)}</p>
               {quote.validUntil && (
-                <p className="text-gray-500">Hiệu lực đến: {formatDate(quote.validUntil)}</p>
+                <p className="text-muted-foreground">Hiệu lực đến: {formatDate(quote.validUntil)}</p>
               )}
-              <span className="mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium bg-gray-100 text-gray-700">
+              <span className="mt-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-medium bg-muted text-muted-foreground">
                 {STATUS_LABELS[quote.status] ?? quote.status}
               </span>
             </div>
@@ -86,7 +86,7 @@ export function ShareQuoteView({ quote, tenant }: Props) {
           {/* Items table */}
           <div className="overflow-x-auto rounded-lg border">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-gray-500">
+              <thead className="bg-muted text-muted-foreground">
                 <tr>
                   <th className="px-4 py-3 text-left">Sản phẩm / dịch vụ</th>
                   <th className="px-4 py-3 text-right">SL</th>
@@ -99,7 +99,7 @@ export function ShareQuoteView({ quote, tenant }: Props) {
                   <tr key={item.id}>
                     <td className="px-4 py-3">
                       <p className="font-medium">{item.name}</p>
-                      {item.description && <p className="text-xs text-gray-500">{item.description}</p>}
+                      {item.description && <p className="text-xs text-muted-foreground">{item.description}</p>}
                     </td>
                     <td className="px-4 py-3 text-right">{item.quantity} {item.unit}</td>
                     <td className="px-4 py-3 text-right">{formatCurrency(item.unitPrice)}</td>
@@ -113,7 +113,7 @@ export function ShareQuoteView({ quote, tenant }: Props) {
           {/* Totals */}
           <div className="ml-auto w-64 space-y-1.5 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-500">Tạm tính</span>
+              <span className="text-muted-foreground">Tạm tính</span>
               <span>{formatCurrency(quote.subtotal)}</span>
             </div>
             {Number(quote.globalDiscountPercent) > 0 && (
@@ -124,12 +124,12 @@ export function ShareQuoteView({ quote, tenant }: Props) {
             )}
             {Number(quote.shippingFee) > 0 && (
               <div className="flex justify-between">
-                <span className="text-gray-500">Phí vận chuyển</span>
+                <span className="text-muted-foreground">Phí vận chuyển</span>
                 <span>{formatCurrency(quote.shippingFee)}</span>
               </div>
             )}
             <div className="flex justify-between">
-              <span className="text-gray-500">VAT ({quote.vatPercent}%)</span>
+              <span className="text-muted-foreground">VAT ({quote.vatPercent}%)</span>
               <span>{formatCurrency(quote.vatAmount)}</span>
             </div>
             <div className="flex justify-between border-t pt-2 text-base font-bold">
@@ -141,19 +141,19 @@ export function ShareQuoteView({ quote, tenant }: Props) {
           {/* Notes / Terms */}
           {quote.notes && (
             <div>
-              <p className="mb-1 text-sm font-medium text-gray-500">Ghi chú</p>
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">{quote.notes}</p>
+              <p className="mb-1 text-sm font-medium text-muted-foreground">Ghi chú</p>
+              <p className="text-sm whitespace-pre-wrap">{quote.notes}</p>
             </div>
           )}
           {quote.terms && (
             <div>
-              <p className="mb-1 text-sm font-medium text-gray-500">Điều khoản</p>
-              <p className="text-sm text-gray-700 whitespace-pre-wrap">{quote.terms}</p>
+              <p className="mb-1 text-sm font-medium text-muted-foreground">Điều khoản</p>
+              <p className="text-sm whitespace-pre-wrap">{quote.terms}</p>
             </div>
           )}
 
           {/* Footer branding */}
-          <div className="border-t pt-4 text-center text-xs text-gray-400">
+          <div className="border-t pt-4 text-center text-xs text-muted-foreground">
             Báo giá được tạo bởi <span className="font-medium">Auto Quotation</span>
           </div>
         </div>
