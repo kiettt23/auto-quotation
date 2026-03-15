@@ -2,7 +2,6 @@ import { pgTable, text, timestamp, index } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { tenants } from "./tenants";
-import { quotes } from "./quotes";
 
 // Tenant-scoped customer records
 export const customers = pgTable(
@@ -24,9 +23,8 @@ export const customers = pgTable(
   (t) => [index("customers_tenant_idx").on(t.tenantId)]
 );
 
-export const customersRelations = relations(customers, ({ one, many }) => ({
+export const customersRelations = relations(customers, ({ one }) => ({
   tenant: one(tenants, { fields: [customers.tenantId], references: [tenants.id] }),
-  quotes: many(quotes),
 }));
 
 export type Customer = typeof customers.$inferSelect;

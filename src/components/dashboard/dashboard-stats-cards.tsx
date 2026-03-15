@@ -1,5 +1,4 @@
-import { FileText, CheckCircle, Users, TrendingUp } from "lucide-react";
-import { formatCurrency } from "@/lib/format-currency";
+import { FileText, LayoutTemplate, Users, Package } from "lucide-react";
 import { StatCard } from "./stat-card";
 import type { DashboardStats } from "@/services/dashboard-service";
 
@@ -9,24 +8,24 @@ export function DashboardStatsCards({ stats }: Props) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard
-        title="Tổng báo giá"
-        value={stats.totalQuotes.toString()}
+        title="Tài liệu"
+        value={stats.totalDocuments.toString()}
         icon={FileText}
       />
       <StatCard
-        title="Đã chấp nhận"
-        value={stats.byStatus.ACCEPTED.toString()}
-        icon={CheckCircle}
-      />
-      <StatCard
-        title="Doanh thu"
-        value={formatCurrency(stats.revenue)}
-        icon={TrendingUp}
+        title="Mẫu tài liệu"
+        value={stats.totalTemplates.toString()}
+        icon={LayoutTemplate}
       />
       <StatCard
         title="Khách hàng"
         value={stats.totalCustomers.toString()}
         icon={Users}
+      />
+      <StatCard
+        title="Sản phẩm"
+        value={stats.totalProducts.toString()}
+        icon={Package}
       />
     </div>
   );

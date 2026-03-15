@@ -75,11 +75,11 @@ export async function saveFirstProduct(data: {
   }
 }
 
-/** Mark onboarding complete and redirect to /quotes */
+/** Mark onboarding complete and redirect to /dashboard */
 export async function completeOnboarding() {
   const ctx = await getTenantContext();
   await db.update(tenants)
     .set({ onboardingComplete: true })
     .where(eq(tenants.id, ctx.tenantId));
-  redirect("/quotes");
+  redirect("/dashboard");
 }

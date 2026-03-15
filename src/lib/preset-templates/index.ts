@@ -6,11 +6,13 @@
 import type { PresetTemplate } from "./types";
 import { pghDeliveryOrderPreset } from "./pgh-delivery-order-preset";
 import { pxkWarehouseExportPreset } from "./pxk-warehouse-export-preset";
+import { baoGiaQuotationPreset } from "./bao-gia-quotation-preset";
 
 export type { PresetTemplate, PresetPlaceholder, PresetTableColumn } from "./types";
 
 /** All available preset templates. Add new presets to this array. */
 export const PRESET_TEMPLATES: PresetTemplate[] = [
+  baoGiaQuotationPreset,
   pghDeliveryOrderPreset,
   pxkWarehouseExportPreset,
 ];

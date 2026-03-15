@@ -13,7 +13,7 @@ export default async function OnboardingPage() {
   });
 
   if (!tenant) redirect("/");
-  if (tenant.onboardingComplete) redirect("/quotes");
+  if (tenant.onboardingComplete) redirect("/dashboard");
 
   return (
     <OnboardingWizard

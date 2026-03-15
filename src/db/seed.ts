@@ -5,14 +5,14 @@
 import { db } from "./index";
 import {
   tenants, tenantMembers, categories, units, products,
-  pricingTiers, volumeDiscounts, customers, quotes, quoteItems,
+  pricingTiers, volumeDiscounts, customers,
   documentTemplates, documents, tenantInvites,
 } from "./schema";
 import { auth } from "../auth";
 import {
   DEFAULT_GREETING, DEFAULT_TERMS, DEFAULT_PRIMARY_COLOR, DEFAULT_QUOTE_PREFIX,
 } from "../lib/constants";
-import { createId } from "@paralleldrive/cuid2";
+// Note: DEFAULT_QUOTE_PREFIX kept for tenant quotePrefix column (migration compatibility)
 
 async function getOrCreateUser(name: string, email: string, password: string) {
   try {
@@ -145,7 +145,7 @@ async function seed() {
   console.log("✅ Pricing tiers + volume discounts");
 
   // ── 7. Customers (5) ──────────────────────────────────────
-  const [custABC, , , custSchool, custHotel] = await db.insert(customers).values([
+  await db.insert(customers).values([
     { tenantId: tenant.id, name: "Nguyễn Văn Hùng", company: "Công ty CP ABC",
       phone: "0912 345 678", email: "hung.nv@abc.com.vn",
       address: "56 Nguyễn Huệ, Quận 1, TP.HCM", notes: "Khách VIP, ưu tiên giao nhanh" },
@@ -164,88 +164,7 @@ async function seed() {
   ]).returning();
   console.log("✅ Created 5 customers");
 
-  // ── 8. Quotes (3 statuses) ────────────────────────────────
-  const in30d = new Date(Date.now() + 30 * 86400000);
-  const shareToken = createId();
-  const lt = (qty: number, price: number, disc = 0) =>
-    String(Math.round(qty * price * (1 - disc / 100)));
-
-  // Q1: DRAFT — IT equipment
-  const [q1] = await db.insert(quotes).values({
-    tenantId: tenant.id, quoteNumber: "BG-2026-001",
-    customerId: custABC.id, customerName: custABC.name, customerCompany: custABC.company,
-    customerPhone: custABC.phone, customerEmail: custABC.email, customerAddress: custABC.address,
-    status: "DRAFT", validUntil: in30d, vatPercent: "10", shippingFee: "350000",
-    terms: DEFAULT_TERMS,
-    subtotal: "97280000", vatAmount: "9728000", total: "107358000",
-  }).returning();
-  await db.insert(quoteItems).values([
-    { quoteId: q1.id, productId: p("LAPTOP-001").id, sortOrder: 0,
-      name: p("LAPTOP-001").name, description: p("LAPTOP-001").description,
-      unit: "Cái", quantity: 2, unitPrice: "28500000", lineTotal: lt(2, 28500000) },
-    { quoteId: q1.id, productId: p("MON-001").id, sortOrder: 1,
-      name: p("MON-001").name, description: p("MON-001").description,
-      unit: "Cái", quantity: 4, unitPrice: "5890000", lineTotal: lt(4, 5890000) },
-    { quoteId: q1.id, productId: p("CHAIR-001").id, sortOrder: 2,
-      name: p("CHAIR-001").name, description: p("CHAIR-001").description,
-      unit: "Chiếc", quantity: 4, unitPrice: "4990000", discountPercent: "5",
-      lineTotal: lt(4, 4990000, 5) },
-  ]);
-  console.log("✅ BG-2026-001 (DRAFT) — IT equipment");
-
-  // Q2: SENT — Furniture for school (with share link)
-  const [q2] = await db.insert(quotes).values({
-    tenantId: tenant.id, quoteNumber: "BG-2026-002",
-    customerId: custSchool.id, customerName: custSchool.name, customerCompany: custSchool.company,
-    customerPhone: custSchool.phone, customerEmail: custSchool.email, customerAddress: custSchool.address,
-    status: "SENT", validUntil: in30d, shareToken,
-    vatPercent: "10", globalDiscountPercent: "5",
-    otherFees: "500000", otherFeesLabel: "Phí lắp đặt",
-    terms: "- Thanh toán 100% sau nghiệm thu\n- Giao hàng 10 ngày\n- Bảo hành 24 tháng",
-    subtotal: "95800000", discountAmount: "4790000", vatAmount: "9101000", total: "100611000",
-  }).returning();
-  await db.insert(quoteItems).values([
-    { quoteId: q2.id, productId: p("DESK-001").id, sortOrder: 0,
-      name: p("DESK-001").name, description: "Cho phòng máy tính",
-      unit: "Bộ", quantity: 10, unitPrice: "4200000", lineTotal: lt(10, 4200000) },
-    { quoteId: q2.id, productId: p("CHAIR-002").id, sortOrder: 1,
-      name: p("CHAIR-002").name, description: p("CHAIR-002").description,
-      unit: "Chiếc", quantity: 40, unitPrice: "890000", lineTotal: lt(40, 890000) },
-    { quoteId: q2.id, sortOrder: 2, name: "Kệ sách treo tường",
-      description: "Kệ gỗ 60x30cm, gắn tường", unit: "Cái",
-      quantity: 10, unitPrice: "380000", lineTotal: lt(10, 380000), isCustomItem: true },
-  ]);
-  console.log("✅ BG-2026-002 (SENT) — Furniture [share link active]");
-
-  // Q3: ACCEPTED — Network for hotel
-  const [q3] = await db.insert(quotes).values({
-    tenantId: tenant.id, quoteNumber: "BG-2026-003",
-    customerId: custHotel.id, customerName: custHotel.name, customerCompany: custHotel.company,
-    customerPhone: custHotel.phone, customerEmail: custHotel.email, customerAddress: custHotel.address,
-    status: "ACCEPTED", validUntil: in30d, vatPercent: "10", shippingFee: "1500000",
-    globalDiscountPercent: "2", otherFees: "3000000", otherFeesLabel: "Phí thi công hạ tầng mạng",
-    terms: "- Tạm ứng 30%\n- Thi công 21 ngày\n- Bảo hành 36 tháng",
-    subtotal: "43350000", discountAmount: "867000", vatAmount: "4248300", total: "51231300",
-    notes: "Khách yêu cầu thi công ngoài giờ hành chính",
-  }).returning();
-  await db.insert(quoteItems).values([
-    { quoteId: q3.id, productId: p("SW-001").id, sortOrder: 0,
-      name: p("SW-001").name, description: p("SW-001").description,
-      unit: "Cái", quantity: 5, unitPrice: "2190000", lineTotal: lt(5, 2190000) },
-    { quoteId: q3.id, productId: p("CAB-001").id, sortOrder: 1,
-      name: p("CAB-001").name, description: "CAT6 cho tầng 1-5",
-      unit: "Mét", quantity: 2000, unitPrice: "6800", lineTotal: lt(2000, 6800) },
-    { quoteId: q3.id, productId: p("PRINT-001").id, sortOrder: 2,
-      name: p("PRINT-001").name, description: p("PRINT-001").description,
-      unit: "Cái", quantity: 2, unitPrice: "8900000", discountPercent: "5",
-      lineTotal: lt(2, 8900000, 5) },
-    { quoteId: q3.id, productId: p("TONER-001").id, sortOrder: 3,
-      name: p("TONER-001").name, description: p("TONER-001").description,
-      unit: "Hộp", quantity: 5, unitPrice: "1850000", lineTotal: lt(5, 1850000) },
-  ]);
-  console.log("✅ BG-2026-003 (ACCEPTED) — Network setup");
-
-  // ── 9. Document Templates ─────────────────────────────────
+  // ── 8. Document Templates ─────────────────────────────────
   const [tmplPXK, tmplBBNT] = await db.insert(documentTemplates).values([
     {
       tenantId: tenant.id,
@@ -332,9 +251,8 @@ async function seed() {
   console.log("✅ Created 1 pending invite");
 
   console.log("\n🎉 Seed complete!");
-  console.log("   4 users | 1 tenant | 4 categories | 5 units | 10 products | 5 customers | 3 quotes");
+  console.log("   4 users | 1 tenant | 4 categories | 5 units | 10 products | 5 customers");
   console.log("   2 doc templates | 3 doc entries | 1 invite");
-  console.log(`   Share: /share/${shareToken}`);
   console.log("   Login (password: password123):");
   console.log("   • owner@demo.com  (OWNER)  • admin@demo.com  (ADMIN)");
   console.log("   • member@demo.com (MEMBER) • viewer@demo.com (VIEWER)");

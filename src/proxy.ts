@@ -20,7 +20,6 @@ function isDashboardPath(pathname: string): boolean {
   // Dashboard routes are at root level (not under a route group in URL)
   const dashboardRoutes = [
     "/dashboard",
-    "/quotes",
     "/products",
     "/customers",
     "/settings",

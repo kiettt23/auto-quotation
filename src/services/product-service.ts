@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { products, pricingTiers, volumeDiscounts, categories, units, quoteItems } from "@/db/schema";
+import { products, pricingTiers, volumeDiscounts, categories, units } from "@/db/schema";
 import type { Product } from "@/db/schema";
 import { eq, and, or, ilike, count, desc, asc } from "drizzle-orm";
 import type { ProductFormData } from "@/lib/validations/product-schemas";
@@ -244,15 +244,6 @@ export async function deleteProduct(tenantId: string, id: string): Promise<Resul
       where: and(eq(products.id, id), eq(products.tenantId, tenantId)),
     });
     if (!existing) return err("Không tìm thấy sản phẩm");
-
-    const [{ usageCount }] = await db
-      .select({ usageCount: count() })
-      .from(quoteItems)
-      .where(eq(quoteItems.productId, id));
-
-    if (usageCount > 0) {
-      return err("Không thể xoá sản phẩm đang có trong báo giá");
-    }
 
     await db
       .delete(products)

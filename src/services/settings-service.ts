@@ -38,10 +38,7 @@ export type QuoteTemplateData = {
 };
 
 export type DefaultsData = {
-  quotePrefix?: string;
   defaultVatPercent?: number;
-  defaultValidityDays?: number;
-  defaultShipping?: number;
 };
 
 // ─── Tenant / Settings ───────────────────────────────────
@@ -107,10 +104,7 @@ export async function updateDefaults(tenantId: string, data: DefaultsData) {
   await db
     .update(tenants)
     .set({
-      ...(data.quotePrefix !== undefined && { quotePrefix: data.quotePrefix }),
       ...(data.defaultVatPercent !== undefined && { defaultVatPercent: String(data.defaultVatPercent) }),
-      ...(data.defaultValidityDays !== undefined && { defaultValidityDays: data.defaultValidityDays }),
-      ...(data.defaultShipping !== undefined && { defaultShipping: String(data.defaultShipping) }),
     })
     .where(eq(tenants.id, tenantId));
 }

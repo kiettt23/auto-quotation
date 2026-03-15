@@ -1,12 +1,13 @@
 import { db } from "@/db";
-import { customers, quotes } from "@/db/schema";
+import { customers } from "@/db/schema";
 import type { Customer } from "@/db/schema";
-import { eq, and, or, ilike, count, desc, sql } from "drizzle-orm";
+import { eq, and, or, ilike, count, desc } from "drizzle-orm";
 import type { CustomerFormData } from "@/lib/validations/customer-schemas";
 import { escapeIlike } from "@/lib/escape-ilike";
 import { ok, err } from "@/lib/result";
 import type { Result } from "@/lib/result";
 
+// quoteCount kept as 0 — quotes workflow removed; field retained for UI compatibility
 export type CustomerWithQuoteCount = Customer & { quoteCount: number };
 
 type GetCustomersParams = {
@@ -48,23 +49,9 @@ export async function getCustomers(
 
   const [rows, [{ total }]] = await Promise.all([
     db
-      .select({
-        id: customers.id,
-        tenantId: customers.tenantId,
-        name: customers.name,
-        company: customers.company,
-        phone: customers.phone,
-        email: customers.email,
-        address: customers.address,
-        notes: customers.notes,
-        createdAt: customers.createdAt,
-        updatedAt: customers.updatedAt,
-        quoteCount: sql<number>`cast(count(${quotes.id}) as int)`,
-      })
+      .select()
       .from(customers)
-      .leftJoin(quotes, eq(quotes.customerId, customers.id))
       .where(baseWhere)
-      .groupBy(customers.id)
       .orderBy(desc(customers.updatedAt))
       .limit(pageSize)
       .offset(offset),
@@ -74,8 +61,11 @@ export async function getCustomers(
       .where(baseWhere),
   ]);
 
+  // quoteCount always 0 — quotes workflow removed
+  const withCount: CustomerWithQuoteCount[] = rows.map((r) => ({ ...r, quoteCount: 0 }));
+
   return {
-    customers: rows as CustomerWithQuoteCount[],
+    customers: withCount,
     total,
     page,
     totalPages: Math.max(1, Math.ceil(total / pageSize)),
@@ -83,7 +73,7 @@ export async function getCustomers(
 }
 
 /**
- * Top-10 search for combobox in quote builder. Searches name and company.
+ * Top-10 search for combobox. Searches name and company.
  */
 export async function searchCustomers(
   tenantId: string,
@@ -124,7 +114,7 @@ export async function getCustomerById(
 }
 
 /**
- * Create or update a customer. If id is provided, performs an update with tenantId guard.
+ * Create or update a customer.
  */
 export async function saveCustomer(
   tenantId: string,
@@ -164,22 +154,13 @@ export async function saveCustomer(
 }
 
 /**
- * Delete customer. Rejects if the customer has any associated quotes.
+ * Delete customer by id, tenant-scoped.
  */
 export async function deleteCustomer(
   tenantId: string,
   id: string
 ): Promise<Result<void>> {
   try {
-    const [{ quoteCount }] = await db
-      .select({ quoteCount: count() })
-      .from(quotes)
-      .where(and(eq(quotes.customerId, id), eq(quotes.tenantId, tenantId)));
-
-    if (quoteCount > 0) {
-      return err("Không thể xoá khách hàng đang có báo giá");
-    }
-
     await db
       .delete(customers)
       .where(and(eq(customers.id, id), eq(customers.tenantId, tenantId)));

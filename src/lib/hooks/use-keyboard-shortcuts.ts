@@ -27,7 +27,7 @@ export function useKeyboardShortcuts(shortcuts?: ShortcutMap) {
           break;
         case "n":
           e.preventDefault();
-          router.push("/quotes/new");
+          shortcuts?.["n"]?.();
           break;
       }
     }

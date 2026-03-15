@@ -12,12 +12,12 @@ import {
 } from "@/app/(dashboard)/documents/actions";
 import { DocEntryFieldInputs } from "./doc-entry-field-inputs";
 import { DocEntryTableRegionEditor } from "./doc-entry-table-region-editor";
+import { findPresetByName } from "@/lib/preset-templates";
 import type { Placeholder, TableRegion, PdfRegion } from "@/lib/validations/doc-template-schemas";
+
 // Generic JSON value type replacing Prisma's JsonValue
 type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
-// Props accept generic JSON types for JSON fields
-// and cast them internally to strongly-typed variants.
 type DocTemplateProp = {
   id: string;
   name: string;
@@ -40,27 +40,21 @@ type Props = {
   entry?: DocEntryProp | null;
 };
 
-/** Cast JSON placeholders to typed array, defaulting to empty array */
 function castPlaceholders(raw: JsonValue): Placeholder[] {
   if (!Array.isArray(raw)) return [];
   return raw as Placeholder[];
 }
 
-/** Cast JSON tableRegion to typed value or null */
 function castTableRegion(raw: JsonValue): TableRegion | null {
-  if (raw === null || raw === undefined || typeof raw !== "object" || Array.isArray(raw)) {
-    return null;
-  }
+  if (raw === null || raw === undefined || typeof raw !== "object" || Array.isArray(raw)) return null;
   return raw as unknown as TableRegion;
 }
 
-/** Cast JSON fieldData to Record<string, string>, defaulting to empty object */
 function castFieldData(raw: JsonValue): Record<string, string> {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
   return raw as Record<string, string>;
 }
 
-/** Cast JSON tableRows to array of row records, defaulting to empty array */
 function castTableRows(raw: JsonValue): Record<string, string>[] {
   if (!Array.isArray(raw)) return [];
   return raw as Record<string, string>[];
@@ -72,9 +66,10 @@ export function DocEntryFormPage({ template, entry }: Props) {
   const [isPending, startTransition] = useTransition();
   const isEditing = !!entry;
 
+  // Look up preset metadata for autocomplete config
+  const preset = findPresetByName(template.name);
+
   const isPdf = template.fileType === "pdf";
-  // Preset/built-in PDF templates store Placeholder[] (with cellRef);
-  // Custom PDF templates store PdfRegion[] (with id, x, y coordinates)
   const rawPhs = Array.isArray(template.placeholders) ? template.placeholders : [];
   const isCoordinateBased = isPdf && rawPhs.length > 0 && "x" in (rawPhs[0] as Record<string, unknown>);
   const placeholders = isCoordinateBased
@@ -92,6 +87,17 @@ export function DocEntryFormPage({ template, entry }: Props) {
 
   function handleFieldChange(cellRef: string, value: string) {
     setFieldData((prev) => ({ ...prev, [cellRef]: value }));
+  }
+
+  /** Handle autocomplete selection: set main field + linked fields */
+  function handleAutocompleteSelect(fieldKey: string, value: string, linkedValues?: Record<string, string>) {
+    setFieldData((prev) => {
+      const updated = { ...prev, [fieldKey]: value };
+      if (linkedValues) {
+        Object.entries(linkedValues).forEach(([k, v]) => { updated[k] = v; });
+      }
+      return updated;
+    });
   }
 
   function handleSave() {
@@ -142,7 +148,7 @@ export function DocEntryFormPage({ template, entry }: Props) {
 
       <Separator />
 
-      {/* Placeholder fields (Excel) or PDF region fields */}
+      {/* Placeholder fields */}
       {placeholders.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-base font-semibold">Thông tin tài liệu</h2>
@@ -150,6 +156,8 @@ export function DocEntryFormPage({ template, entry }: Props) {
             placeholders={placeholders}
             values={fieldData}
             onChange={handleFieldChange}
+            onAutocompleteSelect={handleAutocompleteSelect}
+            presetPlaceholders={preset?.placeholders}
           />
         </section>
       )}
@@ -164,6 +172,7 @@ export function DocEntryFormPage({ template, entry }: Props) {
               tableRegion={tableRegion}
               rows={tableRows}
               onRowsChange={setTableRows}
+              presetTableColumns={preset?.tableColumns}
             />
           </section>
         </>

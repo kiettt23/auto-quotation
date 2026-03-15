@@ -28,10 +28,7 @@ export const quoteTemplateSchema = z.object({
 });
 
 export const defaultsSchema = z.object({
-  quotePrefix: z.string().min(1, "Nhập tiền tố mã báo giá"),
   defaultVatPercent: z.number().min(0).max(100, "VAT 0-100%"),
-  defaultValidityDays: z.number().int().min(1, "Tối thiểu 1 ngày"),
-  defaultShipping: z.number().min(0, "Phí >= 0"),
 });
 
 export const categorySchema = z.object({

@@ -8,6 +8,7 @@ import { documents, documentTemplates } from "@/db/schema";
 import { eq, and, desc, inArray, sql } from "drizzle-orm";
 import { ok, err } from "@/lib/result";
 import type { Result } from "@/lib/result";
+import { createId } from "@paralleldrive/cuid2";
 import type { Document, DocumentTemplate } from "@/db/schema";
 import { generateDocNumber } from "@/lib/generate-doc-number";
 
@@ -138,6 +139,43 @@ export async function updateDocument(
   } catch (e) {
     return err(e instanceof Error ? e.message : "Không thể cập nhật tài liệu");
   }
+}
+
+/** Generate a 30-day share link for a document */
+export async function generateShareLink(
+  tenantId: string,
+  id: string
+): Promise<Result<string>> {
+  try {
+    const existing = await getDocumentById(tenantId, id);
+    if (!existing) return err("Không tìm thấy tài liệu");
+
+    const token = createId();
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+    await db
+      .update(documents)
+      .set({ shareToken: token, shareTokenExpiresAt: expiresAt })
+      .where(eq(documents.id, id));
+
+    return ok(token);
+  } catch (e) {
+    return err(e instanceof Error ? e.message : "Không thể tạo link chia sẻ");
+  }
+}
+
+/** Get a document by share token (public, no auth) */
+export async function getDocumentByShareToken(
+  token: string
+): Promise<DocumentWithTemplate | undefined> {
+  const doc = await db.query.documents.findFirst({
+    where: eq(documents.shareToken, token),
+    with: { template: true },
+  });
+
+  if (!doc) return undefined;
+  if (doc.shareTokenExpiresAt && doc.shareTokenExpiresAt < new Date()) return undefined;
+  return doc;
 }
 
 export async function deleteDocument(

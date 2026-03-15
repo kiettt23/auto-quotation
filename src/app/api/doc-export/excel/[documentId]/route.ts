@@ -27,7 +27,7 @@ export async function GET(
       return NextResponse.json({ error: "Không tìm thấy tenant" }, { status: 404 });
     }
 
-    const result = await renderDocument(doc.template, doc, tenant);
+    const result = await renderDocument(doc.template, doc, tenant, "excel");
 
     const excelMime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     if (result.contentType !== excelMime) {

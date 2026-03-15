@@ -8,13 +8,11 @@ import * as settingsService from "@/services/settings-service";
 import {
   companyInfoSchema,
   bankingSchema,
-  quoteTemplateSchema,
   defaultsSchema,
 } from "@/lib/validations/settings-schemas";
 import type {
   CompanyInfoFormData,
   BankingFormData,
-  QuoteTemplateFormData,
   DefaultsFormData,
 } from "@/lib/validations/settings-schemas";
 import { writeFile, mkdir } from "fs/promises";
@@ -48,19 +46,6 @@ export async function updateBanking(data: BankingFormData) {
   }
 }
 
-export async function updateQuoteTemplate(data: QuoteTemplateFormData) {
-  try {
-    const parsed = quoteTemplateSchema.safeParse(data);
-    if (!parsed.success) return err(parsed.error.issues.map((i) => i.message).join(", "));
-    const ctx = await getTenantContext();
-    requireRole(ctx.role, "ADMIN");
-    await settingsService.updateQuoteTemplate(ctx.tenantId, parsed.data);
-    revalidatePath("/settings");
-    return ok(null);
-  } catch (e) {
-    return err(e instanceof Error ? e.message : "Lỗi cập nhật mẫu báo giá");
-  }
-}
 
 export async function updateDefaults(data: DefaultsFormData) {
   try {

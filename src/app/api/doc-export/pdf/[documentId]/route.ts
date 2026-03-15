@@ -31,7 +31,7 @@ export async function GET(
       return NextResponse.json({ error: "Không tìm thấy tenant" }, { status: 404 });
     }
 
-    const result = await renderDocument(doc.template, doc, tenant);
+    const result = await renderDocument(doc.template, doc, tenant, "pdf");
 
     if (result.contentType !== "application/pdf") {
       return NextResponse.json({ error: "Chứng từ này không phải PDF" }, { status: 400 });

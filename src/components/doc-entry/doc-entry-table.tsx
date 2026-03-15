@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { Pencil, Trash2, Download, FileText, MoreHorizontal } from "lucide-react";
+import { Pencil, Trash2, Download, FileText, MoreHorizontal, Share2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -30,7 +30,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { deleteDocEntry } from "@/app/(dashboard)/documents/actions";
+import { deleteDocEntry, shareDocEntry } from "@/app/(dashboard)/documents/actions";
 
 export type EntryRow = {
   id: string;
@@ -44,6 +44,19 @@ type Props = { entries: EntryRow[] };
 /** Table rows for doc entry list */
 export function DocEntryTable({ entries }: Props) {
   const [isPending, startTransition] = useTransition();
+
+  function handleShare(id: string) {
+    startTransition(async () => {
+      try {
+        const token = await shareDocEntry(id);
+        const url = `${window.location.origin}/share/${token}`;
+        await navigator.clipboard.writeText(url);
+        toast.success("Đã sao chép link chia sẻ");
+      } catch {
+        toast.error("Tạo link chia sẻ thất bại");
+      }
+    });
+  }
 
   function handleDelete(id: string, docNumber: string) {
     startTransition(async () => {
@@ -95,6 +108,10 @@ export function DocEntryTable({ entries }: Props) {
                           <Pencil className="mr-2 size-4" />
                           Chỉnh sửa
                         </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShare(entry.id)}>
+                        <Share2 className="mr-2 size-4" />
+                        Chia sẻ
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <a href={`/api/doc-export/excel/${entry.id}`} download>

@@ -28,10 +28,7 @@ export function DefaultsForm({ settings }: Props) {
   } = useForm<DefaultsFormData>({
     resolver: zodResolver(defaultsSchema),
     defaultValues: {
-      quotePrefix: settings.quotePrefix,
       defaultVatPercent: Number(settings.defaultVatPercent),
-      defaultValidityDays: settings.defaultValidityDays,
-      defaultShipping: Number(settings.defaultShipping),
     },
   });
 
@@ -46,27 +43,11 @@ export function DefaultsForm({ settings }: Props) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Card>
-        <CardHeader><CardTitle>Mã báo giá</CardTitle></CardHeader>
-        <CardContent>
-          <div className="space-y-1">
-            <Label>Tiền tố mã báo giá</Label>
-            <Input {...register("quotePrefix")} />
-            <p className="text-xs text-muted-foreground">
-              Ví dụ: BG-&#123;YYYY&#125;- sẽ tạo mã BG-2026-001
-            </p>
-            {errors.quotePrefix && (
-              <p className="text-xs text-destructive">{errors.quotePrefix.message}</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
         <CardHeader><CardTitle>Giá trị mặc định</CardTitle></CardHeader>
         <CardContent>
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-1">
-              <Label>VAT (%)</Label>
+              <Label>VAT mặc định (%)</Label>
               <Input
                 type="number"
                 min={0}
@@ -74,31 +55,11 @@ export function DefaultsForm({ settings }: Props) {
                 step={0.5}
                 {...register("defaultVatPercent", { valueAsNumber: true })}
               />
+              <p className="text-xs text-muted-foreground">
+                Áp dụng cho tất cả tài liệu mới
+              </p>
               {errors.defaultVatPercent && (
                 <p className="text-xs text-destructive">{errors.defaultVatPercent.message}</p>
-              )}
-            </div>
-            <div className="space-y-1">
-              <Label>Hiệu lực (ngày)</Label>
-              <Input
-                type="number"
-                min={1}
-                {...register("defaultValidityDays", { valueAsNumber: true })}
-              />
-              {errors.defaultValidityDays && (
-                <p className="text-xs text-destructive">{errors.defaultValidityDays.message}</p>
-              )}
-            </div>
-            <div className="space-y-1">
-              <Label>Phí vận chuyển (VNĐ)</Label>
-              <Input
-                type="number"
-                min={0}
-                step={1000}
-                {...register("defaultShipping", { valueAsNumber: true })}
-              />
-              {errors.defaultShipping && (
-                <p className="text-xs text-destructive">{errors.defaultShipping.message}</p>
               )}
             </div>
           </div>

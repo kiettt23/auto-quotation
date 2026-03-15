@@ -6,7 +6,6 @@ import { categories } from "./categories";
 import { units } from "./units";
 import { products } from "./products";
 import { customers } from "./customers";
-import { quotes } from "./quotes";
 import { documentTemplates } from "./document-templates";
 
 // Tenants table — merges old Settings singleton; each tenant is a company workspace
@@ -55,7 +54,6 @@ export const tenantsRelations = relations(tenants, ({ many }) => ({
   units: many(units),
   products: many(products),
   customers: many(customers),
-  quotes: many(quotes),
   documentTemplates: many(documentTemplates),
 }));
 

@@ -6,8 +6,6 @@ import { Separator } from "@/components/ui/separator";
 
 const pageTitles: Record<string, string> = {
   "/dashboard": "Tổng quan",
-  "/quotes": "Báo giá",
-  "/quotes/new": "Tạo báo giá mới",
   "/products": "Sản phẩm",
   "/customers": "Khách hàng",
   "/settings": "Cài đặt",
@@ -25,8 +23,7 @@ export function AppHeader() {
   // Exact match first, then prefix patterns for dynamic routes
   const title =
     pageTitles[pathname] ??
-    (pathname.startsWith("/quotes/") ? "Chi tiết báo giá"
-    : pathname.startsWith("/templates/") ? "Chi tiết mẫu tài liệu"
+    (pathname.startsWith("/templates/") ? "Chi tiết mẫu tài liệu"
     : pathname.startsWith("/documents/") ? "Chi tiết tài liệu"
     : "");
 

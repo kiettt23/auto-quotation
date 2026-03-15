@@ -9,7 +9,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { searchProducts } from "@/app/(dashboard)/quotes/actions";
+import { searchProducts } from "@/app/(dashboard)/documents/search-actions";
 import { formatCurrency } from "@/lib/format-currency";
 import { calculateUnitPrice, type PricingProduct } from "@/lib/pricing-engine";
 
@@ -25,7 +25,7 @@ type ProductResult = {
   volumeDiscounts: { minQuantity: number; discountPercent: string }[];
 };
 
-type SelectedProduct = {
+export type SelectedProduct = {
   productId: string;
   name: string;
   unit: string;
@@ -38,7 +38,8 @@ type Props = {
   onSelect: (product: SelectedProduct) => void;
 };
 
-export function QuoteProductSearch({ open, onOpenChange, onSelect }: Props) {
+/** Reusable product search dialog with category grouping and pricing */
+export function ProductAutocompleteCombobox({ open, onOpenChange, onSelect }: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<ProductResult[]>([]);
 
@@ -47,7 +48,6 @@ export function QuoteProductSearch({ open, onOpenChange, onSelect }: Props) {
     setResults(result.ok ? (result.value as unknown as ProductResult[]) : []);
   }, []);
 
-  // Load default products when dialog opens
   useEffect(() => {
     if (!open) return;
     const timer = setTimeout(() => doSearch(""), 0);
@@ -63,30 +63,21 @@ export function QuoteProductSearch({ open, onOpenChange, onSelect }: Props) {
     const pricingProduct: PricingProduct = {
       pricingType: product.pricingType,
       basePrice: Number(product.basePrice),
-      pricingTiers: product.pricingTiers.map((t) => ({
-        ...t,
-        price: Number(t.price),
-      })),
-      volumeDiscounts: product.volumeDiscounts.map((d) => ({
-        ...d,
-        discountPercent: Number(d.discountPercent),
-      })),
+      pricingTiers: product.pricingTiers.map((t) => ({ ...t, price: Number(t.price) })),
+      volumeDiscounts: product.volumeDiscounts.map((d) => ({ ...d, discountPercent: Number(d.discountPercent) })),
     };
-
-    const unitPrice = calculateUnitPrice(pricingProduct, 1);
 
     onSelect({
       productId: product.id,
       name: product.name,
       unit: product.unit.name,
-      unitPrice,
+      unitPrice: calculateUnitPrice(pricingProduct, 1),
     });
 
     setQuery("");
     onOpenChange(false);
   }
 
-  // Group results by category
   const grouped = results.reduce<Record<string, ProductResult[]>>((acc, p) => {
     const cat = p.category.name;
     if (!acc[cat]) acc[cat] = [];
@@ -96,32 +87,20 @@ export function QuoteProductSearch({ open, onOpenChange, onSelect }: Props) {
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput
-        placeholder="Tìm sản phẩm theo tên hoặc mã..."
-        value={query}
-        onValueChange={setQuery}
-      />
+      <CommandInput placeholder="Tìm sản phẩm theo tên hoặc mã..." value={query} onValueChange={setQuery} />
       <CommandList>
         <CommandEmpty>Không tìm thấy sản phẩm</CommandEmpty>
         {Object.entries(grouped).map(([category, products]) => (
           <CommandGroup key={category} heading={category}>
             {products.map((p) => (
-              <CommandItem
-                key={p.id}
-                value={`${p.code} ${p.name}`}
-                onSelect={() => handleSelect(p)}
-              >
+              <CommandItem key={p.id} value={`${p.code} ${p.name}`} onSelect={() => handleSelect(p)}>
                 <div className="flex w-full items-center justify-between">
                   <div>
                     <span className="font-medium">{p.name}</span>
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      {p.code}
-                    </span>
+                    <span className="ml-2 text-xs text-muted-foreground">{p.code}</span>
                   </div>
                   <span className="text-sm tabular-nums">
-                    {p.pricingType === "TIERED"
-                      ? "Bậc thang"
-                      : formatCurrency(p.basePrice)}
+                    {p.pricingType === "TIERED" ? "Bậc thang" : formatCurrency(p.basePrice)}
                   </span>
                 </div>
               </CommandItem>

@@ -1,6 +1,5 @@
 import {
   LayoutDashboard,
-  FileText,
   Package,
   Users,
   Settings,
@@ -26,34 +25,28 @@ export const navItems: NavItem[] = [
     showInBottomNav: true,
   },
   {
-    label: "Báo giá",
-    icon: FileText,
-    href: "/quotes",
-    showInBottomNav: true,
-  },
-  {
-    label: "Sản phẩm",
-    icon: Package,
-    href: "/products",
-    showInBottomNav: true,
-  },
-  {
-    label: "Khách hàng",
-    icon: Users,
-    href: "/customers",
-    showInBottomNav: true,
-  },
-  {
     label: "Mẫu tài liệu",
     icon: FileStack,
     href: "/templates",
-    showInBottomNav: false,
+    showInBottomNav: true,
     minRole: "ADMIN",
   },
   {
     label: "Tài liệu",
     icon: FolderOpen,
     href: "/documents",
+    showInBottomNav: true,
+  },
+  {
+    label: "Sản phẩm",
+    icon: Package,
+    href: "/products",
+    showInBottomNav: false,
+  },
+  {
+    label: "Khách hàng",
+    icon: Users,
+    href: "/customers",
     showInBottomNav: false,
   },
   {

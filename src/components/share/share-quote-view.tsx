@@ -1,5 +1,5 @@
 import Image from "next/image";
-import type { Quote, QuoteItem } from "@/db/schema";
+import type { Quote, QuoteItem } from "@/db/schema/quotes";
 
 /** Only the tenant fields needed for the public share view */
 type ShareTenant = {

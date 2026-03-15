@@ -7,7 +7,6 @@ export * from "./categories";
 export * from "./units";
 export * from "./products";
 export * from "./customers";
-export * from "./quotes";
 export * from "./document-templates";
 export * from "./documents";
 export * from "./tenant-invites";

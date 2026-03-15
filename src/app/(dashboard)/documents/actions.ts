@@ -6,6 +6,7 @@ import {
   createDocument,
   updateDocument,
   deleteDocument,
+  generateShareLink,
 } from "@/services/document-service";
 import { revalidatePath } from "next/cache";
 
@@ -39,6 +40,14 @@ export async function updateDocEntry(
   });
   if (!result.ok) throw new Error(result.error);
   revalidatePath("/documents");
+  return result.value;
+}
+
+export async function shareDocEntry(id: string) {
+  const ctx = await getTenantContext();
+  requireRole(ctx.role, "MEMBER");
+  const result = await generateShareLink(ctx.tenantId, id);
+  if (!result.ok) throw new Error(result.error);
   return result.value;
 }
 

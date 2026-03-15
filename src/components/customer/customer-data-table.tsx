@@ -3,7 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { toast } from "sonner";
-import { MoreHorizontal, Pencil, Trash2, FileText, Plus } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -119,20 +119,6 @@ export function CustomerDataTable({
                         <DropdownMenuItem onClick={() => onEdit(c)}>
                           <Pencil className="mr-2 size-4" />
                           Chỉnh sửa
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => router.push(`/quotes?customer=${c.id}`)}
-                        >
-                          <FileText className="mr-2 size-4" />
-                          Xem báo giá
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() =>
-                            router.push(`/quotes/new?customerId=${c.id}`)
-                          }
-                        >
-                          <Plus className="mr-2 size-4" />
-                          Tạo báo giá mới
                         </DropdownMenuItem>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>

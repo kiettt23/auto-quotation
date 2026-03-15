@@ -16,6 +16,9 @@ export const documents = pgTable(
     fieldData: json("field_data").default({}).notNull(),
     // Array of table row data: [{ colLetter: value }]
     tableRows: json("table_rows").default([]).notNull(),
+    // Sharing
+    shareToken: text("share_token").unique(),
+    shareTokenExpiresAt: timestamp("share_token_expires_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
   },
