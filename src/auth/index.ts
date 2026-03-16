@@ -4,6 +4,8 @@ import { db } from "@/db";
 import * as schema from "@/db/schema";
 
 // Better Auth server instance — configure once, import everywhere server-side
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
@@ -14,9 +16,13 @@ export const auth = betterAuth({
       verification: schema.verifications,
     },
   }),
-  trustedOrigins: process.env.NEXT_PUBLIC_APP_URL
-    ? [process.env.NEXT_PUBLIC_APP_URL]
-    : ["http://localhost:3000", "http://localhost:3001"],
+  baseURL: appUrl,
+  trustedOrigins: [
+    appUrl,
+    // Allow both common dev ports so switching projects doesn't break auth
+    "http://localhost:3000",
+    "http://localhost:3001",
+  ],
   emailAndPassword: {
     enabled: true,
   },

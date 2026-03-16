@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { customers } from "@/db/schema";
 import type { Customer } from "@/db/schema";
-import { eq, and, or, ilike, count, desc } from "drizzle-orm";
+import { eq, and, or, ilike, count, desc, isNull } from "drizzle-orm";
 import type { CustomerFormData } from "@/lib/validations/customer-schemas";
 import { escapeIlike } from "@/lib/escape-ilike";
 import { ok, err } from "@/lib/result";
@@ -43,8 +43,8 @@ export async function getCustomers(
     : undefined;
 
   const baseWhere = searchFilter
-    ? and(eq(customers.tenantId, tenantId), searchFilter)
-    : eq(customers.tenantId, tenantId);
+    ? and(eq(customers.tenantId, tenantId), isNull(customers.deletedAt), searchFilter)
+    : and(eq(customers.tenantId, tenantId), isNull(customers.deletedAt));
 
   const [rows, [{ total }]] = await Promise.all([
     db
@@ -85,6 +85,7 @@ export async function searchCustomers(
     .where(
       and(
         eq(customers.tenantId, tenantId),
+        isNull(customers.deletedAt),
         or(
           ilike(customers.name, `%${escapeIlike(query)}%`),
           ilike(customers.company, `%${escapeIlike(query)}%`)
@@ -105,7 +106,7 @@ export async function getCustomerById(
   const [row] = await db
     .select()
     .from(customers)
-    .where(and(eq(customers.id, id), eq(customers.tenantId, tenantId)))
+    .where(and(eq(customers.id, id), eq(customers.tenantId, tenantId), isNull(customers.deletedAt)))
     .limit(1);
 
   return row ?? null;
@@ -160,7 +161,8 @@ export async function deleteCustomer(
 ): Promise<Result<void>> {
   try {
     await db
-      .delete(customers)
+      .update(customers)
+      .set({ deletedAt: new Date() })
       .where(and(eq(customers.id, id), eq(customers.tenantId, tenantId)));
 
     return ok(undefined);

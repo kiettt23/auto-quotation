@@ -1,12 +1,13 @@
 "use server";
 
-import { headers, cookies } from "next/headers";
+import { headers } from "next/headers";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { tenants, tenantMembers } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { createId } from "@paralleldrive/cuid2";
+import { setActiveTenantCookie } from "@/lib/tenant-cookie";
 
 export async function createCompanyAction(data: { name: string; slug: string }) {
   const headersList = await headers();
@@ -43,14 +44,7 @@ export async function createCompanyAction(data: { name: string; slug: string }) 
   });
 
   // Switch to new tenant
-  const cookieStore = await cookies();
-  cookieStore.set("active-tenant-id", tenantId, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 365,
-    path: "/",
-  });
+  await setActiveTenantCookie(tenantId);
 
   redirect("/onboarding");
 }

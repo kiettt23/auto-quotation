@@ -45,9 +45,6 @@ export function AppSidebar({ role = "VIEWER", currentTenantId, tenants }: Props)
     hasPermission(role, item.minRole ?? "VIEWER")
   );
 
-  const mainItems = visibleItems.filter((item) => item.href !== "/settings");
-  const settingsItem = visibleItems.find((item) => item.href === "/settings");
-
   function isActive(href: string) {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
@@ -63,7 +60,7 @@ export function AppSidebar({ role = "VIEWER", currentTenantId, tenants }: Props)
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
+              {visibleItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
@@ -84,20 +81,6 @@ export function AppSidebar({ role = "VIEWER", currentTenantId, tenants }: Props)
 
       <SidebarFooter>
         <SidebarMenu>
-          {settingsItem && (
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={isActive(settingsItem.href)}
-                tooltip={settingsItem.label}
-              >
-                <Link href={settingsItem.href}>
-                  <settingsItem.icon />
-                  <span>{settingsItem.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )}
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={handleLogout}

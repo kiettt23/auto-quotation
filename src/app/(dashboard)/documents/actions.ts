@@ -9,6 +9,7 @@ import {
   generateShareLink,
 } from "@/services/document-service";
 import { revalidatePath } from "next/cache";
+import { logAudit } from "@/lib/audit-logger";
 
 export async function createDocEntry(data: {
   templateId: string;
@@ -23,6 +24,7 @@ export async function createDocEntry(data: {
     tableRows: (data.tableRows ?? []) as Record<string, string>[],
   });
   if (!result.ok) throw new Error(result.error);
+  logAudit({ tenantId, userId: ctx.userId, action: "document.create", resourceType: "document", resourceId: result.value.id });
   revalidatePath("/documents");
   return result.value;
 }
@@ -39,6 +41,7 @@ export async function updateDocEntry(
     tableRows: (data.tableRows ?? []) as Record<string, string>[],
   });
   if (!result.ok) throw new Error(result.error);
+  logAudit({ tenantId, userId: ctx.userId, action: "document.update", resourceType: "document", resourceId: id });
   revalidatePath("/documents");
   return result.value;
 }
@@ -57,5 +60,6 @@ export async function deleteDocEntry(id: string) {
   const { tenantId } = ctx;
   const result = await deleteDocument(tenantId, id);
   if (!result.ok) throw new Error(result.error);
+  logAudit({ tenantId, userId: ctx.userId, action: "document.delete", resourceType: "document", resourceId: id });
   revalidatePath("/documents");
 }

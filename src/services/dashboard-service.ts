@@ -5,7 +5,7 @@
 
 import { db } from "@/db";
 import { customers, products, documents, documentTemplates } from "@/db/schema";
-import { eq, sql, desc } from "drizzle-orm";
+import { eq, sql, desc, and, isNull } from "drizzle-orm";
 
 // ─── Types ───────────────────────────────────────────────
 
@@ -23,20 +23,19 @@ export async function getDashboardStats(tenantId: string): Promise<DashboardStat
     db
       .select({ count: sql<number>`count(*)::int` })
       .from(customers)
-      .where(eq(customers.tenantId, tenantId)),
+      .where(and(eq(customers.tenantId, tenantId), isNull(customers.deletedAt))),
     db
       .select({ count: sql<number>`count(*)::int` })
       .from(products)
-      .where(eq(products.tenantId, tenantId)),
+      .where(and(eq(products.tenantId, tenantId), isNull(products.deletedAt))),
     db
       .select({ count: sql<number>`count(*)::int` })
       .from(documentTemplates)
-      .where(eq(documentTemplates.tenantId, tenantId)),
+      .where(and(eq(documentTemplates.tenantId, tenantId), isNull(documentTemplates.deletedAt))),
     db
       .select({ count: sql<number>`count(*)::int` })
       .from(documents)
-      .innerJoin(documentTemplates, eq(documents.templateId, documentTemplates.id))
-      .where(eq(documentTemplates.tenantId, tenantId)),
+      .where(and(eq(documents.tenantId, tenantId), isNull(documents.deletedAt))),
   ]);
 
   return {
@@ -65,7 +64,7 @@ export async function getRecentDocuments(tenantId: string, limit = 5): Promise<R
     })
     .from(documents)
     .innerJoin(documentTemplates, eq(documents.templateId, documentTemplates.id))
-    .where(eq(documentTemplates.tenantId, tenantId))
+    .where(and(eq(documents.tenantId, tenantId), isNull(documents.deletedAt)))
     .orderBy(desc(documents.createdAt))
     .limit(limit);
 

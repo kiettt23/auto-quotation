@@ -1,60 +1,61 @@
 import { describe, it, expect } from "vitest";
 import { ok, err, unwrap } from "@/lib/result";
+import type { Result } from "@/lib/result";
 
 describe("result.ts - Result type helpers", () => {
   describe("ok()", () => {
     it("should wrap a successful value", () => {
-      const result = ok(42);
+      const result: Result<number> = ok(42);
       expect(result.ok).toBe(true);
-      expect(result.value).toBe(42);
+      if (result.ok) expect(result.value).toBe(42);
     });
 
     it("should wrap string values", () => {
-      const result = ok("success");
+      const result: Result<string> = ok("success");
       expect(result.ok).toBe(true);
-      expect(result.value).toBe("success");
+      if (result.ok) expect(result.value).toBe("success");
     });
 
     it("should wrap object values", () => {
       const obj = { id: 1, name: "test" };
-      const result = ok(obj);
+      const result: Result<typeof obj> = ok(obj);
       expect(result.ok).toBe(true);
-      expect(result.value).toBe(obj);
+      if (result.ok) expect(result.value).toBe(obj);
     });
 
     it("should wrap array values", () => {
       const arr = [1, 2, 3];
-      const result = ok(arr);
+      const result: Result<number[]> = ok(arr);
       expect(result.ok).toBe(true);
-      expect(result.value).toBe(arr);
+      if (result.ok) expect(result.value).toBe(arr);
     });
 
     it("should wrap null values", () => {
-      const result = ok(null);
+      const result: Result<null> = ok(null);
       expect(result.ok).toBe(true);
-      expect(result.value).toBe(null);
+      if (result.ok) expect(result.value).toBe(null);
     });
   });
 
   describe("err()", () => {
     it("should wrap an error message", () => {
-      const result = err("Something went wrong");
+      const result: Result<never, string> = err("Something went wrong");
       expect(result.ok).toBe(false);
-      expect(result.error).toBe("Something went wrong");
+      if (!result.ok) expect(result.error).toBe("Something went wrong");
     });
 
     it("should wrap error objects", () => {
       const error = new Error("Test error");
-      const result = err(error);
+      const result: Result<never, Error> = err(error);
       expect(result.ok).toBe(false);
-      expect(result.error).toBe(error);
+      if (!result.ok) expect(result.error).toBe(error);
     });
 
     it("should support generic error types", () => {
       const errorCode = { code: "INVALID_INPUT", message: "Input is invalid" };
-      const result = err(errorCode);
+      const result: Result<never, typeof errorCode> = err(errorCode);
       expect(result.ok).toBe(false);
-      expect(result.error).toBe(errorCode);
+      if (!result.ok) expect(result.error).toBe(errorCode);
     });
   });
 
@@ -76,8 +77,8 @@ describe("result.ts - Result type helpers", () => {
     });
 
     it("should throw Error with stringified error", () => {
-      const result = err({ code: "CUSTOM_ERROR" });
-      expect(() => unwrap(result)).toThrow();
+      const result: Result<never, { code: string }> = err({ code: "CUSTOM_ERROR" });
+      expect(() => unwrap(result as Result<never>)).toThrow();
     });
 
     it("should preserve null values", () => {

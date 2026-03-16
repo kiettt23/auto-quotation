@@ -1,11 +1,12 @@
 "use server";
 
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { tenantMembers } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { setActiveTenantCookie } from "@/lib/tenant-cookie";
 
 export async function switchTenantAction(tenantId: string) {
   const headersList = await headers();
@@ -21,14 +22,6 @@ export async function switchTenantAction(tenantId: string) {
   });
   if (!membership) throw new Error("Not a member of this tenant");
 
-  const cookieStore = await cookies();
-  cookieStore.set("active-tenant-id", tenantId, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 24 * 365,
-    path: "/",
-  });
-
+  await setActiveTenantCookie(tenantId);
   redirect("/dashboard");
 }

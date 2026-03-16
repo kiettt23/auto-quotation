@@ -5,7 +5,7 @@
 
 import { db } from "@/db";
 import { documents, documentTemplates } from "@/db/schema";
-import { eq, and, desc, inArray, sql } from "drizzle-orm";
+import { eq, and, desc, sql, isNull } from "drizzle-orm";
 import { ok, err } from "@/lib/result";
 import type { Result } from "@/lib/result";
 import { createId } from "@paralleldrive/cuid2";
@@ -40,12 +40,7 @@ export async function getDocuments(
   tenantId: string,
   params: GetDocumentsParams = {}
 ): Promise<DocumentWithTemplate[]> {
-  // Filter at DB level using subquery — only docs whose template belongs to this tenant
-  const tenantTemplateIds = db.select({ id: documentTemplates.id })
-    .from(documentTemplates)
-    .where(eq(documentTemplates.tenantId, tenantId));
-
-  const conditions = [inArray(documents.templateId, tenantTemplateIds)];
+  const conditions = [eq(documents.tenantId, tenantId), isNull(documents.deletedAt)];
   if (params.templateId) {
     conditions.push(eq(documents.templateId, params.templateId));
   }
@@ -63,13 +58,8 @@ export async function getDocumentById(
   tenantId: string,
   id: string
 ): Promise<DocumentWithTemplate | undefined> {
-  // Use subquery to enforce tenant scope at DB level
-  const tenantTemplateIds = db.select({ id: documentTemplates.id })
-    .from(documentTemplates)
-    .where(eq(documentTemplates.tenantId, tenantId));
-
   const doc = await db.query.documents.findFirst({
-    where: and(eq(documents.id, id), inArray(documents.templateId, tenantTemplateIds)),
+    where: and(eq(documents.id, id), eq(documents.tenantId, tenantId), isNull(documents.deletedAt)),
     with: { template: true },
   });
   return doc;
@@ -104,6 +94,7 @@ export async function createDocument(
     const [doc] = await db
       .insert(documents)
       .values({
+        tenantId,
         templateId,
         docNumber,
         fieldData: data.fieldData,
@@ -186,7 +177,7 @@ export async function deleteDocument(
     const existing = await getDocumentById(tenantId, id);
     if (!existing) return err("Không tìm thấy tài liệu");
 
-    await db.delete(documents).where(eq(documents.id, id));
+    await db.update(documents).set({ deletedAt: new Date() }).where(eq(documents.id, id));
     return ok(undefined);
   } catch (e) {
     return err(e instanceof Error ? e.message : "Không thể xóa tài liệu");

@@ -10,3 +10,4 @@ export * from "./customers";
 export * from "./document-templates";
 export * from "./documents";
 export * from "./tenant-invites";
+export * from "./audit-logs";

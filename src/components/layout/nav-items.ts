@@ -50,7 +50,7 @@ export const navItems: NavItem[] = [
     showInBottomNav: true,
   },
   {
-    label: "Cài đặt",
+    label: "Cài đặt chung",
     icon: Settings,
     href: "/settings",
     showInBottomNav: false,

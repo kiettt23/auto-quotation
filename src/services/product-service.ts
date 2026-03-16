@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { products, pricingTiers, volumeDiscounts, categories, units } from "@/db/schema";
 import type { Product } from "@/db/schema";
-import { eq, and, or, ilike, count, desc, asc } from "drizzle-orm";
+import { eq, and, or, ilike, count, desc, asc, isNull } from "drizzle-orm";
 import type { ProductFormData } from "@/lib/validations/product-schemas";
 import { escapeIlike } from "@/lib/escape-ilike";
 import { ok, err } from "@/lib/result";
@@ -49,7 +49,7 @@ export async function getProducts(
   const pageSize = params.pageSize ?? 20;
   const offset = (page - 1) * pageSize;
 
-  const conditions = [eq(products.tenantId, tenantId)];
+  const conditions = [eq(products.tenantId, tenantId), isNull(products.deletedAt)];
   if (params.categoryId) {
     conditions.push(eq(products.categoryId, params.categoryId));
   }
@@ -94,7 +94,7 @@ export async function getProductById(
   id: string
 ): Promise<ProductWithRelations | null> {
   const row = await db.query.products.findFirst({
-    where: and(eq(products.id, id), eq(products.tenantId, tenantId)),
+    where: and(eq(products.id, id), eq(products.tenantId, tenantId), isNull(products.deletedAt)),
     with: { category: true, unit: true, pricingTiers: true, volumeDiscounts: true },
   });
 
@@ -113,6 +113,7 @@ export async function searchProducts(
   const rows = await db.query.products.findMany({
     where: and(
       eq(products.tenantId, tenantId),
+      isNull(products.deletedAt),
       or(
         ilike(products.name, `%${escapeIlike(query)}%`),
         ilike(products.code, `%${escapeIlike(query)}%`)
@@ -243,7 +244,8 @@ export async function deleteProduct(tenantId: string, id: string): Promise<Resul
     if (!existing) return err("Không tìm thấy sản phẩm");
 
     await db
-      .delete(products)
+      .update(products)
+      .set({ deletedAt: new Date() })
       .where(and(eq(products.id, id), eq(products.tenantId, tenantId)));
 
     return ok(undefined);
@@ -382,6 +384,7 @@ type RawProductRow = {
   pricingType: "FIXED" | "TIERED";
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date | null;
   category: { id: string; name: string } | null;
   unit: { id: string; name: string } | null;
   pricingTiers: { id: string; productId: string; minQuantity: string; maxQuantity: string | null; price: string }[];

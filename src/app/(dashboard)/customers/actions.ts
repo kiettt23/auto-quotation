@@ -7,6 +7,7 @@ import { requireRole } from "@/lib/rbac";
 import * as customerService from "@/services/customer-service";
 import { customerFormSchema } from "@/lib/validations/customer-schemas";
 import type { CustomerFormData } from "@/lib/validations/customer-schemas";
+import { logAudit } from "@/lib/audit-logger";
 
 type GetCustomersParams = {
   page?: number;
@@ -41,6 +42,7 @@ export async function saveCustomer(data: CustomerFormData, id?: string) {
     requireRole(ctx.role, "MEMBER");
     const result = await customerService.saveCustomer(ctx.tenantId, parsed.data, id);
     if (!result.ok) return err(result.error);
+    logAudit({ tenantId: ctx.tenantId, userId: ctx.userId, action: id ? "customer.update" : "customer.create", resourceType: "customer", resourceId: result.value.id });
     revalidatePath("/customers");
     return ok(result.value);
   } catch (e) {
@@ -54,6 +56,7 @@ export async function deleteCustomer(id: string) {
     requireRole(ctx.role, "MEMBER");
     const result = await customerService.deleteCustomer(ctx.tenantId, id);
     if (!result.ok) return err(result.error);
+    logAudit({ tenantId: ctx.tenantId, userId: ctx.userId, action: "customer.delete", resourceType: "customer", resourceId: id });
     revalidatePath("/customers");
     return ok(null);
   } catch (e) {

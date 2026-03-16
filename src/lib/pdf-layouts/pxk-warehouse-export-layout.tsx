@@ -96,7 +96,7 @@ const s = StyleSheet.create({
   tdTextRight: { fontSize: 10, padding: "4 5", textAlign: "right" },
 
   // Column widths matching original proportions
-  // STT | Tên Hàng | Dvt | quy cách | Tổng Cộng(kgs) | Ghi Chú
+  // STT | Tên Hàng | Dvt | Quy cách | Tổng Cộng(kgs) | Ghi Chú
   cStt: { width: "7%", borderRightWidth: BORDER, borderColor: B },
   cItem: { width: "27%", borderRightWidth: BORDER, borderColor: B },
   cUnit: { width: "8%", borderRightWidth: BORDER, borderColor: B },
@@ -178,7 +178,9 @@ function PxkDocument({ data }: { data: PxkWarehouseExportData }) {
     return sum + (isNaN(w) ? 0 : w);
   }, 0);
 
-  const receiver = [data.receiverName, data.receiverPhone].filter(Boolean).join(" : ");
+  const receiver = [data.receiverName, data.receiverPhone]
+    .filter(Boolean)
+    .join(" : ");
 
   return (
     <Document>
@@ -205,7 +207,8 @@ function PxkDocument({ data }: { data: PxkWarehouseExportData }) {
           </Text>
           {data.deliveryAddress ? (
             <Text style={s.infoLine}>
-              Nơi giao hàng:<Text style={s.infoBold}>{data.deliveryAddress}</Text>
+              Nơi giao hàng:
+              <Text style={s.infoBold}>{data.deliveryAddress}</Text>
             </Text>
           ) : null}
           {receiver ? (
@@ -219,12 +222,24 @@ function PxkDocument({ data }: { data: PxkWarehouseExportData }) {
         <View style={s.table}>
           {/* Header row */}
           <View style={s.tRow}>
-            <View style={s.cStt}><Text style={s.thText}>STT</Text></View>
-            <View style={s.cItem}><Text style={s.thText}>Tên Hàng</Text></View>
-            <View style={s.cUnit}><Text style={s.thText}>Dvt</Text></View>
-            <View style={s.cSpec}><Text style={s.thText}>quy cách</Text></View>
-            <View style={s.cWeight}><Text style={s.thText}>Tổng Cộng( kgs)</Text></View>
-            <View style={s.cNote}><Text style={s.thText}>Ghi Chú</Text></View>
+            <View style={s.cStt}>
+              <Text style={s.thText}>STT</Text>
+            </View>
+            <View style={s.cItem}>
+              <Text style={s.thText}>Tên Hàng</Text>
+            </View>
+            <View style={s.cUnit}>
+              <Text style={s.thText}>Dvt</Text>
+            </View>
+            <View style={s.cSpec}>
+              <Text style={s.thText}>Quy cách</Text>
+            </View>
+            <View style={s.cWeight}>
+              <Text style={s.thText}>Tổng Cộng( kgs)</Text>
+            </View>
+            <View style={s.cNote}>
+              <Text style={s.thText}>Ghi Chú</Text>
+            </View>
           </View>
 
           {/* Data rows */}
@@ -233,17 +248,29 @@ function PxkDocument({ data }: { data: PxkWarehouseExportData }) {
             return (
               <View key={i} style={isLast ? s.tRowNoBorder : s.tRow}>
                 <View style={s.cStt}>
-                  <Text style={s.tdTextCenter}>{row.itemName ? i + 1 : ""}</Text>
-                </View>
-                <View style={s.cItem}><Text style={s.tdText}>{row.itemName}</Text></View>
-                <View style={s.cUnit}><Text style={s.tdTextCenter}>{row.unit}</Text></View>
-                <View style={s.cSpec}><Text style={s.tdText}>{row.specification}</Text></View>
-                <View style={s.cWeight}>
-                  <Text style={s.tdTextRight}>
-                    {row.totalWeight && parseFloat(row.totalWeight) ? parseFloat(row.totalWeight).toFixed(2) : ""}
+                  <Text style={s.tdTextCenter}>
+                    {row.itemName ? i + 1 : ""}
                   </Text>
                 </View>
-                <View style={s.cNote}><Text style={s.tdText}>{row.note}</Text></View>
+                <View style={s.cItem}>
+                  <Text style={s.tdText}>{row.itemName}</Text>
+                </View>
+                <View style={s.cUnit}>
+                  <Text style={s.tdTextCenter}>{row.unit}</Text>
+                </View>
+                <View style={s.cSpec}>
+                  <Text style={s.tdText}>{row.specification}</Text>
+                </View>
+                <View style={s.cWeight}>
+                  <Text style={s.tdTextRight}>
+                    {row.totalWeight && parseFloat(row.totalWeight)
+                      ? parseFloat(row.totalWeight).toFixed(2)
+                      : ""}
+                  </Text>
+                </View>
+                <View style={s.cNote}>
+                  <Text style={s.tdText}>{row.note}</Text>
+                </View>
               </View>
             );
           })}
@@ -286,6 +313,10 @@ function PxkDocument({ data }: { data: PxkWarehouseExportData }) {
 
 // ─── Export ──────────────────────────────────────────────────────────────────
 
-export async function generatePxkWarehouseExport(data: PxkWarehouseExportData): Promise<Buffer> {
-  return renderToBuffer(<PxkDocument data={data} />) as unknown as Promise<Buffer>;
+export async function generatePxkWarehouseExport(
+  data: PxkWarehouseExportData,
+): Promise<Buffer> {
+  return renderToBuffer(
+    <PxkDocument data={data} />,
+  ) as unknown as Promise<Buffer>;
 }

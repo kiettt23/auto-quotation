@@ -5,7 +5,7 @@
 
 import { db } from "@/db";
 import { documentTemplates } from "@/db/schema";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, isNull } from "drizzle-orm";
 import { ok, err } from "@/lib/result";
 import type { Result } from "@/lib/result";
 import type { DocumentTemplate } from "@/db/schema";
@@ -37,7 +37,7 @@ export type UpdateTemplateInput = {
 
 export async function getTemplates(tenantId: string): Promise<DocumentTemplate[]> {
   return db.query.documentTemplates.findMany({
-    where: eq(documentTemplates.tenantId, tenantId),
+    where: and(eq(documentTemplates.tenantId, tenantId), isNull(documentTemplates.deletedAt)),
     orderBy: [asc(documentTemplates.createdAt)],
   });
 }
@@ -47,7 +47,7 @@ export async function getTemplateById(
   id: string
 ): Promise<DocumentTemplate | undefined> {
   return db.query.documentTemplates.findFirst({
-    where: and(eq(documentTemplates.id, id), eq(documentTemplates.tenantId, tenantId)),
+    where: and(eq(documentTemplates.id, id), eq(documentTemplates.tenantId, tenantId), isNull(documentTemplates.deletedAt)),
   });
 }
 
@@ -116,7 +116,8 @@ export async function deleteTemplate(
     if (!template) return err("Không tìm thấy mẫu tài liệu");
 
     await db
-      .delete(documentTemplates)
+      .update(documentTemplates)
+      .set({ deletedAt: new Date() })
       .where(and(eq(documentTemplates.id, id), eq(documentTemplates.tenantId, tenantId)));
 
     return ok(undefined);

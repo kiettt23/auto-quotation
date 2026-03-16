@@ -46,6 +46,7 @@ export const tenants = pgTable("tenants", {
   onboardingComplete: boolean("onboarding_complete").default(false).notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
+  deletedAt: timestamp("deleted_at"),
 });
 
 export const tenantsRelations = relations(tenants, ({ many }) => ({

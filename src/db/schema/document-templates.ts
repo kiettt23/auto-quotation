@@ -30,6 +30,7 @@ export const documentTemplates = pgTable(
     docNextNumber: integer("doc_next_number").default(1).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
+    deletedAt: timestamp("deleted_at"),
   },
   (t) => [index("doc_templates_tenant_idx").on(t.tenantId)]
 );

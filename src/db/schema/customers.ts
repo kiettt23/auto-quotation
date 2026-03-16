@@ -19,6 +19,7 @@ export const customers = pgTable(
     notes: text("notes").default("").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
+    deletedAt: timestamp("deleted_at"),
   },
   (t) => [index("customers_tenant_idx").on(t.tenantId)]
 );

@@ -12,6 +12,7 @@ import {
   deleteProduct,
 } from "@/services/product-service";
 import { productFormSchema } from "@/lib/validations/product-schemas";
+import { logAudit } from "@/lib/audit-logger";
 import type { ProductWithRelations } from "@/services/product-service";
 
 type PaginatedProducts = {
@@ -63,6 +64,7 @@ export async function saveProductAction(
     }
     const result = await saveProduct(tenantId, parsed.data, id);
     if (!result.ok) return err(result.error);
+    logAudit({ tenantId, userId: ctx.userId, action: id ? "product.update" : "product.create", resourceType: "product", resourceId: result.value.id });
     revalidatePath("/products");
     return ok(result.value);
   } catch (e) {
@@ -77,6 +79,7 @@ export async function deleteProductAction(id: string): Promise<Result<null>> {
     const { tenantId } = ctx;
     const result = await deleteProduct(tenantId, id);
     if (!result.ok) return err(result.error);
+    logAudit({ tenantId, userId: ctx.userId, action: "product.delete", resourceType: "product", resourceId: id });
     revalidatePath("/products");
     return ok(null);
   } catch (e) {

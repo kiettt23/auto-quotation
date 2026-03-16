@@ -210,6 +210,7 @@ async function seed() {
   // ── 10. Document Entries ──────────────────────────────────
   await db.insert(documents).values([
     {
+      tenantId: tenant.id,
       templateId: tmplPXK.id,
       docNumber: "PXK-2026-001",
       fieldData: { B3: "PXK-2026-001", B4: "14/03/2026", B5: "Nguyễn Văn Hùng" },
@@ -219,6 +220,7 @@ async function seed() {
       ],
     },
     {
+      tenantId: tenant.id,
       templateId: tmplPXK.id,
       docNumber: "PXK-2026-002",
       fieldData: { B3: "PXK-2026-002", B4: "14/03/2026", B5: "Trần Minh Tú" },
@@ -227,6 +229,7 @@ async function seed() {
       ],
     },
     {
+      tenantId: tenant.id,
       templateId: tmplBBNT.id,
       docNumber: "BBNT-2026-001",
       fieldData: {

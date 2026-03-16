@@ -1,8 +1,9 @@
-import { headers, cookies } from "next/headers";
+import { headers } from "next/headers";
 import { auth } from "@/auth";
 import { db } from "@/db";
 import { tenantMembers } from "@/db/schema";
 import { and, eq } from "drizzle-orm";
+import { getActiveTenantId } from "@/lib/tenant-cookie";
 
 export type TenantContext = {
   userId: string;
@@ -31,8 +32,7 @@ export async function getTenantContext(): Promise<TenantContext> {
   }
 
   const userId = session.user.id;
-  const cookieStore = await cookies();
-  const activeTenantId = cookieStore.get("active-tenant-id")?.value;
+  const activeTenantId = await getActiveTenantId();
 
   // If cookie is set, verify the user is still a member of that tenant
   if (activeTenantId) {
