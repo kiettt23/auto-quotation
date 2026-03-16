@@ -28,6 +28,7 @@ type ExistingTemplate = {
   sheetName: string;
   fileType: string;
   fileBase64: string;
+  fileUrl?: string | null;
   docPrefix: string;
   docNextNumber: number;
   placeholders: unknown;
@@ -182,9 +183,15 @@ export function DocTemplateBuilderPage({ template }: Props) {
     (isPdf || isPresetMode || isEdit || form.sheetName !== "");
   const canAdvance = contentType !== "configure" || configureIsValid;
 
-  const fileBase64ForPdf = analysis?.fileType === "pdf"
-    ? analysis.fileBase64
-    : template?.fileType === "pdf" ? template.fileBase64 : undefined;
+  // Prefer blob URL for PDF preview; fall back to base64 for legacy/new uploads
+  const pdfPreviewUrl = template?.fileType === "pdf" && template.fileUrl
+    ? template.fileUrl
+    : undefined;
+  const fileBase64ForPdf = pdfPreviewUrl
+    ? undefined
+    : analysis?.fileType === "pdf"
+      ? analysis.fileBase64
+      : template?.fileType === "pdf" ? template.fileBase64 : undefined;
 
   function handleSourceSelect(choice: SourceChoice) {
     if (choice.type === "preset") {
@@ -318,6 +325,7 @@ export function DocTemplateBuilderPage({ template }: Props) {
             isEdit={isEdit}
             fileType={effectiveFileType as "excel" | "pdf"}
             fileBase64={isPresetMode ? undefined : fileBase64ForPdf}
+            fileUrl={isPresetMode ? undefined : pdfPreviewUrl}
             isPreset={isPresetMode}
           />
         )}

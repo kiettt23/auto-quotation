@@ -4,7 +4,8 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import type { PdfRegionDraft } from "./doc-template-configure-step";
 
 type Props = {
-  fileBase64: string;
+  fileBase64?: string;
+  fileUrl?: string;
   regions: PdfRegionDraft[];
   onAddRegion: (region: PdfRegionDraft) => void;
   onSelectRegion?: (index: number) => void;
@@ -38,6 +39,7 @@ const REGION_BORDER_COLORS = [
  */
 export function DocTemplatePdfCanvasViewer({
   fileBase64,
+  fileUrl,
   regions,
   onAddRegion,
   onSelectRegion,
@@ -66,8 +68,11 @@ export function DocTemplatePdfCanvasViewer({
         import.meta.url
       ).toString();
 
-      const data = Uint8Array.from(atob(fileBase64), (c) => c.charCodeAt(0));
-      const pdf = await pdfjsLib.getDocument({ data }).promise;
+      // Load from URL (blob storage) or base64 (legacy/new upload)
+      const source = fileUrl
+        ? { url: fileUrl }
+        : { data: Uint8Array.from(atob(fileBase64!), (c) => c.charCodeAt(0)) };
+      const pdf = await pdfjsLib.getDocument(source).promise;
       if (cancelled) return;
       pdfDocRef.current = pdf;
 
@@ -96,7 +101,7 @@ export function DocTemplatePdfCanvasViewer({
 
     loadPdf();
     return () => { cancelled = true; };
-  }, [fileBase64]);
+  }, [fileBase64, fileUrl]);
 
   // Convert pixel position on canvas to PDF coordinates (origin bottom-left)
   const pixelToPdf = useCallback(

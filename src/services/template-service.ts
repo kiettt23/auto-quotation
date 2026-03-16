@@ -9,6 +9,7 @@ import { eq, and, asc, isNull } from "drizzle-orm";
 import { ok, err } from "@/lib/result";
 import type { Result } from "@/lib/result";
 import type { DocumentTemplate } from "@/db/schema";
+import { uploadTemplateFile, deleteTemplateFile } from "@/lib/blob-storage";
 
 // ─── Input types ─────────────────────────────────────────
 
@@ -56,6 +57,14 @@ export async function createTemplate(
   data: CreateTemplateInput
 ): Promise<Result<DocumentTemplate>> {
   try {
+    // Upload file to Vercel Blob if base64 provided
+    let fileUrl: string | null = null;
+    if (data.fileBase64) {
+      const ext = data.fileType === "pdf" ? "pdf" : "xlsx";
+      const safeName = data.name.replace(/[^a-zA-Z0-9-_]/g, "_");
+      fileUrl = await uploadTemplateFile(data.fileBase64, `${safeName}.${ext}`);
+    }
+
     const [template] = await db
       .insert(documentTemplates)
       .values({
@@ -63,7 +72,8 @@ export async function createTemplate(
         name: data.name,
         description: data.description ?? "",
         fileType: data.fileType,
-        fileBase64: data.fileBase64,
+        fileBase64: "", // deprecated — using fileUrl
+        fileUrl,
         sheetName: data.sheetName ?? "",
         placeholders: data.placeholders ?? [],
         tableRegion: data.tableRegion ?? null,
@@ -114,6 +124,11 @@ export async function deleteTemplate(
     });
 
     if (!template) return err("Không tìm thấy mẫu tài liệu");
+
+    // Clean up blob storage
+    if (template.fileUrl) {
+      deleteTemplateFile(template.fileUrl);
+    }
 
     await db
       .update(documentTemplates)

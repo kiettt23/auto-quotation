@@ -17,8 +17,10 @@ export const documentTemplates = pgTable(
     description: text("description").default("").notNull(),
     // "excel" | "pdf"
     fileType: fileTypeEnum("file_type").default("excel").notNull(),
-    // Original file stored as base64 text
-    fileBase64: text("file_base64").notNull(),
+    // Original file stored as base64 text (deprecated — use fileUrl)
+    fileBase64: text("file_base64").default("").notNull(),
+    // Vercel Blob URL for the template file
+    fileUrl: text("file_url"),
     // Excel: sheet name to use; PDF: unused
     sheetName: text("sheet_name").default("").notNull(),
     // Excel: [{ cellRef, label, type }]; PDF: [{ id, label, x, y, width, height, fontSize, type }]

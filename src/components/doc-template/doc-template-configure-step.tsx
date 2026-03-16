@@ -68,14 +68,16 @@ type Props = {
   isEdit: boolean;
   fileType?: "excel" | "pdf";
   fileBase64?: string;
+  fileUrl?: string;
   /** Preset mode — show placeholders & table config without PDF regions or sheet selector */
   isPreset?: boolean;
 };
 
 /** Step 2: configure template name, sheet/regions, placeholders, numbering. */
-export function DocTemplateConfigureStep({ analysis, form, onChange, isEdit, fileType, fileBase64, isPreset }: Props) {
+export function DocTemplateConfigureStep({ analysis, form, onChange, isEdit, fileType, fileBase64, fileUrl, isPreset }: Props) {
   const effectiveFileType = fileType ?? (analysis?.fileType ?? "excel");
   const effectiveBase64 = fileBase64 ?? (analysis?.fileType === "pdf" ? analysis.fileBase64 : undefined);
+  const effectiveFileUrl = fileUrl;
 
   return (
     <div className="space-y-6">
@@ -88,9 +90,10 @@ export function DocTemplateConfigureStep({ analysis, form, onChange, isEdit, fil
       )}
 
       {/* PDF-specific: coordinate-based region editing (skip for presets) */}
-      {!isPreset && effectiveFileType === "pdf" && effectiveBase64 && (
+      {!isPreset && effectiveFileType === "pdf" && (effectiveBase64 || effectiveFileUrl) && (
         <PdfCoordinateSection
           fileBase64={effectiveBase64}
+          fileUrl={effectiveFileUrl}
           regions={form.pdfRegions}
           onChange={(pdfRegions) => onChange({ pdfRegions })}
         />
@@ -149,12 +152,13 @@ function BasicInfoSection({ form, onChange }: BasicInfoProps) {
 import { useState } from "react";
 
 type PdfCoordinateSectionProps = {
-  fileBase64: string;
+  fileBase64?: string;
+  fileUrl?: string;
   regions: PdfRegionDraft[];
   onChange: (regions: PdfRegionDraft[]) => void;
 };
 
-function PdfCoordinateSection({ fileBase64, regions, onChange }: PdfCoordinateSectionProps) {
+function PdfCoordinateSection({ fileBase64, fileUrl, regions, onChange }: PdfCoordinateSectionProps) {
   const [selectedIndex, setSelectedIndex] = useState<number>(-1);
 
   function handleAddRegion(region: PdfRegionDraft) {
@@ -168,6 +172,7 @@ function PdfCoordinateSection({ fileBase64, regions, onChange }: PdfCoordinateSe
       {/* Canvas viewer for drawing regions */}
       <DocTemplatePdfCanvasViewer
         fileBase64={fileBase64}
+        fileUrl={fileUrl}
         regions={regions}
         onAddRegion={handleAddRegion}
         onSelectRegion={setSelectedIndex}

@@ -5,14 +5,15 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type Props = {
-  fileBase64: string;
+  fileBase64?: string;
+  fileUrl?: string;
 };
 
 /** Collapsible PDF preview using an embedded iframe */
-export function DocTemplatePdfPreview({ fileBase64 }: Props) {
+export function DocTemplatePdfPreview({ fileBase64, fileUrl }: Props) {
   const [expanded, setExpanded] = useState(true);
 
-  const dataUrl = `data:application/pdf;base64,${fileBase64}`;
+  const dataUrl = fileUrl ?? `data:application/pdf;base64,${fileBase64}`;
 
   return (
     <div className="rounded-lg border overflow-hidden">

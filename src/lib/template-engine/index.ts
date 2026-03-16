@@ -8,6 +8,7 @@ import type { RenderResult } from "./types";
 import { findPresetRenderer } from "@/lib/preset-templates/preset-renderers";
 import { renderExcelCustom } from "./render-excel-custom";
 import { renderPdfCustom } from "./render-pdf-custom";
+import { getTemplateFileBase64 } from "@/lib/blob-storage";
 
 // ─── Main render function ─────────────────────────────────
 
@@ -26,7 +27,9 @@ export async function renderDocument(
     return presetRenderer(fieldData, tableRows, tenant, document.docNumber);
   }
 
-  // 2. Custom template rendering
+  // 2. Custom template rendering — resolve file content from blob or legacy base64
+  const fileBase64 = await getTemplateFileBase64(template);
+
   if (template.fileType === "excel") {
     const placeholders = (template.placeholders ?? []) as {
       cellRef: string;
@@ -40,7 +43,7 @@ export async function renderDocument(
     } | null;
 
     return renderExcelCustom(
-      template.fileBase64,
+      fileBase64,
       template.sheetName,
       placeholders,
       tableRegion,
@@ -63,7 +66,7 @@ export async function renderDocument(
   }[];
 
   return renderPdfCustom(
-    template.fileBase64,
+    fileBase64,
     placeholders,
     fieldData,
     `${document.docNumber}`

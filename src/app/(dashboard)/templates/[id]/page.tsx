@@ -23,6 +23,7 @@ export default async function EditTemplatePage({ params }: Props) {
         sheetName: template.sheetName,
         fileType: template.fileType,
         fileBase64: template.fileBase64,
+        fileUrl: template.fileUrl,
         docPrefix: template.docPrefix,
         docNextNumber: template.docNextNumber,
         placeholders: template.placeholders as never,
