@@ -149,9 +149,8 @@ const s = StyleSheet.create({
   signatureRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 30,
   },
-  signatureBlock: { alignItems: "center", width: 130 },
+  signatureBlock: { alignItems: "center", flex: 1 },
   signatureTitle: { fontWeight: "bold", fontSize: 11 },
 });
 
