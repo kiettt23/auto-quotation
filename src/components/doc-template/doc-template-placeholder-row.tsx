@@ -28,11 +28,11 @@ export function DocTemplatePlaceholderRow({ item, index, onChange }: Props) {
         onCheckedChange={(checked) => onChange(index, { included: !!checked })}
         className="mt-1"
       />
-      <div className="grid flex-1 gap-2 sm:grid-cols-[80px_1fr_120px]">
-        {/* Cell ref - read only */}
-        <div>
+      <div className="grid flex-1 gap-2 sm:grid-cols-[minmax(80px,auto)_1fr_120px]">
+        {/* Cell ref / placeholder ID - read only */}
+        <div className="min-w-0">
           <Label className="text-xs text-muted-foreground">Ô</Label>
-          <p className="h-9 flex items-center font-mono text-sm px-1">{item.cellRef}</p>
+          <p className="h-9 flex items-center font-mono text-sm px-1 truncate" title={item.cellRef}>{item.cellRef}</p>
         </div>
 
         {/* Label editable */}

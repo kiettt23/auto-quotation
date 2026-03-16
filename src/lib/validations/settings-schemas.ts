@@ -4,9 +4,15 @@ import { z } from "zod/v4";
 export const companyInfoSchema = z.object({
   companyName: z.string().min(1, "Tên công ty không được để trống"),
   address: z.string(),
-  phone: z.string(),
+  phone: z.string().refine(
+    (v) => !v || /^(0|\+84)\d{9,10}$/.test(v.replace(/[\s.-]/g, "")),
+    "Số điện thoại không hợp lệ (VD: 0912345678)"
+  ),
   email: z.string(),
-  taxCode: z.string(),
+  taxCode: z.string().refine(
+    (v) => !v || /^\d{10}(-\d{3})?$/.test(v),
+    "Mã số thuế phải là 10 hoặc 13 chữ số (VD: 0123456789 hoặc 0123456789-001)"
+  ),
   website: z.string(),
 });
 

@@ -6,7 +6,6 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import { MoreHorizontal, Pencil, Trash2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -85,7 +84,6 @@ export function CustomerDataTable({
               <TableHead className="w-40 hidden sm:table-cell">Công ty</TableHead>
               <TableHead className="w-[130px]">Điện thoại</TableHead>
               <TableHead className="w-[180px] hidden md:table-cell">Email</TableHead>
-              <TableHead className="w-[70px] text-center">Số TL</TableHead>
               <TableHead className="w-[50px]" />
             </TableRow>
           </TableHeader>
@@ -93,7 +91,7 @@ export function CustomerDataTable({
             {customers.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={5}
                   className="h-24 text-center text-muted-foreground"
                 >
                   Chưa có khách hàng nào
@@ -109,9 +107,6 @@ export function CustomerDataTable({
                   <TableCell>{c.phone || "—"}</TableCell>
                   <TableCell className="text-muted-foreground hidden md:table-cell">
                     {c.email || "—"}
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <Badge variant="secondary">{c.docCount}</Badge>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -177,8 +172,7 @@ export function CustomerDataTable({
             <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
             <AlertDialogDescription>
               Bạn có chắc muốn xóa khách hàng &quot;{deleteTarget?.name}&quot;?
-              {(deleteTarget?.docCount ?? 0) > 0 &&
-                ` Khách hàng có ${deleteTarget!.docCount} tài liệu liên quan.`}
+              Hành động này không thể hoàn tác.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -27,9 +27,17 @@ type ProductResult = {
 
 export type SelectedProduct = {
   productId: string;
+  code: string;
   name: string;
   unit: string;
+  category: string;
+  description: string;
+  notes: string;
+  specification: string;
+  weight: number;
+  packagingInfo: string;
   unitPrice: number;
+  basePrice: number;
 };
 
 type Props = {
@@ -69,9 +77,17 @@ export function ProductAutocompleteCombobox({ open, onOpenChange, onSelect }: Pr
 
     onSelect({
       productId: product.id,
+      code: product.code,
       name: product.name,
-      unit: product.unit.name,
+      unit: product.unit?.name ?? "",
+      category: product.category?.name ?? "",
+      description: (product as ProductResult & { description?: string }).description ?? "",
+      notes: (product as ProductResult & { notes?: string }).notes ?? "",
+      specification: (product as ProductResult & { specification?: string }).specification ?? "",
+      weight: Number((product as ProductResult & { weight?: string }).weight ?? 0),
+      packagingInfo: (product as ProductResult & { packagingInfo?: string }).packagingInfo ?? "",
       unitPrice: calculateUnitPrice(pricingProduct, 1),
+      basePrice: Number(product.basePrice),
     });
 
     setQuery("");
@@ -79,7 +95,7 @@ export function ProductAutocompleteCombobox({ open, onOpenChange, onSelect }: Pr
   }
 
   const grouped = results.reduce<Record<string, ProductResult[]>>((acc, p) => {
-    const cat = p.category.name;
+    const cat = p.category?.name ?? "Chưa phân loại";
     if (!acc[cat]) acc[cat] = [];
     acc[cat].push(p);
     return acc;

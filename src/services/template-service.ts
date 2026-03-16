@@ -23,6 +23,7 @@ export type CreateTemplateInput = {
   tableRegion?: unknown;
   docPrefix?: string;
   docNextNumber?: number;
+  presetId?: string;
 };
 
 export type UpdateTemplateInput = {
@@ -79,6 +80,7 @@ export async function createTemplate(
         tableRegion: data.tableRegion ?? null,
         docPrefix: data.docPrefix ?? "DOC-{YYYY}-",
         docNextNumber: data.docNextNumber ?? 1,
+        presetId: data.presetId ?? null,
       })
       .returning();
     return ok(template);

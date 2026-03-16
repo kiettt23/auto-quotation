@@ -60,6 +60,8 @@ export async function getCustomers(
       .where(baseWhere),
   ]);
 
+  // Documents don't have a customerId FK (customer data is in JSON fieldData),
+  // so docCount cannot be computed efficiently. Set to 0 until schema supports it.
   const withCount: CustomerWithDocCount[] = rows.map((r) => ({ ...r, docCount: 0 }));
 
   return {
@@ -128,6 +130,9 @@ export async function saveCustomer(
       email: data.email ?? "",
       address: data.address ?? "",
       notes: data.notes ?? "",
+      defaultDeliveryAddress: data.defaultDeliveryAddress ?? "",
+      defaultReceiverName: data.defaultReceiverName ?? "",
+      defaultReceiverPhone: data.defaultReceiverPhone ?? "",
     };
 
     if (id) {

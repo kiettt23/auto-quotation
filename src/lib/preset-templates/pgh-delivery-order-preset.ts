@@ -21,14 +21,22 @@ export const pghDeliveryOrderPreset: PresetTemplate = {
     {
       key: "buyerName", label: "Tên người mua", type: "text",
       dataSource: "customer",
-      linkedFields: { address: "buyerAddress", phone: "receiverPhone" },
+      linkedFields: { address: "buyerAddress", defaultDeliveryAddress: "deliveryAddress", defaultReceiverName: "receiverName", defaultReceiverPhone: "receiverPhone" },
     },
     { key: "buyerAddress", label: "Địa chỉ người mua", type: "text" },
-    { key: "deliveryTo", label: "Giao đến (người nhận)", type: "text" },
+    {
+      key: "deliveryTo", label: "Giao đến (người nhận)", type: "text",
+      dataSource: "customer",
+      linkedFields: { address: "deliveryAddress", phone: "receiverPhone" },
+    },
     { key: "deliveryAddress", label: "Địa chỉ giao hàng", type: "text" },
     { key: "vehicleId", label: "Số xe", type: "text" },
     { key: "driverName", label: "Tên tài xế", type: "text" },
-    { key: "receiverName", label: "Người nhận hàng", type: "text" },
+    {
+      key: "receiverName", label: "Người nhận hàng", type: "text",
+      dataSource: "customer",
+      linkedFields: { phone: "receiverPhone" },
+    },
     { key: "receiverPhone", label: "SĐT người nhận", type: "text" },
   ],
 
@@ -37,6 +45,7 @@ export const pghDeliveryOrderPreset: PresetTemplate = {
     {
       key: "itemName", label: "Tên hàng", type: "text",
       dataSource: "product",
+      linkedFields: { weight: "netWeight", packagingInfo: "boxQty" },
     },
     { key: "lotNo", label: "Số lô", type: "text" },
     { key: "boxQty", label: "Số thùng", type: "number" },

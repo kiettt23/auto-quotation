@@ -50,11 +50,13 @@ export function DocTemplatePdfCanvasViewer({
   const containerRef = useRef<HTMLDivElement>(null);
   const [pageInfo, setPageInfo] = useState<PageInfo | null>(null);
   const [scale, setScale] = useState(1);
+  const [userZoom, setUserZoom] = useState<number | null>(null); // null = auto-fit
   const [mousePos, setMousePos] = useState<{ pdfX: number; pdfY: number } | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState<{ pdfX: number; pdfY: number } | null>(null);
   const [dragCurrent, setDragCurrent] = useState<{ pdfX: number; pdfY: number } | null>(null);
   const pdfDocRef = useRef<unknown>(null);
+  const fitScaleRef = useRef(1);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -94,12 +96,14 @@ export function DocTemplatePdfCanvasViewer({
 
       const containerWidth = containerRef.current?.clientWidth ?? 800;
       const fitScale = Math.min(containerWidth / viewport.width, 1.5);
-      setScale(fitScale);
+      fitScaleRef.current = fitScale;
+      const activeScale = userZoom ?? fitScale;
+      setScale(activeScale);
 
       const canvas = canvasRef.current;
       if (!canvas) return;
 
-      const scaledViewport = page.getViewport({ scale: fitScale });
+      const scaledViewport = page.getViewport({ scale: activeScale });
       canvas.width = scaledViewport.width;
       canvas.height = scaledViewport.height;
 
@@ -110,7 +114,7 @@ export function DocTemplatePdfCanvasViewer({
 
     loadPdf();
     return () => { cancelled = true; };
-  }, [fileBase64, fileUrl, currentPage]);
+  }, [fileBase64, fileUrl, currentPage, userZoom]);
 
   // Convert pixel position on canvas to PDF coordinates (origin bottom-left)
   const pixelToPdf = useCallback(
@@ -294,11 +298,43 @@ export function DocTemplatePdfCanvasViewer({
             </div>
           )}
         </div>
-        {mousePos && (
-          <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
-            X: {mousePos.pdfX.toFixed(1)} &nbsp; Y: {mousePos.pdfY.toFixed(1)}
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Zoom controls */}
+          <div className="flex items-center gap-1 text-xs">
+            <button
+              type="button"
+              className="px-1.5 py-0.5 rounded border hover:bg-muted disabled:opacity-30"
+              onClick={() => setUserZoom((prev) => Math.max(0.3, (prev ?? fitScaleRef.current) - 0.15))}
+            >
+              −
+            </button>
+            <span className="font-mono text-muted-foreground w-12 text-center">
+              {Math.round(scale * 100)}%
+            </span>
+            <button
+              type="button"
+              className="px-1.5 py-0.5 rounded border hover:bg-muted disabled:opacity-30"
+              onClick={() => setUserZoom((prev) => Math.min(3, (prev ?? fitScaleRef.current) + 0.15))}
+            >
+              +
+            </button>
+            {userZoom !== null && (
+              <button
+                type="button"
+                className="px-1.5 py-0.5 rounded border hover:bg-muted text-muted-foreground"
+                onClick={() => setUserZoom(null)}
+                title="Vừa khung"
+              >
+                ↺
+              </button>
+            )}
+          </div>
+          {mousePos && (
+            <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
+              X: {mousePos.pdfX.toFixed(1)} &nbsp; Y: {mousePos.pdfY.toFixed(1)}
+            </span>
+          )}
+        </div>
       </div>
 
       <div

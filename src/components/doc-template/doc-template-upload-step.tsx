@@ -57,6 +57,12 @@ export function DocTemplateUploadStep({ onAnalyzed }: Props) {
       return;
     }
 
+    const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+    if (file.size > MAX_FILE_SIZE) {
+      setError("Kích thước file không được vượt quá 20MB");
+      return;
+    }
+
     setError(null);
     setIsLoading(true);
 

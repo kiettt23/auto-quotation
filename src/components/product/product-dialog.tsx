@@ -196,6 +196,22 @@ export function ProductDialog({
             <Textarea rows={2} {...register("notes")} />
           </Field>
 
+          {/* Extended attributes for template auto-fill */}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Field>
+              <FieldLabel>Quy cách</FieldLabel>
+              <Input {...register("specification")} placeholder="VD: 50kg/cuộn" />
+            </Field>
+            <Field>
+              <FieldLabel>Trọng lượng (kg)</FieldLabel>
+              <Input type="number" step="any" {...register("weight", { valueAsNumber: true })} placeholder="0" />
+            </Field>
+            <Field>
+              <FieldLabel>Đóng gói</FieldLabel>
+              <Input {...register("packagingInfo")} placeholder="VD: 20 thùng/pallet" />
+            </Field>
+          </div>
+
           <div className="flex justify-end gap-2 pt-2">
             <Button
               type="button"

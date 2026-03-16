@@ -1,6 +1,6 @@
 # Development Roadmap - Auto Quotation v2.0.0
 
-Last Updated: 2026-03-14 | Status: All Phases Complete (1-6), Future Planning (7+)
+Last Updated: 2026-03-16 | Status: All Phases Complete (1-6), UX Polish (6.5), Future Planning (7+)
 
 ## Overview
 
@@ -146,7 +146,46 @@ Auto Quotation has completed all planned development phases for production SaaS 
 
 ---
 
-## Future Roadmap (Phase 7+)
+## Future Roadmap (Phase 6.5+)
+
+### Phase 6.5 — UX Polish & Backlog (v2.0.2) 📋
+
+**Source:** Codebase audit 2026-03-16 | **Priority:** Before Phase 7
+
+**Already Done (v2.0.1):**
+- ✅ Logo upload extension validation (security)
+- ✅ Unsaved changes warning (beforeunload)
+- ✅ Document list server-side pagination
+- ✅ File size check before base64 (20MB max)
+- ✅ Product save insert-before-delete (data safety)
+- ✅ Document search by doc number
+- ✅ Remove fake customer docCount column
+- ✅ Phone validation (Vietnamese format)
+- ✅ Tax code (MST) validation (10/13 digits)
+- ✅ PDF viewer zoom controls (30%-300%)
+
+**Remaining Backlog (needs audit to confirm):**
+
+| # | Item | Effort | Priority |
+|---|------|--------|----------|
+| 1 | Date picker component (DD/MM/YYYY) | Medium | Medium |
+| 2 | Bulk delete for products/customers/documents | Medium | Medium |
+| 3 | Table column sorting | Medium | Medium |
+| 4 | Template duplication feature | Small | Medium |
+| 5 | Keyboard shortcuts (Ctrl+S save) | Small | Low |
+| 6 | Export products/customers to CSV | Small | Low |
+| 7 | Document filtering by date range | Small | Low |
+| 8 | Page size selector in data tables | Tiny | Low |
+| 9 | Accessibility: aria-describedby on forms | Small | Low |
+| 10 | Accessibility: table scope="col" | Tiny | Low |
+| 11 | Mobile: card view for tables | Medium | Low |
+| 12 | Settings service SRP refactor | Medium | Low |
+| 13 | Font cache for PDF generation | Small | Low |
+| 14 | Undo/redo in document form | Large | Low |
+
+**Note:** These are from scout agents — ~33% were false positives on audit. Verify each before implementing.
+
+---
 
 ### Phase 7 — Email & Notifications (Q2 2026)
 
@@ -237,7 +276,11 @@ Auto Quotation has completed all planned development phases for production SaaS 
 - **v1.0.0** - 2026-02-28 - Initial MVP
 - **v2.0.0** - 2026-03-14 - Multi-tenant SaaS with RBAC
 
+### Completed 🔧
+- **v2.0.1** - 2026-03-16 - Security & UX hardening (audit-driven, 11 fixes)
+
 ### Planned 📅
+- **v2.0.2** - 2026-03 - UX polish & backlog (from audit, see Phase 6.5)
 - **v2.1.0** - 2026-04 - Email notifications
 - **v2.2.0** - 2026-05 - Analytics & tracking
 - **v3.0.0** - 2026-06 - Advanced templates, bulk ops
@@ -392,4 +435,4 @@ Auto Quotation has completed all planned development phases for production SaaS 
 
 ---
 
-**Last Updated:** 2026-03-14 | **Next Review:** 2026-04-14
+**Last Updated:** 2026-03-16 | **Next Review:** 2026-04-14

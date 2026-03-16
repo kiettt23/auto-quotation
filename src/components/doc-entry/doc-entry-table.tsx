@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { deleteDocEntry, shareDocEntry } from "@/app/(dashboard)/documents/actions";
+import { deleteDocEntry, shareDocEntry, duplicateDocEntry } from "@/app/(dashboard)/documents/actions";
 
 export type EntryRow = {
   id: string;
@@ -54,6 +54,8 @@ export function DocEntryTable({ entries }: Props) {
   /* Per-row pending states */
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [sharingId, setSharingId] = useState<string | null>(null);
+  const [duplicatingId, setDuplicatingId] = useState<string | null>(null);
+  const [, startDuplicateTransition] = useTransition();
 
   /* AlertDialog state — extracted outside dropdown for keyboard focus */
   const [deleteTarget, setDeleteTarget] = useState<EntryRow | null>(null);
@@ -83,6 +85,20 @@ export function DocEntryTable({ entries }: Props) {
   async function copyShareUrl() {
     await navigator.clipboard.writeText(shareUrl);
     toast.success("Đã sao chép link chia sẻ");
+  }
+
+  function handleDuplicate(entry: EntryRow) {
+    setDuplicatingId(entry.id);
+    startDuplicateTransition(async () => {
+      try {
+        const newDoc = await duplicateDocEntry(entry.id);
+        toast.success(`Đã tạo bản sao: ${newDoc.docNumber}`);
+      } catch {
+        toast.error("Tạo bản sao thất bại");
+      } finally {
+        setDuplicatingId(null);
+      }
+    });
   }
 
   function handleDelete() {
@@ -153,6 +169,17 @@ export function DocEntryTable({ entries }: Props) {
                             <Share2 className="mr-2 size-4" />
                           )}
                           Chia sẻ
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => handleDuplicate(entry)}
+                          disabled={duplicatingId === entry.id}
+                        >
+                          {duplicatingId === entry.id ? (
+                            <Loader2 className="mr-2 size-4 animate-spin" />
+                          ) : (
+                            <Copy className="mr-2 size-4" />
+                          )}
+                          Tạo bản sao
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <a href={`/api/doc-export/excel/${entry.id}`} download>

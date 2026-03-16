@@ -1,7 +1,7 @@
 import { db } from "@/db";
 import { products, pricingTiers, volumeDiscounts, categories, units } from "@/db/schema";
 import type { Product } from "@/db/schema";
-import { eq, and, or, ilike, count, desc, asc, isNull } from "drizzle-orm";
+import { eq, and, or, ilike, count, desc, asc, isNull, inArray } from "drizzle-orm";
 import type { ProductFormData } from "@/lib/validations/product-schemas";
 import { escapeIlike } from "@/lib/escape-ilike";
 import { ok, err } from "@/lib/result";
@@ -156,25 +156,28 @@ async function saveProductInternal(
     unitId: data.unitId ?? null,
     basePrice: String(data.basePrice),
     pricingType: data.pricingType,
+    specification: data.specification ?? "",
+    weight: String(data.weight ?? 0),
+    packagingInfo: data.packagingInfo ?? "",
   };
 
   let productId!: string;
 
   if (id) {
-    // Verify ownership
+    // Verify ownership and fetch existing relations for safe replace
     const existing = await db.query.products.findFirst({
       where: and(eq(products.id, id), eq(products.tenantId, tenantId)),
+      with: { pricingTiers: true, volumeDiscounts: true },
     });
     if (!existing) throw new Error("Không tìm thấy sản phẩm");
 
-    // neon-http driver does not support transactions — use sequential queries
+    // neon-http driver does not support transactions.
+    // Insert new tiers BEFORE deleting old ones to avoid data loss on crash.
     await db.update(products)
       .set({ ...payload, updatedAt: new Date() })
       .where(and(eq(products.id, id), eq(products.tenantId, tenantId)));
 
-    await db.delete(pricingTiers).where(eq(pricingTiers.productId, id));
-    await db.delete(volumeDiscounts).where(eq(volumeDiscounts.productId, id));
-
+    // 1. Insert new tiers first (old ones still exist as fallback)
     if (data.pricingTiers?.length) {
       await db.insert(pricingTiers).values(
         data.pricingTiers.map((t) => ({
@@ -185,7 +188,6 @@ async function saveProductInternal(
         }))
       );
     }
-
     if (data.volumeDiscounts?.length) {
       await db.insert(volumeDiscounts).values(
         data.volumeDiscounts.map((d) => ({
@@ -194,6 +196,16 @@ async function saveProductInternal(
           discountPercent: String(d.discountPercent),
         }))
       );
+    }
+
+    // 2. Delete old tiers by ID — new ones already persisted
+    const oldTierIds = existing.pricingTiers.map((t) => t.id);
+    const oldDiscountIds = existing.volumeDiscounts.map((d) => d.id);
+    if (oldTierIds.length) {
+      await db.delete(pricingTiers).where(inArray(pricingTiers.id, oldTierIds));
+    }
+    if (oldDiscountIds.length) {
+      await db.delete(volumeDiscounts).where(inArray(volumeDiscounts.id, oldDiscountIds));
     }
 
     productId = id;
@@ -381,6 +393,9 @@ type RawProductRow = {
   categoryId: string | null;
   unitId: string | null;
   basePrice: string;
+  specification: string;
+  weight: string;
+  packagingInfo: string;
   pricingType: "FIXED" | "TIERED";
   createdAt: Date;
   updatedAt: Date;

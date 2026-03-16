@@ -20,6 +20,7 @@ export async function createDocTemplate(data: {
   tableRegion: unknown;
   docPrefix?: string;
   docNextNumber?: number;
+  presetId?: string;
 }) {
   const ctx = await getTenantContext();
   requireRole(ctx.role, "ADMIN");

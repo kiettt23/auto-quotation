@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { getTenantContext } from "@/lib/tenant-context";
 import { getTemplateById } from "@/services/template-service";
+import { getTenantSettings } from "@/services/settings-service";
 import { DocEntryFormPage } from "@/components/doc-entry/doc-entry-form-page";
 
 type Props = {
@@ -14,7 +15,10 @@ export default async function NewDocumentPage({ searchParams }: Props) {
   if (!templateId) redirect("/documents");
 
   const { tenantId } = await getTenantContext();
-  const template = await getTemplateById(tenantId, templateId);
+  const [template, tenant] = await Promise.all([
+    getTemplateById(tenantId, templateId),
+    getTenantSettings(tenantId),
+  ]);
   if (!template) notFound();
 
   return (
@@ -26,7 +30,16 @@ export default async function NewDocumentPage({ searchParams }: Props) {
         fileType: template.fileType,
         placeholders: template.placeholders as never,
         tableRegion: template.tableRegion as never,
+        presetId: template.presetId,
       }}
+      tenantData={tenant ? {
+        companyName: tenant.companyName,
+        address: tenant.address,
+        phone: tenant.phone,
+        email: tenant.email,
+        taxCode: tenant.taxCode,
+        website: tenant.website,
+      } : undefined}
     />
   );
 }

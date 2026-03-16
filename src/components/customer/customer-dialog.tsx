@@ -30,7 +30,7 @@ type Props = {
 
 function getDefaults(c: CustomerWithDocCount | null): CustomerFormData {
   if (!c) {
-    return { name: "", company: "", phone: "", email: "", address: "", notes: "" };
+    return { name: "", company: "", phone: "", email: "", address: "", notes: "", defaultDeliveryAddress: "", defaultReceiverName: "", defaultReceiverPhone: "" };
   }
   return {
     name: c.name,
@@ -39,6 +39,9 @@ function getDefaults(c: CustomerWithDocCount | null): CustomerFormData {
     email: c.email,
     address: c.address,
     notes: c.notes,
+    defaultDeliveryAddress: c.defaultDeliveryAddress,
+    defaultReceiverName: c.defaultReceiverName,
+    defaultReceiverPhone: c.defaultReceiverPhone,
   };
 }
 
@@ -74,7 +77,7 @@ export function CustomerDialog({ open, onOpenChange, customer }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {isEditing ? "Sửa khách hàng" : "Thêm khách hàng"}
@@ -114,6 +117,27 @@ export function CustomerDialog({ open, onOpenChange, customer }: Props) {
             <FieldLabel>Ghi chú</FieldLabel>
             <Textarea rows={2} {...register("notes")} />
           </Field>
+
+          {/* Delivery defaults */}
+          <div className="border-t pt-4 mt-4">
+            <p className="text-sm font-medium mb-3 text-muted-foreground">Thông tin giao hàng mặc định</p>
+            <div className="space-y-4">
+              <Field>
+                <FieldLabel>Địa chỉ giao hàng</FieldLabel>
+                <Input {...register("defaultDeliveryAddress")} placeholder="Để trống nếu giống địa chỉ chính" />
+              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field>
+                  <FieldLabel>Người nhận</FieldLabel>
+                  <Input {...register("defaultReceiverName")} />
+                </Field>
+                <Field>
+                  <FieldLabel>SĐT người nhận</FieldLabel>
+                  <Input {...register("defaultReceiverPhone")} />
+                </Field>
+              </div>
+            </div>
+          </div>
 
           <div className="flex justify-end gap-2 pt-2">
             <Button

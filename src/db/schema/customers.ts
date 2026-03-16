@@ -17,6 +17,10 @@ export const customers = pgTable(
     email: text("email").default("").notNull(),
     address: text("address").default("").notNull(),
     notes: text("notes").default("").notNull(),
+    // Delivery defaults — auto-fill when selecting this customer
+    defaultDeliveryAddress: text("default_delivery_address").default("").notNull(),
+    defaultReceiverName: text("default_receiver_name").default("").notNull(),
+    defaultReceiverPhone: text("default_receiver_phone").default("").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),
     deletedAt: timestamp("deleted_at"),

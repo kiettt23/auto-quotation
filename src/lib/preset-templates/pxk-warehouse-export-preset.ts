@@ -32,7 +32,7 @@ export const pxkWarehouseExportPreset: PresetTemplate = {
     {
       key: "itemName", label: "Tên Hàng", type: "text",
       dataSource: "product",
-      linkedFields: { unit: "unit" },
+      linkedFields: { unit: "unit", specification: "specification", weight: "totalWeight" },
     },
     { key: "unit", label: "Đvt", type: "text" },
     { key: "specification", label: "Quy cách", type: "text" },

@@ -6,6 +6,7 @@ import {
   createDocument,
   updateDocument,
   deleteDocument,
+  duplicateDocument,
   generateShareLink,
 } from "@/services/document-service";
 import { revalidatePath } from "next/cache";
@@ -51,6 +52,17 @@ export async function shareDocEntry(id: string) {
   requireRole(ctx.role, "MEMBER");
   const result = await generateShareLink(ctx.tenantId, id);
   if (!result.ok) throw new Error(result.error);
+  return result.value;
+}
+
+export async function duplicateDocEntry(id: string) {
+  const ctx = await getTenantContext();
+  requireRole(ctx.role, "MEMBER");
+  const { tenantId } = ctx;
+  const result = await duplicateDocument(tenantId, id);
+  if (!result.ok) throw new Error(result.error);
+  logAudit({ tenantId, userId: ctx.userId, action: "document.duplicate", resourceType: "document", resourceId: result.value.id });
+  revalidatePath("/documents");
   return result.value;
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { ArrowLeft, Save } from "lucide-react";
@@ -12,7 +12,7 @@ import {
 } from "@/app/(dashboard)/documents/actions";
 import { DocEntryFieldInputs } from "./doc-entry-field-inputs";
 import { DocEntryTableRegionEditor } from "./doc-entry-table-region-editor";
-import { findPresetByName } from "@/lib/preset-templates";
+import { findPresetByName, getPresetById } from "@/lib/preset-templates";
 import type { Placeholder, TableRegion, PdfRegion } from "@/lib/validations/doc-template-schemas";
 
 // Generic JSON value type replacing Prisma's JsonValue
@@ -25,6 +25,7 @@ type DocTemplateProp = {
   fileType?: string;
   placeholders: JsonValue;
   tableRegion: JsonValue;
+  presetId?: string | null;
 };
 
 type DocEntryProp = {
@@ -35,9 +36,20 @@ type DocEntryProp = {
   tableRows: JsonValue;
 };
 
+type TenantData = {
+  companyName: string;
+  address: string;
+  phone: string;
+  email: string;
+  taxCode: string;
+  website: string;
+};
+
 type Props = {
   template: DocTemplateProp;
   entry?: DocEntryProp | null;
+  /** Tenant settings for auto-filling preset fields */
+  tenantData?: TenantData;
 };
 
 function castPlaceholders(raw: JsonValue): Placeholder[] {
@@ -60,14 +72,23 @@ function castTableRows(raw: JsonValue): Record<string, string>[] {
   return raw as Record<string, string>[];
 }
 
+/** Resolve autoFill dot-path like "tenant.companyName" → value from tenantData */
+function resolveAutoFill(path: string, tenantData?: TenantData): string {
+  if (!tenantData || !path.startsWith("tenant.")) return "";
+  const field = path.replace("tenant.", "") as keyof TenantData;
+  return tenantData[field] ?? "";
+}
+
 /** Full-page form for creating or editing a document entry */
-export function DocEntryFormPage({ template, entry }: Props) {
+export function DocEntryFormPage({ template, entry, tenantData }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const isEditing = !!entry;
 
-  // Look up preset metadata for autocomplete config
-  const preset = findPresetByName(template.name);
+  // Look up preset metadata for autocomplete config — prefer presetId, fallback to name
+  const preset = template.presetId
+    ? getPresetById(template.presetId)
+    : findPresetByName(template.name);
 
   const isPdf = template.fileType === "pdf";
   const rawPhs = Array.isArray(template.placeholders) ? template.placeholders : [];
@@ -77,21 +98,47 @@ export function DocEntryFormPage({ template, entry }: Props) {
     : castPlaceholders(template.placeholders);
   const tableRegion = isCoordinateBased ? null : castTableRegion(template.tableRegion);
 
-  const [fieldData, setFieldData] = useState<Record<string, string>>(
-    () => (entry ? castFieldData(entry.fieldData) : {})
-  );
+  const [fieldData, setFieldData] = useState<Record<string, string>>(() => {
+    if (entry) return castFieldData(entry.fieldData);
+    // Auto-fill from tenant settings for preset templates
+    const initial: Record<string, string> = {};
+    if (preset && tenantData) {
+      for (const ph of preset.placeholders) {
+        if (ph.autoFill) {
+          const value = resolveAutoFill(ph.autoFill, tenantData);
+          if (value) initial[ph.key] = value;
+        }
+      }
+    }
+    return initial;
+  });
 
   const [tableRows, setTableRows] = useState<Record<string, string>[]>(
     () => (entry ? castTableRows(entry.tableRows) : [])
   );
 
+  // Track whether form has been modified to warn on navigation
+  const isDirty = useRef(false);
+
+  useEffect(() => {
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      if (isDirty.current) {
+        e.preventDefault();
+      }
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
   function handleFieldChange(cellRef: string, value: string) {
+    isDirty.current = true;
     setFieldData((prev) => ({ ...prev, [cellRef]: value }));
   }
 
   /** Handle autocomplete selection: set main field + linked fields */
   function handleAutocompleteSelect(fieldKey: string, value: string, linkedValues?: Record<string, string>) {
     setFieldData((prev) => {
+      isDirty.current = true;
       const updated = { ...prev, [fieldKey]: value };
       if (linkedValues) {
         Object.entries(linkedValues).forEach(([k, v]) => { updated[k] = v; });
@@ -105,6 +152,7 @@ export function DocEntryFormPage({ template, entry }: Props) {
       try {
         if (isEditing && entry) {
           await updateDocEntry(entry.id, { fieldData, tableRows });
+          isDirty.current = false;
           toast.success("Đã cập nhật tài liệu");
         } else {
           await createDocEntry({
@@ -112,6 +160,7 @@ export function DocEntryFormPage({ template, entry }: Props) {
             fieldData,
             tableRows,
           });
+          isDirty.current = false;
           toast.success("Đã tạo tài liệu thành công");
           router.push("/documents");
         }
@@ -171,7 +220,7 @@ export function DocEntryFormPage({ template, entry }: Props) {
             <DocEntryTableRegionEditor
               tableRegion={tableRegion}
               rows={tableRows}
-              onRowsChange={setTableRows}
+              onRowsChange={(rows) => { isDirty.current = true; setTableRows(rows); }}
               presetTableColumns={preset?.tableColumns}
             />
           </section>

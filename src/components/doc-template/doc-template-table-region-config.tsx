@@ -67,7 +67,7 @@ export function DocTemplateTableRegionConfig({ tableRegion, onChange }: Props) {
                       checked={col.included}
                       onCheckedChange={(checked) => updateColumn(i, { included: !!checked })}
                     />
-                    <span className="w-8 font-mono text-sm text-center">{col.col}</span>
+                    <span className="min-w-[4rem] shrink-0 font-mono text-sm truncate" title={col.col}>{col.col}</span>
                     <Input
                       value={col.label}
                       onChange={(e) => updateColumn(i, { label: e.target.value })}

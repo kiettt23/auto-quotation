@@ -21,6 +21,10 @@ export const products = pgTable(
     categoryId: text("category_id").references(() => categories.id, { onDelete: "set null" }),
     unitId: text("unit_id").references(() => units.id, { onDelete: "set null" }),
     basePrice: numeric("base_price", { precision: 15, scale: 0 }).default("0").notNull(),
+    // Extended product attributes for auto-fill in templates
+    specification: text("specification").default("").notNull(),
+    weight: numeric("weight", { precision: 15, scale: 2 }).default("0").notNull(),
+    packagingInfo: text("packaging_info").default("").notNull(),
     pricingType: pricingTypeEnum("pricing_type").default("FIXED").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull().$onUpdate(() => new Date()),

@@ -5,7 +5,7 @@
 
 import { db } from "@/db";
 import { documents, documentTemplates } from "@/db/schema";
-import { eq, and, desc, sql, isNull } from "drizzle-orm";
+import { eq, and, desc, sql, isNull, ilike } from "drizzle-orm";
 import { ok, err } from "@/lib/result";
 import type { Result } from "@/lib/result";
 import { createId } from "@paralleldrive/cuid2";
@@ -20,6 +20,7 @@ export type DocumentWithTemplate = Document & {
 
 export type GetDocumentsParams = {
   templateId?: string;
+  search?: string;
   limit?: number;
   offset?: number;
 };
@@ -43,6 +44,9 @@ export async function getDocuments(
   const conditions = [eq(documents.tenantId, tenantId), isNull(documents.deletedAt)];
   if (params.templateId) {
     conditions.push(eq(documents.templateId, params.templateId));
+  }
+  if (params.search) {
+    conditions.push(ilike(documents.docNumber, `%${params.search}%`));
   }
 
   return db.query.documents.findMany({
@@ -167,6 +171,41 @@ export async function getDocumentByShareToken(
   if (!doc) return undefined;
   if (doc.shareTokenExpiresAt && doc.shareTokenExpiresAt < new Date()) return undefined;
   return doc;
+}
+
+/** Duplicate a document — copies fieldData and tableRows, assigns new docNumber */
+export async function duplicateDocument(
+  tenantId: string,
+  id: string
+): Promise<Result<Document>> {
+  try {
+    const existing = await getDocumentById(tenantId, id);
+    if (!existing) return err("Không tìm thấy tài liệu");
+
+    const [updated] = await db
+      .update(documentTemplates)
+      .set({ docNextNumber: sql`${documentTemplates.docNextNumber} + 1` })
+      .where(eq(documentTemplates.id, existing.templateId))
+      .returning({ docNextNumber: documentTemplates.docNextNumber, docPrefix: documentTemplates.docPrefix });
+
+    const nextNum = updated.docNextNumber - 1;
+    const docNumber = generateDocNumber(updated.docPrefix, nextNum);
+
+    const [doc] = await db
+      .insert(documents)
+      .values({
+        tenantId,
+        templateId: existing.templateId,
+        docNumber,
+        fieldData: existing.fieldData,
+        tableRows: existing.tableRows,
+      })
+      .returning();
+
+    return ok(doc);
+  } catch (e) {
+    return err(e instanceof Error ? e.message : "Không thể tạo bản sao");
+  }
 }
 
 export async function deleteDocument(

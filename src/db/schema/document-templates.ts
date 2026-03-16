@@ -14,6 +14,8 @@ export const documentTemplates = pgTable(
       .notNull()
       .references(() => tenants.id, { onDelete: "cascade" }),
     name: text("name").notNull(),
+    // Preset template ID (e.g. "preset-pgh") — null for custom templates
+    presetId: text("preset_id"),
     description: text("description").default("").notNull(),
     // "excel" | "pdf"
     fileType: fileTypeEnum("file_type").default("excel").notNull(),

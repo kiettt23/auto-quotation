@@ -251,6 +251,7 @@ export function DocTemplateBuilderPage({ template }: Props) {
             tableRegion,
             docPrefix: form.docPrefix,
             docNextNumber: form.docNextNumber,
+            presetId: selectedPreset.id,
           });
           toast.success("Đã tạo mẫu tài liệu từ mẫu có sẵn");
         } else {

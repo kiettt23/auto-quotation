@@ -23,6 +23,7 @@ export default async function EditDocumentPage({ params }: Props) {
         fileType: doc.template.fileType,
         placeholders: doc.template.placeholders as never,
         tableRegion: doc.template.tableRegion as never,
+        presetId: doc.template.presetId,
       }}
       entry={{
         id: doc.id,

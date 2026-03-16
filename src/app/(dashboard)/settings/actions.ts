@@ -126,7 +126,12 @@ export async function uploadLogo(formData: FormData) {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const ext = file.name.split(".").pop() ?? "png";
+    // Only allow safe image extensions matching the validated MIME types
+    const ALLOWED_EXT = ["png", "jpg", "jpeg", "webp"];
+    const ext = (file.name.split(".").pop() ?? "").toLowerCase();
+    if (!ALLOWED_EXT.includes(ext)) {
+      return err("Định dạng file không hợp lệ");
+    }
     const filename = `logo-${ctx.tenantId}.${ext}`;
     const uploadDir = path.join(process.cwd(), "public", "uploads");
 
