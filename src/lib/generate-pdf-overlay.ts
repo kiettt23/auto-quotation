@@ -14,6 +14,8 @@ type PdfRegion = {
   height: number;
   fontSize: number;
   type: "text" | "number" | "date";
+  /** Page index (0-based). Defaults to 0 for backward compatibility. */
+  pageIndex?: number;
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -56,35 +58,44 @@ export async function generatePdfOverlay(
   const font = await pdfDoc.embedFont(fontBytes);
 
   const pages = pdfDoc.getPages();
+  if (pages.length === 0) return Buffer.from(await pdfDoc.save());
 
-  // All regions are drawn on the first page (page 0)
-  // If multi-page support is needed, extend PdfRegion with a pageIndex field
-  const page = pages[0];
-  if (!page) return Buffer.from(await pdfDoc.save());
-
+  // Group regions by page index (default to page 0)
+  const regionsByPage = new Map<number, PdfRegion[]>();
   for (const region of regions) {
-    const value = formatValue(fieldData[region.id], region.type);
-    if (!value) continue;
+    const idx = region.pageIndex ?? 0;
+    if (!regionsByPage.has(idx)) regionsByPage.set(idx, []);
+    regionsByPage.get(idx)!.push(region);
+  }
 
-    // Draw white rectangle to cover existing content
-    page.drawRectangle({
-      x: region.x,
-      y: region.y,
-      width: region.width,
-      height: region.height,
-      color: rgb(1, 1, 1),
-    });
+  for (const [pageIdx, pageRegions] of regionsByPage) {
+    const page = pages[pageIdx];
+    if (!page) continue; // skip if page doesn't exist
 
-    // Draw text value at position (y offset to center text within height)
-    const textY = region.y + (region.height - region.fontSize) / 2;
-    page.drawText(value, {
-      x: region.x + 2,
-      y: Math.max(region.y, textY),
-      size: region.fontSize,
-      font,
-      color: rgb(0, 0, 0),
-      maxWidth: region.width - 4,
-    });
+    for (const region of pageRegions) {
+      const value = formatValue(fieldData[region.id], region.type);
+      if (!value) continue;
+
+      // Draw white rectangle to cover existing content
+      page.drawRectangle({
+        x: region.x,
+        y: region.y,
+        width: region.width,
+        height: region.height,
+        color: rgb(1, 1, 1),
+      });
+
+      // Draw text value at position (y offset to center text within height)
+      const textY = region.y + (region.height - region.fontSize) / 2;
+      page.drawText(value, {
+        x: region.x + 2,
+        y: Math.max(region.y, textY),
+        size: region.fontSize,
+        font,
+        color: rgb(0, 0, 0),
+        maxWidth: region.width - 4,
+      });
+    }
   }
 
   const modifiedPdfBytes = await pdfDoc.save();

@@ -55,6 +55,8 @@ export function DocTemplatePdfCanvasViewer({
   const [dragStart, setDragStart] = useState<{ pdfX: number; pdfY: number } | null>(null);
   const [dragCurrent, setDragCurrent] = useState<{ pdfX: number; pdfY: number } | null>(null);
   const pdfDocRef = useRef<unknown>(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Load and render PDF
   useEffect(() => {
@@ -75,18 +77,23 @@ export function DocTemplatePdfCanvasViewer({
       const pdf = await pdfjsLib.getDocument(source).promise;
       if (cancelled) return;
       pdfDocRef.current = pdf;
+      setTotalPages(pdf.numPages);
 
-      const page = await pdf.getPage(1);
-      if (cancelled) return;
+      await renderPage(pdf, currentPage + 1, cancelled);
+    }
+
+    async function renderPage(pdf: { getPage: (n: number) => Promise<unknown> }, pageNum: number, wasCancelled: boolean) {
+      const page = await pdf.getPage(pageNum) as {
+        getViewport: (opts: { scale: number }) => { width: number; height: number };
+        render: (opts: { canvasContext: CanvasRenderingContext2D; viewport: unknown }) => { promise: Promise<void> };
+      };
+      if (wasCancelled) return;
 
       const viewport = page.getViewport({ scale: 1 });
-      const pdfWidth = viewport.width;
-      const pdfHeight = viewport.height;
-      setPageInfo({ width: pdfWidth, height: pdfHeight });
+      setPageInfo({ width: viewport.width, height: viewport.height });
 
-      // Calculate scale to fit container (max ~800px wide)
       const containerWidth = containerRef.current?.clientWidth ?? 800;
-      const fitScale = Math.min(containerWidth / pdfWidth, 1.5);
+      const fitScale = Math.min(containerWidth / viewport.width, 1.5);
       setScale(fitScale);
 
       const canvas = canvasRef.current;
@@ -96,12 +103,14 @@ export function DocTemplatePdfCanvasViewer({
       canvas.width = scaledViewport.width;
       canvas.height = scaledViewport.height;
 
-      await page.render({ canvas, viewport: scaledViewport }).promise;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
     }
 
     loadPdf();
     return () => { cancelled = true; };
-  }, [fileBase64, fileUrl]);
+  }, [fileBase64, fileUrl, currentPage]);
 
   // Convert pixel position on canvas to PDF coordinates (origin bottom-left)
   const pixelToPdf = useCallback(
@@ -174,6 +183,7 @@ export function DocTemplatePdfCanvasViewer({
         height: Math.round(height * 10) / 10,
         fontSize: 10,
         type: "text",
+        pageIndex: currentPage,
       };
       onAddRegion(newRegion);
     }
@@ -186,7 +196,9 @@ export function DocTemplatePdfCanvasViewer({
   // Region overlay rectangles
   function renderRegions() {
     if (!pageInfo) return null;
+    // Only show regions for the current page
     return regions.map((region, idx) => {
+      if ((region.pageIndex ?? 0) !== currentPage) return null;
       const topLeft = pdfToPixel(region.x, region.y + region.height);
       const w = region.width * scale;
       const h = region.height * scale;
@@ -256,7 +268,32 @@ export function DocTemplatePdfCanvasViewer({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium">Xem trước PDF - Kéo chuột để tạo vùng</p>
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium">Xem trước PDF - Kéo chuột để tạo vùng</p>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1 text-xs">
+              <button
+                type="button"
+                className="px-1.5 py-0.5 rounded border disabled:opacity-30"
+                disabled={currentPage === 0}
+                onClick={() => setCurrentPage((p) => p - 1)}
+              >
+                ←
+              </button>
+              <span className="font-mono text-muted-foreground">
+                {currentPage + 1}/{totalPages}
+              </span>
+              <button
+                type="button"
+                className="px-1.5 py-0.5 rounded border disabled:opacity-30"
+                disabled={currentPage >= totalPages - 1}
+                onClick={() => setCurrentPage((p) => p + 1)}
+              >
+                →
+              </button>
+            </div>
+          )}
+        </div>
         {mousePos && (
           <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-0.5 rounded">
             X: {mousePos.pdfX.toFixed(1)} &nbsp; Y: {mousePos.pdfY.toFixed(1)}

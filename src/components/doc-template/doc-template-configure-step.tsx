@@ -48,6 +48,8 @@ export type PdfRegionDraft = {
   height: number;
   fontSize: number;
   type: "text" | "number" | "date";
+  /** Page index (0-based). Defaults to 0. */
+  pageIndex?: number;
 };
 
 export type ConfigureFormState = {
