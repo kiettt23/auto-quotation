@@ -22,12 +22,16 @@ import { deleteProductAction } from "@/actions/product.actions";
 import { ProductDialog } from "./product-dialog";
 import { formatCurrency } from "@/lib/utils/document-helpers";
 import type { ProductWithRelations } from "@/services/product.service";
+import type { CategoryRow } from "@/services/category.service";
+import type { UnitRow } from "@/services/unit.service";
 
 type ProductTableProps = {
   products: ProductWithRelations[];
+  categories: CategoryRow[];
+  units: UnitRow[];
 };
 
-export function ProductTable({ products }: ProductTableProps) {
+export function ProductTable({ products, categories, units }: ProductTableProps) {
   const [editProduct, setEditProduct] = useState<ProductWithRelations | null>(null);
 
   async function handleDelete(id: string, name: string) {
@@ -107,6 +111,8 @@ export function ProductTable({ products }: ProductTableProps) {
         open={!!editProduct}
         onOpenChange={(open) => !open && setEditProduct(null)}
         product={editProduct}
+        categories={categories}
+        units={units}
       />
     </>
   );

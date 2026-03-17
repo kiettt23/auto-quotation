@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -8,19 +9,37 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createProductAction, updateProductAction } from "@/actions/product.actions";
 import type { ProductWithRelations } from "@/services/product.service";
+import type { CategoryRow } from "@/services/category.service";
+import type { UnitRow } from "@/services/unit.service";
 
 type ProductDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   product?: ProductWithRelations | null;
+  categories: CategoryRow[];
+  units: UnitRow[];
 };
 
-export function ProductDialog({ open, onOpenChange, product }: ProductDialogProps) {
+export function ProductDialog({
+  open,
+  onOpenChange,
+  product,
+  categories,
+  units,
+}: ProductDialogProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const isEdit = !!product;
 
@@ -42,6 +61,7 @@ export function ProductDialog({ open, onOpenChange, product }: ProductDialogProp
 
     toast.success(isEdit ? "Đã cập nhật sản phẩm" : "Đã thêm sản phẩm");
     onOpenChange(false);
+    router.refresh();
   }
 
   return (
@@ -67,22 +87,34 @@ export function ProductDialog({ open, onOpenChange, product }: ProductDialogProp
 
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="categoryId">Danh mục</Label>
-              <Input
-                id="categoryId"
-                name="categoryId"
-                placeholder="Nhập danh mục"
-                defaultValue={product?.categoryId ?? ""}
-              />
+              <Label>Danh mục</Label>
+              <Select name="categoryId" defaultValue={product?.categoryId ?? ""}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn danh mục" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="unitId">Đơn vị tính</Label>
-              <Input
-                id="unitId"
-                name="unitId"
-                placeholder="Nhập ĐVT"
-                defaultValue={product?.unitId ?? ""}
-              />
+              <Label>Đơn vị tính</Label>
+              <Select name="unitId" defaultValue={product?.unitId ?? ""}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn ĐVT" />
+                </SelectTrigger>
+                <SelectContent>
+                  {units.map((u) => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

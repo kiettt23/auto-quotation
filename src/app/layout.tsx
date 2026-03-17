@@ -7,7 +7,8 @@ const inter = Inter({ subsets: ["latin", "vietnamese"] });
 
 export const metadata: Metadata = {
   title: "Auto Quotation",
-  description: "Tạo báo giá, phiếu xuất kho, phiếu giao hàng nhanh chóng và chuyên nghiệp.",
+  description:
+    "Tạo báo giá, phiếu xuất kho, phiếu giao hàng nhanh chóng và chuyên nghiệp.",
 };
 
 export default function RootLayout({
@@ -19,7 +20,7 @@ export default function RootLayout({
     <html lang="vi">
       <body className={`${inter.className} antialiased`}>
         {children}
-        <Toaster position="top-right" richColors />
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

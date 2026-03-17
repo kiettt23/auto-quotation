@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -21,6 +22,7 @@ type CustomerDialogProps = {
 };
 
 export function CustomerDialog({ open, onOpenChange, customer }: CustomerDialogProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const isEdit = !!customer;
 
@@ -42,6 +44,7 @@ export function CustomerDialog({ open, onOpenChange, customer }: CustomerDialogP
 
     toast.success(isEdit ? "Đã cập nhật khách hàng" : "Đã thêm khách hàng");
     onOpenChange(false);
+    router.refresh();
   }
 
   return (

@@ -3,10 +3,12 @@ import { z } from "zod";
 const documentItemSchema = z.object({
   productId: z.string().optional(),
   productName: z.string().min(1, "Tên sản phẩm không được trống"),
+  specification: z.string().optional(),
   unit: z.string().optional(),
   quantity: z.coerce.number().min(1, "Số lượng phải >= 1"),
   unitPrice: z.coerce.number().min(0, "Đơn giá phải >= 0"),
   amount: z.coerce.number().min(0),
+  note: z.string().optional(),
 });
 
 export const createDocumentSchema = z.object({

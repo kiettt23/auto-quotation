@@ -7,12 +7,16 @@ import { Input } from "@/components/ui/input";
 import { ProductTable } from "@/components/products/product-table";
 import { ProductDialog } from "@/components/products/product-dialog";
 import type { ProductWithRelations } from "@/services/product.service";
+import type { CategoryRow } from "@/services/category.service";
+import type { UnitRow } from "@/services/unit.service";
 
 type Props = {
   products: ProductWithRelations[];
+  categories: CategoryRow[];
+  units: UnitRow[];
 };
 
-export function ProductPageClient({ products }: Props) {
+export function ProductPageClient({ products, categories, units }: Props) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -39,11 +43,17 @@ export function ProductPageClient({ products }: Props) {
         className="max-w-xs"
       />
 
-      <ProductTable products={filtered} />
+      <ProductTable
+        products={filtered}
+        categories={categories}
+        units={units}
+      />
 
       <ProductDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
+        categories={categories}
+        units={units}
       />
     </div>
   );

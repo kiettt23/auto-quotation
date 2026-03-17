@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,13 +17,12 @@ import {
 } from "@/actions/document.actions";
 import {
   documentTypeConfig,
-  documentStatusConfig,
   calculateTotal,
   formatCurrency,
   formatDate,
 } from "@/lib/utils/document-helpers";
 import type { DocumentRow } from "@/services/document.service";
-import type { DocumentType, DocumentStatus } from "@/db/schema/document";
+import type { DocumentType } from "@/db/schema/document";
 import type { DocumentData } from "@/lib/types/document-data";
 
 export function DocumentListClient({
@@ -91,7 +89,6 @@ function DocumentRow({
   onDuplicate: (id: string) => void;
 }) {
   const typeConfig = documentTypeConfig[doc.type as DocumentType];
-  const statusConfig = documentStatusConfig[doc.status as DocumentStatus];
   const data = doc.data as DocumentData;
   const total = data?.items ? calculateTotal(data.items) : 0;
 
@@ -119,13 +116,6 @@ function DocumentRow({
       </div>
 
       <div className="flex items-center gap-3">
-        <Badge
-          variant="outline"
-          className={`${statusConfig.badgeBg} ${statusConfig.badgeText} border-0`}
-        >
-          {statusConfig.label}
-        </Badge>
-
         <DropdownMenu>
           <DropdownMenuTrigger
             onClick={(e) => e.preventDefault()}

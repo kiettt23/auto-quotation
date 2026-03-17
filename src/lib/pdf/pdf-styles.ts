@@ -3,7 +3,7 @@ import { StyleSheet } from "@react-pdf/renderer";
 /** Shared PDF styles across all presets */
 export const pdfStyles = StyleSheet.create({
   page: {
-    fontFamily: "Helvetica",
+    fontFamily: "Roboto",
     fontSize: 10,
     padding: 40,
     color: "#1e293b",
@@ -83,13 +83,15 @@ export const pdfStyles = StyleSheet.create({
     fontWeight: "bold",
     color: "#0f172a",
   },
-  // Columns
-  colStt: { width: "8%" },
-  colProduct: { width: "32%", flexGrow: 1 },
-  colUnit: { width: "10%" },
-  colQty: { width: "10%", textAlign: "right" },
-  colPrice: { width: "20%", textAlign: "right" },
-  colAmount: { width: "20%", textAlign: "right" },
+  // Columns — total = 100%, no flexGrow to avoid overlap
+  colStt: { width: "5%", paddingRight: 4 },
+  colProduct: { width: "20%", paddingRight: 4 },
+  colSpec: { width: "13%", paddingRight: 4 },
+  colUnit: { width: "7%", paddingRight: 4 },
+  colQty: { width: "5%", textAlign: "right", paddingRight: 4 },
+  colPrice: { width: "13%", textAlign: "right", paddingRight: 4 },
+  colAmount: { width: "15%", textAlign: "right", paddingRight: 8 },
+  colNote: { width: "22%" },
   // Total
   totalRow: {
     flexDirection: "row",
@@ -109,7 +111,6 @@ export const pdfStyles = StyleSheet.create({
   // Notes
   notes: {
     fontSize: 9,
-    fontStyle: "italic",
     color: "#64748b",
     marginTop: 8,
   },

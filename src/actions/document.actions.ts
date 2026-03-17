@@ -70,22 +70,6 @@ export async function updateDocumentAction(
   }
 }
 
-export async function finalizeDocumentAction(
-  documentId: string
-): Promise<ActionResult<DocumentRow>> {
-  try {
-    const companyId = await requireCompanyId();
-    const doc = await updateDocument(documentId, companyId, {
-      status: "FINAL",
-    });
-    if (!doc) return err("Không tìm thấy tài liệu.");
-    revalidateDocuments();
-    return ok(doc);
-  } catch {
-    return err("Đã xảy ra lỗi.");
-  }
-}
-
 export async function deleteDocumentAction(
   documentId: string
 ): Promise<ActionResult<null>> {

@@ -17,6 +17,7 @@ interface Product {
   id: string;
   name: string;
   unitPrice: number;
+  specification?: string | null;
   unitName?: string | null;
 }
 
@@ -55,6 +56,7 @@ export function DocumentItemsTable({ items, products, onItemsChange }: Props) {
     updateItem(index, {
       productId: product.id,
       productName: product.name,
+      specification: product.specification ?? "",
       unit: product.unitName ?? "",
       unitPrice: product.unitPrice,
     });
@@ -69,86 +71,102 @@ export function DocumentItemsTable({ items, products, onItemsChange }: Props) {
       </h2>
 
       {/* Header */}
-      <div className="mb-2 grid grid-cols-[40px_1fr_80px_80px_120px_120px_40px] gap-2 px-2">
+      <div className="mb-2 grid grid-cols-[40px_1fr_120px_60px_60px_100px_100px_40px] gap-2 px-2">
         <span className="text-xs font-semibold text-slate-500">STT</span>
         <span className="text-xs font-semibold text-slate-500">Sản phẩm</span>
+        <span className="text-xs font-semibold text-slate-500">Quy cách</span>
         <span className="text-xs font-semibold text-slate-500">ĐVT</span>
         <span className="text-xs font-semibold text-slate-500">SL</span>
-        <span className="text-right text-xs font-semibold text-slate-500">
-          Đơn giá
-        </span>
-        <span className="text-right text-xs font-semibold text-slate-500">
-          Thành tiền
-        </span>
+        <span className="text-right text-xs font-semibold text-slate-500">Đơn giá</span>
+        <span className="text-right text-xs font-semibold text-slate-500">Thành tiền</span>
         <span />
       </div>
 
       {/* Rows */}
       <div className="flex flex-col gap-2">
         {items.map((item, index) => (
-          <div
-            key={index}
-            className="grid grid-cols-[40px_1fr_80px_80px_120px_120px_40px] items-center gap-2 rounded-lg bg-slate-50 px-2 py-1.5"
-          >
-            <span className="text-center text-sm text-slate-500">
-              {index + 1}
-            </span>
+          <div key={index} className="flex flex-col gap-1 rounded-lg bg-slate-50 px-2 py-1.5">
+            {/* Main row */}
+            <div className="grid grid-cols-[40px_1fr_120px_60px_60px_100px_100px_40px] items-center gap-2">
+              <span className="text-center text-sm text-slate-500">
+                {index + 1}
+              </span>
 
-            <Select
-              value={item.productId ?? ""}
-              onValueChange={(v) => handleProductSelect(index, v)}
-            >
-              <SelectTrigger className="h-9 text-sm">
-                <SelectValue placeholder="Chọn SP..." />
-              </SelectTrigger>
-              <SelectContent>
-                {products.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <Select
+                value={item.productId ?? ""}
+                onValueChange={(v) => handleProductSelect(index, v)}
+              >
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Chọn SP..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {products.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>
+                      {p.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-            <Input
-              value={item.unit ?? ""}
-              onChange={(e) => updateItem(index, { unit: e.target.value })}
-              className="h-9 text-sm"
-              placeholder="ĐVT"
-            />
+              <Input
+                value={item.specification ?? ""}
+                onChange={(e) => updateItem(index, { specification: e.target.value })}
+                className="h-9 text-sm"
+                placeholder="Quy cách"
+              />
 
-            <Input
-              type="number"
-              min={1}
-              value={item.quantity}
-              onChange={(e) =>
-                updateItem(index, { quantity: Number(e.target.value) || 1 })
-              }
-              className="h-9 text-sm"
-            />
+              <Input
+                value={item.unit ?? ""}
+                onChange={(e) => updateItem(index, { unit: e.target.value })}
+                className="h-9 text-sm"
+                placeholder="ĐVT"
+              />
 
-            <Input
-              type="number"
-              min={0}
-              value={item.unitPrice}
-              onChange={(e) =>
-                updateItem(index, { unitPrice: Number(e.target.value) || 0 })
-              }
-              className="h-9 text-right text-sm"
-            />
+              <Input
+                type="number"
+                min={1}
+                value={item.quantity}
+                onChange={(e) =>
+                  updateItem(index, { quantity: Number(e.target.value) || 1 })
+                }
+                className="h-9 text-sm"
+              />
 
-            <span className="text-right text-sm font-medium text-slate-900">
-              {formatCurrency(item.quantity * item.unitPrice)}
-            </span>
+              <Input
+                type="number"
+                min={0}
+                value={item.unitPrice}
+                onChange={(e) =>
+                  updateItem(index, { unitPrice: Number(e.target.value) || 0 })
+                }
+                className="h-9 text-right text-sm"
+              />
 
-            <button
-              type="button"
-              onClick={() => removeItem(index)}
-              disabled={items.length <= 1}
-              className="rounded p-1 text-slate-400 hover:text-red-500 disabled:opacity-30"
-            >
-              <Trash2 className="h-4 w-4" />
-            </button>
+              <span className="text-right text-sm font-medium text-slate-900">
+                {formatCurrency(item.quantity * item.unitPrice)}
+              </span>
+
+              <button
+                type="button"
+                onClick={() => removeItem(index)}
+                disabled={items.length <= 1}
+                className="cursor-pointer rounded p-1 text-slate-400 hover:text-red-500 disabled:opacity-30"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Note row */}
+            <div className="grid grid-cols-[40px_1fr_40px] gap-2">
+              <span />
+              <Input
+                value={item.note ?? ""}
+                onChange={(e) => updateItem(index, { note: e.target.value })}
+                className="h-8 text-xs text-slate-500"
+                placeholder="Ghi chú cho sản phẩm này..."
+              />
+              <span />
+            </div>
           </div>
         ))}
       </div>

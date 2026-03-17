@@ -3,18 +3,12 @@
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Copy, Printer } from "lucide-react";
+import { ArrowLeft, Copy, Pencil, Printer } from "lucide-react";
 import { toast } from "sonner";
 import { duplicateDocumentAction } from "@/actions/document.actions";
-import {
-  documentTypeConfig,
-  documentStatusConfig,
-} from "@/lib/utils/document-helpers";
 import { DocumentPdfViewer } from "@/components/documents/document-pdf-viewer";
 import { DocumentPdfDownloadButton } from "@/components/documents/document-pdf-download-button";
 import type { DocumentRow } from "@/services/document.service";
-import type { DocumentType, DocumentStatus } from "@/db/schema/document";
 
 interface CompanyInfo {
   name: string;
@@ -30,7 +24,6 @@ export function DocumentDetailClient({
   company: CompanyInfo;
 }) {
   const router = useRouter();
-  const statusConfig = documentStatusConfig[doc.status as DocumentStatus];
 
   async function handleDuplicate() {
     const result = await duplicateDocumentAction(doc.id);
@@ -54,19 +47,17 @@ export function DocumentDetailClient({
           Quay lại danh sách
         </Link>
 
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-semibold text-slate-900">
-            {doc.documentNumber}
-          </span>
-          <Badge
-            variant="outline"
-            className={`${statusConfig.badgeBg} ${statusConfig.badgeText} border-0`}
-          >
-            {statusConfig.label}
-          </Badge>
-        </div>
+        <span className="text-lg font-semibold text-slate-900">
+          {doc.documentNumber}
+        </span>
 
         <div className="flex gap-2">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/documents/${doc.id}/edit`}>
+              <Pencil className="mr-1.5 h-4 w-4" />
+              Chỉnh sửa
+            </Link>
+          </Button>
           <DocumentPdfDownloadButton document={doc} company={company} />
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Printer className="mr-1.5 h-4 w-4" />

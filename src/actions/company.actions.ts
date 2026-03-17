@@ -10,7 +10,6 @@ import {
   getCompanyByOwnerId,
   updateCompany,
 } from "@/services/company.service";
-import { seedDefaults } from "@/services/seed-defaults.service";
 import { requireCompanyId } from "@/lib/auth/get-company-id";
 import { ok, err, type ActionResult } from "@/lib/utils/action-result";
 
@@ -38,7 +37,6 @@ export async function setupCompanyAction(
     }
 
     const company = await createCompany(session.user.id, parsed.data);
-    await seedDefaults(company.id);
     return ok({ companyId: company.id });
   } catch {
     return err("Đã xảy ra lỗi. Vui lòng thử lại.");

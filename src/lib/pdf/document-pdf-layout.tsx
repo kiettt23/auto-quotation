@@ -78,10 +78,12 @@ export function DocumentPdfLayout({
         <View style={s.tableHeader}>
           <Text style={[s.tableHeaderText, s.colStt]}>STT</Text>
           <Text style={[s.tableHeaderText, s.colProduct]}>Sản phẩm</Text>
+          <Text style={[s.tableHeaderText, s.colSpec]}>Quy cách</Text>
           <Text style={[s.tableHeaderText, s.colUnit]}>ĐVT</Text>
           <Text style={[s.tableHeaderText, s.colQty]}>SL</Text>
           <Text style={[s.tableHeaderText, s.colPrice]}>Đơn giá</Text>
           <Text style={[s.tableHeaderText, s.colAmount]}>Thành tiền</Text>
+          <Text style={[s.tableHeaderText, s.colNote]}>Ghi chú</Text>
         </View>
 
         {/* Table rows */}
@@ -94,6 +96,9 @@ export function DocumentPdfLayout({
             <Text style={[s.tableCell, s.colProduct]}>
               {item.productName}
             </Text>
+            <Text style={[s.tableCell, s.colSpec]}>
+              {item.specification ?? ""}
+            </Text>
             <Text style={[s.tableCell, s.colUnit]}>{item.unit}</Text>
             <Text style={[s.tableCell, s.colQty]}>{item.quantity}</Text>
             <Text style={[s.tableCell, s.colPrice]}>
@@ -101,6 +106,9 @@ export function DocumentPdfLayout({
             </Text>
             <Text style={[s.tableCellBold, s.colAmount]}>
               {fmt(item.quantity * item.unitPrice)}
+            </Text>
+            <Text style={[s.tableCell, s.colNote]}>
+              {item.note ?? ""}
             </Text>
           </View>
         ))}
@@ -113,7 +121,12 @@ export function DocumentPdfLayout({
 
         {/* Notes */}
         {data.notes && (
-          <Text style={s.notes}>Ghi chú: {data.notes}</Text>
+          <View style={s.notes}>
+            <Text style={{ fontWeight: 700, marginBottom: 2 }}>Ghi chú:</Text>
+            {data.notes.split("\n").map((line, i) => (
+              <Text key={i}>{line}</Text>
+            ))}
+          </View>
         )}
 
         {/* Signatures */}

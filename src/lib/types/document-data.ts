@@ -11,8 +11,10 @@ export interface DocumentData {
 export interface DocumentDataItem {
   productId?: string;
   productName: string;
+  specification?: string;
   unit: string;
   quantity: number;
   unitPrice: number;
   amount: number;
+  note?: string;
 }

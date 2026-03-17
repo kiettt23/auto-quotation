@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { pdf } from "@react-pdf/renderer";
+import { registerPdfFonts } from "@/lib/pdf/register-fonts";
 import { Button } from "@/components/ui/button";
+
+registerPdfFonts();
 import { Download } from "lucide-react";
 import { DocumentPdfLayout } from "@/lib/pdf/document-pdf-layout";
 import { presetTitleMap } from "@/lib/pdf/preset-config";

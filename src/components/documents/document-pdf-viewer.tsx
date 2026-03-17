@@ -1,7 +1,10 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { registerPdfFonts } from "@/lib/pdf/register-fonts";
 import { DocumentPdfLayout } from "@/lib/pdf/document-pdf-layout";
+
+registerPdfFonts();
 import { presetTitleMap } from "@/lib/pdf/preset-config";
 import { formatDate } from "@/lib/utils/document-helpers";
 import type { DocumentRow } from "@/services/document.service";

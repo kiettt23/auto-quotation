@@ -65,7 +65,7 @@ async function generateDocumentNumber(
       )
     );
 
-  const nextNum = (result?.count ?? 0) + 1;
+  const nextNum = Number(result?.count ?? 0) + 1;
   return `${prefix}-${year}-${String(nextNum).padStart(3, "0")}`;
 }
 
