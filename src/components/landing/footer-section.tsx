@@ -17,7 +17,7 @@ export function FooterSection() {
           <a href="mailto:hello@autoquotation.vn" className="hover:text-foreground">Liên hệ</a>
         </nav>
         <p className="text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Auto Quotation. All rights reserved.
+          © 2026 Auto Quotation. All rights reserved.
         </p>
       </div>
     </footer>
