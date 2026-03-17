@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, jsonb, unique } from "drizzle-orm/pg-core";
 import { company } from "./company";
 import { customer } from "./customer";
 
@@ -32,4 +32,6 @@ export const document = pgTable("document", {
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
-});
+}, (t) => [
+  unique("uq_document_number").on(t.companyId, t.documentNumber),
+]);

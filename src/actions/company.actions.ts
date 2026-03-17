@@ -1,8 +1,17 @@
 "use server";
 
 import { requireSession } from "@/lib/auth/get-session";
-import { createCompanySchema } from "@/lib/validations/company.schema";
-import { createCompany, getCompanyByOwnerId } from "@/services/company.service";
+import {
+  createCompanySchema,
+  updateCompanySchema,
+} from "@/lib/validations/company.schema";
+import {
+  createCompany,
+  getCompanyByOwnerId,
+  updateCompany,
+} from "@/services/company.service";
+import { seedDefaults } from "@/services/seed-defaults.service";
+import { requireCompanyId } from "@/lib/auth/get-company-id";
 import { ok, err, type ActionResult } from "@/lib/utils/action-result";
 
 export async function setupCompanyAction(
@@ -29,7 +38,35 @@ export async function setupCompanyAction(
     }
 
     const company = await createCompany(session.user.id, parsed.data);
+    await seedDefaults(company.id);
     return ok({ companyId: company.id });
+  } catch {
+    return err("Đã xảy ra lỗi. Vui lòng thử lại.");
+  }
+}
+
+export async function updateCompanyAction(
+  formData: FormData
+): Promise<ActionResult<{ companyId: string }>> {
+  try {
+    const companyId = await requireCompanyId();
+
+    const parsed = updateCompanySchema.safeParse({
+      name: formData.get("name"),
+      address: formData.get("address"),
+      phone: formData.get("phone"),
+      taxCode: formData.get("taxCode"),
+      email: formData.get("email"),
+      bankName: formData.get("bankName"),
+      bankAccount: formData.get("bankAccount"),
+    });
+
+    if (!parsed.success) {
+      return err(parsed.error.issues[0].message);
+    }
+
+    await updateCompany(companyId, parsed.data);
+    return ok({ companyId });
   } catch {
     return err("Đã xảy ra lỗi. Vui lòng thử lại.");
   }

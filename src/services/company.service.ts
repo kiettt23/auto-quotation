@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { db } from "@/db";
 import { company } from "@/db/schema";
 import { eq } from "drizzle-orm";
@@ -6,8 +7,8 @@ import { generateId } from "@/lib/utils/generate-id";
 export type CompanyRow = typeof company.$inferSelect;
 export type CompanyInsert = typeof company.$inferInsert;
 
-/** Get company by owner (user) ID */
-export async function getCompanyByOwnerId(ownerId: string) {
+/** Get company by owner (user) ID — cached per request */
+export const getCompanyByOwnerId = cache(async (ownerId: string) => {
   const rows = await db
     .select()
     .from(company)
@@ -15,7 +16,7 @@ export async function getCompanyByOwnerId(ownerId: string) {
     .limit(1);
 
   return rows[0] ?? null;
-}
+});
 
 /** Create a new company for a user */
 export async function createCompany(

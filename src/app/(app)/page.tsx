@@ -1,10 +1,13 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
+import { requireCompanyId } from "@/lib/auth/get-company-id";
+import { listRecentDocuments } from "@/services/document.service";
+import { DocumentRowCard } from "@/components/documents/document-row-card";
 
-export default function HomePage() {
-  // TODO: fetch recent documents from DB in Phase 5
-  const documents: unknown[] = [];
+export default async function HomePage() {
+  const companyId = await requireCompanyId();
+  const documents = await listRecentDocuments(companyId);
 
   return (
     <div className="flex flex-col gap-8 p-6 lg:p-10">
@@ -37,7 +40,13 @@ export default function HomePage() {
               <Link href="/documents/new">+ Tạo tài liệu đầu tiên</Link>
             </Button>
           </div>
-        ) : null}
+        ) : (
+          <div className="flex flex-col gap-2">
+            {documents.map((doc) => (
+              <DocumentRowCard key={doc.id} doc={doc} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
