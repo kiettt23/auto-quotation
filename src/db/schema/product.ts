@@ -1,0 +1,20 @@
+import { pgTable, text, timestamp, integer } from "drizzle-orm/pg-core";
+import { company } from "./company";
+import { category } from "./category";
+import { unit } from "./unit";
+
+/** Products/services catalog */
+export const product = pgTable("product", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().references(() => company.id),
+  name: text("name").notNull(),
+  categoryId: text("category_id").references(() => category.id),
+  unitId: text("unit_id").references(() => unit.id),
+  /** Price in VND (stored as integer to avoid floating point) */
+  unitPrice: integer("unit_price").notNull().default(0),
+  specification: text("specification"),
+  description: text("description"),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
+});

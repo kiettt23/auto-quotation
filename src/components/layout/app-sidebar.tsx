@@ -1,100 +1,42 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LogOut } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarRail,
-} from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils/cn";
+import { useActivePath } from "@/hooks/use-active-path";
 import { navItems } from "./nav-items";
-import { hasPermission } from "@/lib/rbac";
-import { TenantSwitcher } from "./tenant-switcher";
-import { authClient } from "@/auth/client";
-import { logoutAction } from "@/app/(auth)/logout-action";
+import { AppLogo } from "./app-logo";
 
-type TenantInfo = {
-  tenantId: string;
-  name: string;
-  slug: string;
-};
-
-type Props = {
-  role?: string;
-  currentTenantId: string;
-  tenants: TenantInfo[];
-};
-
-export function AppSidebar({ role = "VIEWER", currentTenantId, tenants }: Props) {
-  const pathname = usePathname();
-
-  async function handleLogout() {
-    await authClient.signOut();
-    await logoutAction();
-  }
-
-  const visibleItems = navItems.filter((item) =>
-    hasPermission(role, item.minRole ?? "VIEWER")
-  );
-
-  function isActive(href: string) {
-    if (href === "/") return pathname === "/";
-    return pathname.startsWith(href);
-  }
+function NavLink({ href, label, icon: Icon }: (typeof navItems)[number]) {
+  const isActive = useActivePath(href);
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarHeader>
-        <TenantSwitcher currentTenantId={currentTenantId} tenants={tenants} />
-      </SidebarHeader>
+    <Link
+      href={href}
+      className={cn(
+        "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm transition-colors",
+        isActive
+          ? "bg-blue-50 font-medium text-blue-600"
+          : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+      )}
+    >
+      <Icon className="h-4 w-4" />
+      {label}
+    </Link>
+  );
+}
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {visibleItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive(item.href)}
-                    tooltip={item.label}
-                  >
-                    <Link href={item.href}>
-                      <item.icon />
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
+export function AppSidebar() {
+  return (
+    <aside className="hidden lg:flex w-60 flex-col border-r border-slate-200 bg-white px-4 py-5">
+      <Link href="/" className="pb-6">
+        <AppLogo />
+      </Link>
 
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton
-              onClick={handleLogout}
-              tooltip="Đăng xuất"
-              className="text-muted-foreground hover:text-destructive"
-            >
-              <LogOut />
-              <span>Đăng xuất</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-
-      <SidebarRail />
-    </Sidebar>
+      <nav className="flex flex-col gap-1">
+        {navItems.map((item) => (
+          <NavLink key={item.href} {...item} />
+        ))}
+      </nav>
+    </aside>
   );
 }

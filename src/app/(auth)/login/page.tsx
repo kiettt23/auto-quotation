@@ -2,9 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "@/auth/client";
+import Link from "next/link";
+import { signIn } from "@/lib/auth/auth-client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-// Login page — email/password sign-in via Better Auth
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -16,66 +19,68 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    try {
-      const result = await signIn.email({ email, password });
-      if (result.error) {
-        setError(result.error.message ?? "Đăng nhập thất bại");
-      } else {
-        router.push("/");
-        router.refresh();
-      }
-    } catch {
-      setError("Đã xảy ra lỗi không mong muốn");
-    } finally {
+
+    const result = await signIn.email({ email, password });
+
+    if (result.error) {
+      setError(result.error.message ?? "Đăng nhập thất bại");
       setLoading(false);
+      return;
     }
+
+    router.push("/");
   }
 
   return (
-    <div className="rounded-xl border bg-card p-8 shadow-sm">
-      <h1 className="mb-6 text-2xl font-bold text-foreground">Đăng nhập</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-muted-foreground">
-            Email
-          </label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="you@example.com"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-muted-foreground">
-            Mật khẩu
-          </label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="••••••••"
-          />
-        </div>
-        {error && <p className="text-sm text-destructive">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
-        >
-          {loading ? "Đang đăng nhập..." : "Đăng nhập"}
-        </button>
-      </form>
-      <p className="mt-4 text-center text-sm text-muted-foreground">
-        Chưa có tài khoản?{" "}
-        <a href="/register" className="text-primary hover:underline">
-          Đăng ký
-        </a>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl font-bold text-slate-900">Đăng nhập</h1>
+        <p className="text-sm text-slate-500">
+          Nhập email và mật khẩu để tiếp tục
+        </p>
+      </div>
+
+      {error && (
+        <p className="text-sm text-red-500">{error}</p>
+      )}
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="name@company.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="password">Mật khẩu</Label>
+        <Input
+          id="password"
+          type="password"
+          placeholder="••••••••"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
+
+      <Button type="submit" disabled={loading} className="w-full">
+        {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+      </Button>
+
+      <div className="flex items-center gap-3">
+        <div className="h-px flex-1 bg-slate-200" />
+        <span className="text-xs text-slate-400">hoặc</span>
+        <div className="h-px flex-1 bg-slate-200" />
+      </div>
+
+      <p className="text-center text-sm text-blue-500">
+        <Link href="/register">Chưa có tài khoản? Đăng ký</Link>
       </p>
-    </div>
+    </form>
   );
 }

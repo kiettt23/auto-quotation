@@ -1,59 +1,9 @@
-import {
-  LayoutDashboard,
-  Package,
-  Users,
-  Settings,
-  FileStack,
-  FolderOpen,
-  type LucideIcon,
-} from "lucide-react";
+import { Home, FileText, Package, Users, Settings } from "lucide-react";
 
-export type NavItem = {
-  label: string;
-  icon: LucideIcon;
-  href: string;
-  showInBottomNav: boolean;
-  /** Minimum role required to see this item. Defaults to VIEWER (everyone). */
-  minRole?: "OWNER" | "ADMIN" | "MEMBER" | "VIEWER";
-};
-
-export const navItems: NavItem[] = [
-  {
-    label: "Tổng quan",
-    icon: LayoutDashboard,
-    href: "/dashboard",
-    showInBottomNav: true,
-  },
-  {
-    label: "Mẫu tài liệu",
-    icon: FileStack,
-    href: "/templates",
-    showInBottomNav: true,
-    minRole: "ADMIN",
-  },
-  {
-    label: "Tài liệu",
-    icon: FolderOpen,
-    href: "/documents",
-    showInBottomNav: true,
-  },
-  {
-    label: "Sản phẩm",
-    icon: Package,
-    href: "/products",
-    showInBottomNav: true,
-  },
-  {
-    label: "Khách hàng",
-    icon: Users,
-    href: "/customers",
-    showInBottomNav: true,
-  },
-  {
-    label: "Cài đặt chung",
-    icon: Settings,
-    href: "/settings",
-    showInBottomNav: false,
-    minRole: "ADMIN",
-  },
-];
+export const navItems = [
+  { href: "/", label: "Trang chủ", icon: Home },
+  { href: "/documents", label: "Tài liệu", icon: FileText },
+  { href: "/products", label: "Sản phẩm", icon: Package },
+  { href: "/customers", label: "Khách hàng", icon: Users },
+  { href: "/settings", label: "Cài đặt", icon: Settings },
+] as const;
