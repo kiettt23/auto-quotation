@@ -28,9 +28,10 @@ export async function createDocumentAction(
       return err(parsed.error.issues[0].message);
     }
 
-    const { type, customerId, items, ...rest } = parsed.data;
+    const { typeId, type, customerId, items, ...rest } = parsed.data;
 
     const doc = await createDocument(companyId, {
+      typeId,
       type,
       customerId: customerId || undefined,
       data: { ...rest, items },
@@ -55,7 +56,7 @@ export async function updateDocumentAction(
       return err(parsed.error.issues[0].message);
     }
 
-    const { customerId, items, type: _type, ...rest } = parsed.data;
+    const { customerId, items, type: _type, typeId: _typeId, ...rest } = parsed.data;
 
     const doc = await updateDocument(documentId, companyId, {
       customerId: customerId || undefined,

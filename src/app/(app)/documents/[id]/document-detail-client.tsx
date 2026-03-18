@@ -9,19 +9,33 @@ import { duplicateDocumentAction } from "@/actions/document.actions";
 import { DocumentPdfViewer } from "@/components/documents/document-pdf-viewer";
 import { DocumentPdfDownloadButton } from "@/components/documents/document-pdf-download-button";
 import type { DocumentRow } from "@/services/document.service";
+import type { ColumnDef } from "@/lib/types/column-def";
 
 interface CompanyInfo {
   name: string;
   address?: string | null;
   phone?: string | null;
+  taxCode?: string | null;
+  logoUrl?: string | null;
+  headerLayout?: string | null;
 }
 
 export function DocumentDetailClient({
   document: doc,
   company,
+  columns,
+  showTotal,
+  title,
+  signatureLabels,
+  templateId,
 }: {
   document: DocumentRow;
   company: CompanyInfo;
+  columns: ColumnDef[];
+  showTotal: boolean;
+  title: string;
+  signatureLabels: string[];
+  templateId?: string | null;
 }) {
   const router = useRouter();
 
@@ -58,7 +72,15 @@ export function DocumentDetailClient({
               Chỉnh sửa
             </Link>
           </Button>
-          <DocumentPdfDownloadButton document={doc} company={company} />
+          <DocumentPdfDownloadButton
+            document={doc}
+            company={company}
+            columns={columns}
+            showTotal={showTotal}
+            title={title}
+            signatureLabels={signatureLabels}
+            templateId={templateId}
+          />
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Printer className="mr-1.5 h-4 w-4" />
             In
@@ -71,7 +93,15 @@ export function DocumentDetailClient({
       </div>
 
       {/* PDF Preview */}
-      <DocumentPdfViewer document={doc} company={company} />
+      <DocumentPdfViewer
+        document={doc}
+        company={company}
+        columns={columns}
+        showTotal={showTotal}
+        title={title}
+        signatureLabels={signatureLabels}
+        templateId={templateId}
+      />
     </div>
   );
 }

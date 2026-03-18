@@ -1,5 +1,6 @@
 import { db } from "@/db";
-import { document, type DocumentType, type DocumentStatus } from "@/db/schema";
+import { document, type DocumentType } from "@/db/schema";
+import { documentType } from "@/db/schema/document-type";
 import { eq, and, isNull, desc, sql, like } from "drizzle-orm";
 import { generateId } from "@/lib/utils/generate-id";
 
@@ -41,19 +42,13 @@ export async function getDocumentById(documentId: string, companyId: string) {
   return rows[0] ?? null;
 }
 
-/** Generate next document number: BG-2026-001, PXK-2026-002, etc. */
+/** Generate next document number using shortLabel from document_type */
 async function generateDocumentNumber(
   companyId: string,
-  type: DocumentType
+  shortLabel: string
 ): Promise<string> {
-  const prefixMap: Record<DocumentType, string> = {
-    QUOTATION: "BG",
-    WAREHOUSE_EXPORT: "PXK",
-    DELIVERY_ORDER: "PGH",
-  };
-  const prefix = prefixMap[type];
   const year = new Date().getFullYear();
-  const pattern = `${prefix}-${year}-%`;
+  const pattern = `${shortLabel}-${year}-%`;
 
   const [result] = await db
     .select({ count: sql<number>`count(*)` })
@@ -66,21 +61,56 @@ async function generateDocumentNumber(
     );
 
   const nextNum = Number(result?.count ?? 0) + 1;
-  return `${prefix}-${year}-${String(nextNum).padStart(3, "0")}`;
+  return `${shortLabel}-${year}-${String(nextNum).padStart(3, "0")}`;
+}
+
+/** Resolve shortLabel from typeId, fallback to old type enum */
+async function resolveShortLabel(companyId: string, typeId?: string, type?: DocumentType): Promise<string> {
+  if (typeId) {
+    const rows = await db
+      .select({ shortLabel: documentType.shortLabel })
+      .from(documentType)
+      .where(and(eq(documentType.id, typeId), eq(documentType.companyId, companyId)))
+      .limit(1);
+    if (rows[0]) return rows[0].shortLabel;
+  }
+  // Fallback for old documents without typeId
+  const prefixMap: Record<string, string> = {
+    QUOTATION: "BG",
+    WAREHOUSE_EXPORT: "PXK",
+    DELIVERY_ORDER: "PGH",
+  };
+  return prefixMap[type ?? "QUOTATION"] ?? "DOC";
 }
 
 /** Create a new document */
 export async function createDocument(
   companyId: string,
   data: {
-    type: DocumentType;
+    typeId?: string;
+    type?: DocumentType;
     customerId?: string;
-    status?: DocumentStatus;
     data: Record<string, unknown>;
   }
 ) {
   const id = generateId();
-  const documentNumber = await generateDocumentNumber(companyId, data.type);
+  const shortLabel = await resolveShortLabel(companyId, data.typeId, data.type);
+  const documentNumber = await generateDocumentNumber(companyId, shortLabel);
+
+  // Determine old type field for backward compat
+  let legacyType: DocumentType = "QUOTATION";
+  if (data.type) {
+    legacyType = data.type;
+  } else if (data.typeId) {
+    const rows = await db
+      .select({ key: documentType.key })
+      .from(documentType)
+      .where(eq(documentType.id, data.typeId))
+      .limit(1);
+    const key = rows[0]?.key;
+    if (key === "WAREHOUSE_EXPORT" || key === "DELIVERY_ORDER") legacyType = key;
+    else legacyType = "QUOTATION";
+  }
 
   const [row] = await db
     .insert(document)
@@ -88,8 +118,8 @@ export async function createDocument(
       id,
       companyId,
       customerId: data.customerId,
-      type: data.type,
-      status: data.status ?? "DRAFT",
+      type: legacyType,
+      typeId: data.typeId,
       documentNumber,
       data: data.data,
     })
@@ -104,7 +134,6 @@ export async function updateDocument(
   companyId: string,
   data: {
     customerId?: string;
-    status?: DocumentStatus;
     data?: Record<string, unknown>;
   }
 ) {
@@ -137,9 +166,9 @@ export async function duplicateDocument(
   if (!original) return null;
 
   return createDocument(companyId, {
+    typeId: original.typeId ?? undefined,
     type: original.type as DocumentType,
     customerId: original.customerId ?? undefined,
-    status: "DRAFT",
     data: original.data as Record<string, unknown>,
   });
 }

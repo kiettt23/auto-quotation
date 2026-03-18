@@ -75,7 +75,7 @@ export function ProductDialog({
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5 pt-2">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="name">Tên sản phẩm *</Label>
+            <Label htmlFor="name">Tên sản phẩm <span className="text-red-500">*</span></Label>
             <Input
               id="name"
               name="name"
@@ -119,7 +119,7 @@ export function ProductDialog({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="unitPrice">Đơn giá (VNĐ) *</Label>
+            <Label htmlFor="unitPrice">Đơn giá (VNĐ) <span className="text-red-500">*</span></Label>
             <Input
               id="unitPrice"
               name="unitPrice"

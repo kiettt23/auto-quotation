@@ -5,14 +5,18 @@ const documentItemSchema = z.object({
   productName: z.string().min(1, "Tên sản phẩm không được trống"),
   specification: z.string().optional(),
   unit: z.string().optional(),
-  quantity: z.coerce.number().min(1, "Số lượng phải >= 1"),
-  unitPrice: z.coerce.number().min(0, "Đơn giá phải >= 0"),
-  amount: z.coerce.number().min(0),
+  quantity: z.coerce.number().optional(),
+  unitPrice: z.coerce.number().optional(),
+  amount: z.coerce.number().optional(),
   note: z.string().optional(),
+  customFields: z.record(z.string(), z.union([z.string(), z.number()])).optional(),
 });
 
 export const createDocumentSchema = z.object({
-  type: z.enum(["QUOTATION", "WAREHOUSE_EXPORT", "DELIVERY_ORDER"]),
+  /** Document type ID (FK to document_type table) */
+  typeId: z.string().min(1, "Chọn loại chứng từ"),
+  /** @deprecated Kept for backward compat during migration */
+  type: z.enum(["QUOTATION", "WAREHOUSE_EXPORT", "DELIVERY_ORDER"]).optional(),
   customerId: z.string().optional(),
   customerName: z.string().optional(),
   customerAddress: z.string().optional(),
@@ -20,6 +24,15 @@ export const createDocumentSchema = z.object({
   receiverPhone: z.string().optional(),
   items: z.array(documentItemSchema).min(1, "Cần ít nhất 1 sản phẩm"),
   notes: z.string().optional(),
+  /** Per-document column override */
+  columns: z.array(z.object({
+    key: z.string(),
+    label: z.string(),
+    type: z.enum(["text", "number", "currency"]),
+    width: z.string(),
+    align: z.enum(["left", "right", "center"]).optional(),
+    system: z.boolean().optional(),
+  })).optional(),
 });
 
 export type CreateDocumentInput = z.infer<typeof createDocumentSchema>;

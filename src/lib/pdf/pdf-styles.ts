@@ -83,15 +83,7 @@ export const pdfStyles = StyleSheet.create({
     fontWeight: "bold",
     color: "#0f172a",
   },
-  // Columns — total = 100%, no flexGrow to avoid overlap
-  colStt: { width: "5%", paddingRight: 4 },
-  colProduct: { width: "20%", paddingRight: 4 },
-  colSpec: { width: "13%", paddingRight: 4 },
-  colUnit: { width: "7%", paddingRight: 4 },
-  colQty: { width: "5%", textAlign: "right", paddingRight: 4 },
-  colPrice: { width: "13%", textAlign: "right", paddingRight: 4 },
-  colAmount: { width: "15%", textAlign: "right", paddingRight: 8 },
-  colNote: { width: "22%" },
+  // Column widths are now dynamic — set via ColumnDef.width in document-pdf-layout.tsx
   // Total
   totalRow: {
     flexDirection: "row",

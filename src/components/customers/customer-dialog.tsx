@@ -58,7 +58,7 @@ export function CustomerDialog({ open, onOpenChange, customer }: CustomerDialogP
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5 pt-2">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="name">Tên khách hàng *</Label>
+            <Label htmlFor="name">Tên khách hàng <span className="text-red-500">*</span></Label>
             <Input
               id="name"
               name="name"

@@ -15,6 +15,7 @@ export const updateCompanySchema = z.object({
   email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
   bankName: z.string().optional(),
   bankAccount: z.string().optional(),
+  headerLayout: z.enum(["left", "center"]).optional(),
 });
 
 export type CreateCompanyInput = z.infer<typeof createCompanySchema>;

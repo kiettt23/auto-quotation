@@ -10,6 +10,10 @@ export const company = pgTable("company", {
   email: text("email"),
   bankName: text("bank_name"),
   bankAccount: text("bank_account"),
+  /** Company logo as data URL (base64) or external URL */
+  logoUrl: text("logo_url"),
+  /** Header layout: "left" (logo left, info right) or "center" (centered) */
+  headerLayout: text("header_layout").default("left"),
   ownerId: text("owner_id").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -11,10 +11,12 @@ import {
 import { DocumentTypeSelector } from "./document-type-selector";
 import { DocumentCustomerSection } from "./document-customer-section";
 import { DocumentItemsTable } from "./document-items-table";
-import type { DocumentType } from "@/db/schema/document";
 import type { DocumentItem } from "@/lib/validations/document.schema";
 import type { DocumentData } from "@/lib/types/document-data";
 import type { DocumentRow } from "@/services/document.service";
+import type { DocumentTypeRow } from "@/services/document-type.service";
+import { Plus, Trash2, RotateCcw } from "lucide-react";
+import { autoCalculateWidths, type ColumnDef } from "@/lib/types/column-def";
 
 interface ProductOption {
   id: string;
@@ -35,18 +37,19 @@ interface CustomerOption {
 interface Props {
   products: ProductOption[];
   customers: CustomerOption[];
+  documentTypes: DocumentTypeRow[];
   /** If provided, form is in edit mode */
   document?: DocumentRow;
 }
 
-export function DocumentForm({ products, customers, document: doc }: Props) {
+export function DocumentForm({ products, customers, documentTypes, document: doc }: Props) {
   const router = useRouter();
   const isEdit = !!doc;
   const existingData = doc?.data as DocumentData | undefined;
 
   const [isPending, setIsPending] = useState(false);
-  const [docType, setDocType] = useState<DocumentType>(
-    (doc?.type as DocumentType) ?? "QUOTATION",
+  const [typeId, setTypeId] = useState(
+    doc?.typeId ?? documentTypes[0]?.id ?? "",
   );
   const [customerId, setCustomerId] = useState(doc?.customerId ?? "");
   const [customerName, setCustomerName] = useState(
@@ -64,9 +67,32 @@ export function DocumentForm({ products, customers, document: doc }: Props) {
   const [items, setItems] = useState<DocumentItem[]>(
     existingData?.items?.length
       ? existingData.items
-      : [{ productName: "", unit: "", quantity: 1, unitPrice: 0, amount: 0 }],
+      : [{ productName: "", quantity: 1, unitPrice: 0, amount: 0 }],
   );
   const [notes, setNotes] = useState(existingData?.notes ?? "");
+
+  // Resolve columns from selected document type
+  const selectedType = useMemo(
+    () => documentTypes.find((t) => t.id === typeId),
+    [documentTypes, typeId],
+  );
+  const defaultColumns = useMemo(
+    () => (selectedType?.columns ?? []) as ColumnDef[],
+    [selectedType?.columns],
+  );
+  // Per-document column override — starts from type defaults or existing override
+  const [columnOverride, setColumnOverride] = useState<ColumnDef[] | null>(
+    existingData?.columns ?? null,
+  );
+  const columns = columnOverride ?? defaultColumns;
+  const showTotal = selectedType?.showTotal ?? true;
+  const [showColumnEditor, setShowColumnEditor] = useState(false);
+
+  // When type changes, reset column override
+  const handleTypeChange = useCallback((newTypeId: string) => {
+    setTypeId(newTypeId);
+    setColumnOverride(null);
+  }, []);
 
   function handleCustomerSelect(id: string) {
     const customer = customers.find((c) => c.id === id);
@@ -80,7 +106,7 @@ export function DocumentForm({ products, customers, document: doc }: Props) {
 
   function buildPayload() {
     return {
-      type: docType,
+      typeId,
       customerId: customerId || undefined,
       customerName,
       customerAddress,
@@ -88,9 +114,10 @@ export function DocumentForm({ products, customers, document: doc }: Props) {
       receiverPhone,
       items: items.map((item) => ({
         ...item,
-        amount: item.quantity * item.unitPrice,
+        amount: (item.quantity ?? 0) * (item.unitPrice ?? 0),
       })),
       notes,
+      ...(columnOverride ? { columns: columnOverride } : {}),
     };
   }
 
@@ -113,7 +140,11 @@ export function DocumentForm({ products, customers, document: doc }: Props) {
   return (
     <div className="flex flex-col gap-6">
       {!isEdit && (
-        <DocumentTypeSelector selected={docType} onSelect={setDocType} />
+        <DocumentTypeSelector
+          types={documentTypes}
+          selectedId={typeId}
+          onSelect={handleTypeChange}
+        />
       )}
 
       <DocumentCustomerSection
@@ -130,9 +161,36 @@ export function DocumentForm({ products, customers, document: doc }: Props) {
         onReceiverPhoneChange={setReceiverPhone}
       />
 
+      {/* Inline column customization */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-semibold text-slate-900">Bảng sản phẩm</h2>
+        <button
+          type="button"
+          onClick={() => {
+            if (!showColumnEditor && !columnOverride) {
+              setColumnOverride([...defaultColumns]);
+            }
+            setShowColumnEditor(!showColumnEditor);
+          }}
+          className="text-sm text-blue-600 hover:text-blue-700"
+        >
+          {showColumnEditor ? "Ẩn tùy chỉnh cột" : "Tùy chỉnh cột"}
+        </button>
+      </div>
+
+      {showColumnEditor && columnOverride && (
+        <InlineColumnEditor
+          columns={columnOverride}
+          onChange={setColumnOverride}
+          onReset={() => { setColumnOverride(null); setShowColumnEditor(false); }}
+        />
+      )}
+
       <DocumentItemsTable
         items={items}
         products={products}
+        columns={columns}
+        showTotal={showTotal}
         onItemsChange={setItems}
       />
 
@@ -142,7 +200,7 @@ export function DocumentForm({ products, customers, document: doc }: Props) {
           Ghi chú chung
         </label>
         <p className="mb-2 text-xs text-slate-400">
-          Hiển thị cuối trái tài liệu PDF. VD: điều khoản, thời hạn báo giá...
+          Hiển thị cuối tài liệu PDF. VD: điều khoản, thời hạn báo giá...
         </p>
         <textarea
           value={notes}
@@ -159,6 +217,79 @@ export function DocumentForm({ products, customers, document: doc }: Props) {
           {isPending ? "Đang lưu..." : "Lưu & xem PDF"}
         </Button>
       </div>
+    </div>
+  );
+}
+
+// --- Inline column editor for per-document overrides ---
+
+function InlineColumnEditor({
+  columns,
+  onChange,
+  onReset,
+}: {
+  columns: ColumnDef[];
+  onChange: (cols: ColumnDef[]) => void;
+  onReset: () => void;
+}) {
+  function updateCol(i: number, patch: Partial<ColumnDef>) {
+    onChange(columns.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
+  }
+
+  function removeCol(i: number) {
+    onChange(autoCalculateWidths(columns.filter((_, idx) => idx !== i)));
+  }
+
+  function addCol() {
+    const newCol: ColumnDef = { key: `custom_${Date.now()}`, label: "Cột mới", type: "text", width: "10%" };
+    const updated = [...columns, newCol];
+    onChange(autoCalculateWidths(updated));
+  }
+
+  return (
+    <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-sm font-medium text-slate-700">Cột hiển thị</span>
+        <button onClick={onReset} className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700">
+          <RotateCcw className="h-3 w-3" />
+          Đặt lại mặc định
+        </button>
+      </div>
+
+      <div className="space-y-2">
+        {columns.map((col, i) => (
+          <div key={col.key} className="flex items-center gap-2">
+            <input
+              value={col.label}
+              onChange={(e) => updateCol(i, { label: e.target.value })}
+              disabled={col.system}
+              className="flex-1 rounded border border-slate-200 bg-white px-2 py-1 text-sm disabled:bg-slate-50 disabled:text-slate-400"
+            />
+            <select
+              value={col.type}
+              onChange={(e) => updateCol(i, { type: e.target.value as ColumnDef["type"] })}
+              disabled={col.system}
+              className="rounded border border-slate-200 bg-white px-2 py-1 text-sm disabled:bg-slate-50"
+            >
+              <option value="text">Văn bản</option>
+              <option value="number">Số</option>
+              <option value="currency">Tiền tệ</option>
+            </select>
+            {col.system ? (
+              <span className="w-8 text-center text-xs text-slate-300">🔒</span>
+            ) : (
+              <button onClick={() => removeCol(i)} className="w-8 text-center text-slate-400 hover:text-red-600">
+                <Trash2 className="mx-auto h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <button onClick={addCol} className="mt-2 flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700">
+        <Plus className="h-4 w-4" />
+        Thêm cột
+      </button>
     </div>
   );
 }

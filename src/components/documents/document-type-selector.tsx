@@ -1,28 +1,34 @@
 "use client";
 
-import { documentTypeConfig } from "@/lib/utils/document-helpers";
-import type { DocumentType } from "@/db/schema/document";
+import type { DocumentTypeRow } from "@/services/document-type.service";
 
-const types: DocumentType[] = ["QUOTATION", "WAREHOUSE_EXPORT", "DELIVERY_ORDER"];
+interface Props {
+  types: DocumentTypeRow[];
+  selectedId: string;
+  onSelect: (typeId: string) => void;
+}
 
-export function DocumentTypeSelector({
-  selected,
-  onSelect,
-}: {
-  selected: DocumentType;
-  onSelect: (type: DocumentType) => void;
-}) {
+/** Badge color cycling for document types */
+const BADGE_STYLES = [
+  { bg: "bg-blue-100", text: "text-blue-700" },
+  { bg: "bg-amber-100", text: "text-amber-700" },
+  { bg: "bg-indigo-100", text: "text-indigo-700" },
+  { bg: "bg-emerald-100", text: "text-emerald-700" },
+  { bg: "bg-rose-100", text: "text-rose-700" },
+];
+
+export function DocumentTypeSelector({ types, selectedId, onSelect }: Props) {
   return (
-    <div className="flex gap-4">
-      {types.map((type) => {
-        const config = documentTypeConfig[type];
-        const isActive = selected === type;
+    <div className="flex flex-wrap gap-4">
+      {types.map((type, i) => {
+        const isActive = selectedId === type.id;
+        const badge = BADGE_STYLES[i % BADGE_STYLES.length];
 
         return (
           <button
-            key={type}
+            key={type.id}
             type="button"
-            onClick={() => onSelect(type)}
+            onClick={() => onSelect(type.id)}
             className={`flex w-44 flex-col items-center gap-2 rounded-xl border-2 bg-white p-5 transition-colors ${
               isActive
                 ? "border-blue-500 ring-1 ring-blue-500"
@@ -30,16 +36,16 @@ export function DocumentTypeSelector({
             }`}
           >
             <span
-              className={`inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${config.badgeBg} ${config.badgeText}`}
+              className={`inline-flex rounded-md px-2.5 py-1 text-xs font-semibold ${badge.bg} ${badge.text}`}
             >
-              {config.prefix}
+              {type.shortLabel}
             </span>
             <span
               className={`text-sm font-medium ${
                 isActive ? "text-slate-900" : "text-slate-500"
               }`}
             >
-              {config.label}
+              {type.label}
             </span>
           </button>
         );

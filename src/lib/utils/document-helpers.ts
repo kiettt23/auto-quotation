@@ -1,4 +1,4 @@
-import type { DocumentType, DocumentStatus } from "@/db/schema/document";
+import type { DocumentType } from "@/db/schema/document";
 
 /** Map document type to display info */
 export const documentTypeConfig: Record<
@@ -25,27 +25,11 @@ export const documentTypeConfig: Record<
   },
 };
 
-export const documentStatusConfig: Record<
-  DocumentStatus,
-  { label: string; badgeBg: string; badgeText: string }
-> = {
-  DRAFT: {
-    label: "Nháp",
-    badgeBg: "bg-amber-50",
-    badgeText: "text-amber-700",
-  },
-  FINAL: {
-    label: "Hoàn tất",
-    badgeBg: "bg-green-50",
-    badgeText: "text-green-700",
-  },
-};
-
 /** Calculate total from document items */
 export function calculateTotal(
-  items: Array<{ quantity: number; unitPrice: number }>
+  items: Array<{ quantity?: number; unitPrice?: number; amount?: number }>
 ): number {
-  return items.reduce((sum, item) => sum + item.quantity * item.unitPrice, 0);
+  return items.reduce((sum, item) => sum + (item.amount ?? (item.quantity ?? 0) * (item.unitPrice ?? 0)), 0);
 }
 
 /** Format currency VND */

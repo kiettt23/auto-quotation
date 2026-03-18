@@ -4,15 +4,14 @@ import { useState } from "react";
 import { pdf } from "@react-pdf/renderer";
 import { registerPdfFonts } from "@/lib/pdf/register-fonts";
 import { Button } from "@/components/ui/button";
+import { getTemplateComponent } from "@/lib/pdf/template-registry";
 
 registerPdfFonts();
 import { Download } from "lucide-react";
-import { DocumentPdfLayout } from "@/lib/pdf/document-pdf-layout";
-import { presetTitleMap } from "@/lib/pdf/preset-config";
 import { formatDate } from "@/lib/utils/document-helpers";
 import type { DocumentRow } from "@/services/document.service";
-import type { DocumentType } from "@/db/schema/document";
 import type { DocumentData } from "@/lib/types/document-data";
+import type { ColumnDef } from "@/lib/types/column-def";
 
 interface Props {
   document: DocumentRow;
@@ -20,25 +19,44 @@ interface Props {
     name: string;
     address?: string | null;
     phone?: string | null;
+    taxCode?: string | null;
+    logoUrl?: string | null;
+    headerLayout?: string | null;
   };
+  columns: ColumnDef[];
+  showTotal: boolean;
+  title: string;
+  signatureLabels: string[];
+  templateId?: string | null;
 }
 
-export function DocumentPdfDownloadButton({ document: doc, company }: Props) {
+export function DocumentPdfDownloadButton({
+  document: doc,
+  company,
+  columns,
+  showTotal,
+  title,
+  signatureLabels,
+  templateId,
+}: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const TemplateComponent = getTemplateComponent(templateId);
 
   async function handleDownload() {
     setIsGenerating(true);
     try {
-      const title = presetTitleMap[doc.type as DocumentType];
       const data = doc.data as DocumentData;
 
       const blob = await pdf(
-        <DocumentPdfLayout
+        <TemplateComponent
           title={title}
           documentNumber={doc.documentNumber}
           date={formatDate(doc.createdAt)}
           company={company}
           data={data}
+          columns={columns}
+          showTotal={showTotal}
+          signatureLabels={signatureLabels}
         />
       ).toBlob();
 

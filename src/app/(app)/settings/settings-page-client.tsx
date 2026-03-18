@@ -12,9 +12,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Building2, CreditCard, Tags, Ruler } from "lucide-react";
+import { Building2, CreditCard, Tags, Ruler, FileText } from "lucide-react";
 import { SettingsForm } from "./settings-form";
 import { SimpleListManager } from "@/components/settings/simple-list-manager";
+import { DocumentTypeColumnEditor } from "@/components/settings/document-type-column-editor";
 import {
   createCategoryAction,
   deleteCategoryAction,
@@ -26,14 +27,16 @@ import {
 import type { CompanyRow } from "@/services/company.service";
 import type { CategoryRow } from "@/services/category.service";
 import type { UnitRow } from "@/services/unit.service";
+import type { DocumentTypeRow } from "@/services/document-type.service";
 
 interface Props {
   company: CompanyRow;
   categories: CategoryRow[];
   units: UnitRow[];
+  documentTypes: DocumentTypeRow[];
 }
 
-export function SettingsPageClient({ company, categories, units }: Props) {
+export function SettingsPageClient({ company, categories, units, documentTypes }: Props) {
   const [activeTab, setActiveTab] = useState("company");
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const pendingTabRef = useRef<string | null>(null);
@@ -95,6 +98,10 @@ export function SettingsPageClient({ company, categories, units }: Props) {
             <Ruler className="h-4 w-4" />
             Đơn vị tính
           </TabsTrigger>
+          <TabsTrigger value="documentTypes" className="gap-1.5">
+            <FileText className="h-4 w-4" />
+            Mẫu tài liệu
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="company">
@@ -147,6 +154,10 @@ export function SettingsPageClient({ company, categories, units }: Props) {
               emptyMessage="Chưa có đơn vị nào. Thêm đơn vị đầu tiên."
             />
           </div>
+        </TabsContent>
+
+        <TabsContent value="documentTypes">
+          <DocumentTypeColumnEditor documentTypes={documentTypes} />
         </TabsContent>
       </Tabs>
 
