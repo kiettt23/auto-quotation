@@ -1,338 +1,478 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 import { StyleSheet } from "@react-pdf/renderer";
 import type { PdfTemplateProps } from "../template-props";
-import { getCellValue, calculateTotal } from "../pdf-helpers";
-import { fmtCurrency } from "../template-props";
 
 /**
- * Jesang-style delivery order template
- * Pixel-perfect layout matching PHIẾU GIAO NHẬN (GOODS DELIVERY ORDER)
- * Features: bordered customer info grid, bilingual labels, 5 signature blocks
+ * Jesang-style delivery order — pixel-perfect hardcoded layout
+ * Only DATA changes: company, customer, items, totals
+ * All labels, columns, signatures are fixed
  */
 
-const border = { borderWidth: 1, borderColor: "#000000" };
-const borderBottom = { borderBottomWidth: 1, borderBottomColor: "#000000" };
-const borderRight = { borderRightWidth: 1, borderRightColor: "#000000" };
+const B = 1; // border thickness
+const BC = "#000000";
 
-const js = StyleSheet.create({
+const s = StyleSheet.create({
   page: {
     fontFamily: "Roboto",
     fontSize: 10,
-    padding: 40,
-    color: "#000000",
+    paddingTop: 40,
+    paddingBottom: 32,
+    paddingHorizontal: 52,
+    color: BC,
   },
-  /* ── Header ── */
+
+  /* Header */
   companyName: { fontSize: 13, fontWeight: "bold", marginBottom: 2 },
   companyDetail: { fontSize: 9, marginBottom: 1 },
-  titleBlock: { alignItems: "center", marginTop: 16, marginBottom: 12 },
-  titleMain: { fontSize: 20, fontWeight: "bold" },
-  titleSub: { fontSize: 11, marginTop: 2 },
-  /* ── Date + Doc number row ── */
+  rule1: {
+    borderBottomWidth: 1.5,
+    borderBottomColor: BC,
+    marginTop: 10,
+    marginBottom: 12,
+  },
+  rule2: { borderBottomWidth: 0.5, borderBottomColor: BC, marginBottom: 14 },
+
+  /* Title */
+  titleWrap: { alignItems: "center", marginBottom: 14 },
+  titleMain: { fontSize: 20, fontWeight: "bold", letterSpacing: 0.5 },
+  titleSub: { fontSize: 10, marginTop: 2, letterSpacing: 0.3 },
+
+  /* Date row */
   dateRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 12,
-    fontSize: 9,
+    alignItems: "center",
+    marginBottom: 16,
   },
+  dateText: { fontSize: 9 },
   docNumBox: {
-    borderWidth: 1,
-    borderColor: "#000000",
-    paddingHorizontal: 8,
+    borderWidth: B,
+    borderColor: BC,
+    paddingHorizontal: 10,
     paddingVertical: 3,
     fontSize: 10,
     fontWeight: "bold",
   },
-  /* ── Customer info grid ── */
-  infoGrid: { ...border, marginBottom: 12 },
-  infoRow: {
+
+  /* Info grid */
+  grid: { borderWidth: B, borderColor: BC, marginBottom: 20 },
+  gridRow: {
     flexDirection: "row",
-    minHeight: 28,
-    ...borderBottom,
+    minHeight: 50,
+    borderBottomWidth: B,
+    borderBottomColor: BC,
   },
-  infoLabel: {
+  gridRowLast: { flexDirection: "row", minHeight: 28 },
+  gridLabel: {
     width: "25%",
-    padding: 4,
-    fontSize: 8,
-    ...borderRight,
+    padding: 6,
+    fontSize: 7.5,
+    borderRightWidth: B,
+    borderRightColor: BC,
+    justifyContent: "center",
   },
-  infoValue: {
+  gridValue: {
     width: "75%",
-    padding: 4,
+    padding: 6,
     fontSize: 9,
     fontWeight: "bold",
+    justifyContent: "center",
   },
-  infoHalfRow: {
-    flexDirection: "row",
-    minHeight: 24,
-    ...borderBottom,
-  },
-  infoHalfLabel: {
+  gridHalfLabel: {
     width: "25%",
-    padding: 4,
-    fontSize: 8,
-    ...borderRight,
+    padding: 6,
+    fontSize: 7.5,
+    borderRightWidth: B,
+    borderRightColor: BC,
+    justifyContent: "center",
   },
-  infoHalfValue: {
+  gridHalfValue: {
     width: "25%",
-    padding: 4,
+    padding: 6,
     fontSize: 9,
-    ...borderRight,
+    justifyContent: "center",
   },
-  /* ── Table ── */
-  tableWrap: { ...border, marginBottom: 4 },
-  tableHeader: {
+  gridHalfValueBorder: {
+    width: "25%",
+    padding: 6,
+    fontSize: 9,
+    borderRightWidth: B,
+    borderRightColor: BC,
+    justifyContent: "center",
+  },
+
+  /* Table */
+  table: { borderWidth: B, borderColor: BC, marginBottom: 4 },
+  thRow: {
     flexDirection: "row",
-    ...borderBottom,
-    backgroundColor: "#f5f5f5",
-    minHeight: 32,
+    borderBottomWidth: B,
+    borderBottomColor: BC,
+    minHeight: 34,
   },
   th: {
     padding: 4,
-    fontSize: 8,
+    fontSize: 7.5,
     fontWeight: "bold",
     textAlign: "center",
     justifyContent: "center",
-    ...borderRight,
+    alignItems: "center",
+    borderRightWidth: B,
+    borderRightColor: BC,
   },
-  tableRow: {
+  thSub: { fontSize: 7, fontWeight: "normal" },
+  tdRow: {
     flexDirection: "row",
-    ...borderBottom,
-    minHeight: 24,
+    borderBottomWidth: B,
+    borderBottomColor: BC,
+    minHeight: 26,
   },
   td: {
-    padding: 4,
+    padding: 5,
     fontSize: 9,
-    ...borderRight,
+    borderRightWidth: B,
+    borderRightColor: BC,
     justifyContent: "center",
   },
-  totalRow: {
+  totalRow: { flexDirection: "row", minHeight: 26 },
+
+  /* Signatures */
+  sigWrap: { borderWidth: B, borderColor: BC, marginTop: 32 },
+  sigTitleRow: {
     flexDirection: "row",
-    ...borderBottom,
-    minHeight: 24,
+    borderBottomWidth: B,
+    borderBottomColor: BC,
+    minHeight: 28,
   },
-  /* ── Signatures ── */
-  sigRow: {
-    flexDirection: "row",
-    marginTop: 24,
-    ...border,
-  },
-  sigBlock: {
+  sigTitleCell: {
     flex: 1,
     alignItems: "center",
-    paddingTop: 8,
-    paddingBottom: 40,
-    ...borderRight,
+    justifyContent: "center",
+    paddingVertical: 5,
+    borderRightWidth: B,
+    borderRightColor: BC,
   },
-  sigTitle: { fontSize: 10, fontWeight: "bold", marginBottom: 2 },
-  sigSub: { fontSize: 8, fontStyle: "italic" },
-  /* ── Notes ── */
-  notes: { fontSize: 9, marginTop: 8, color: "#374151" },
+  sigTitleVn: { fontSize: 9, fontWeight: "bold" },
+  sigTitleEn: { fontSize: 7.5 },
+  sigSpaceRow: { flexDirection: "row", minHeight: 75 },
+  sigSpaceCell: { flex: 1, borderRightWidth: B, borderRightColor: BC },
+
+  /* Notes */
+  notes: { fontSize: 9, marginTop: 8 },
 });
 
+/* Fixed column widths matching original document */
+const COL = {
+  stt: "7%",
+  contract: "13%",
+  item: "22%",
+  lot: "12%",
+  box: "12%",
+  weight: "16%",
+  invoice: "18%",
+};
+
 export function JesangDeliveryTemplate({
-  title,
   documentNumber,
   date,
   company,
   data,
-  columns,
-  showTotal,
-  signatureLabels,
 }: PdfTemplateProps) {
   const items = data.items ?? [];
-  const hasAmount = columns.some((c) => c.key === "amount");
-  const total = hasAmount ? calculateTotal(items) : 0;
 
-  /* Parse date "19/3/2026" → parts */
-  const dateParts = date.split("/");
-  const day = dateParts[0] ?? "";
-  const month = dateParts[1] ?? "";
-  const year = dateParts[2] ?? "";
+  /* Parse date */
+  const dp = date.split("/");
+  const day = dp[0] ?? "";
+  const month = (dp[1] ?? "").padStart(2, "0");
+  const year = dp[2] ?? "";
+
+  /* Calculate totals from customFields */
+  let totalBox = 0;
+  let totalWeight = 0;
+  for (const item of items) {
+    totalBox += Number(item.customFields?.["boxQty"] ?? 0);
+    totalWeight += Number(
+      item.customFields?.["netWeight"] ?? 0,
+    );
+  }
 
   return (
     <Document>
-      <Page size="A4" style={js.page}>
-        {/* ── Company header ── */}
+      <Page size="A4" style={s.page}>
+        {/* ═══ HEADER ═══ */}
         <View>
-          <Text style={js.companyName}>{company.name}</Text>
-          {company.address && <Text style={js.companyDetail}>{company.address}</Text>}
-          {company.taxCode && <Text style={js.companyDetail}>MST : {company.taxCode}</Text>}
-        </View>
-
-        {/* ── Title ── */}
-        <View style={js.titleBlock}>
-          <Text style={js.titleMain}>{title}</Text>
-          {/* Subtitle from document type label — rendered if contains parentheses */}
-          {title.includes("(") ? null : (
-            <Text style={js.titleSub}>( GOODS DELIVERY ORDER )</Text>
+          <Text style={s.companyName}>{company.name}</Text>
+          {company.address && (
+            <Text style={s.companyDetail}>{company.address}</Text>
+          )}
+          {company.taxCode && (
+            <Text style={s.companyDetail}>MST : {company.taxCode}</Text>
           )}
         </View>
+        <View style={s.rule1} />
 
-        {/* ── Date + Document number ── */}
-        <View style={js.dateRow}>
-          <Text>
-            Ngày giao (Delivery date) : Ngày (Date) {day} Tháng (Month) {month} Năm (Year) {year}
-          </Text>
-          <Text style={js.docNumBox}>{documentNumber}</Text>
+        {/* ═══ TITLE ═══ */}
+        <View style={s.titleWrap}>
+          <Text style={s.titleMain}>PHIẾU GIAO NHẬN</Text>
+          <Text style={s.titleSub}>( GOODS DELIVERY ORDER )</Text>
         </View>
 
-        {/* ── Customer info grid ── */}
-        <View style={js.infoGrid}>
-          {/* Buyer */}
-          <View style={js.infoRow}>
-            <View style={js.infoLabel}>
+        {/* ═══ DATE + DOC NUMBER ═══ */}
+        <View style={s.dateRow}>
+          <Text style={s.dateText}>
+            Ngày giao (Delivery date) : Ngày (Date) {day} Tháng (Month) {month}{" "}
+            Năm (Year) {year}
+          </Text>
+          <Text style={s.docNumBox}>{documentNumber}</Text>
+        </View>
+
+        {/* ═══ CUSTOMER INFO GRID ═══ */}
+        <View style={s.grid}>
+          {/* Row 1: Buyer — name + address inline */}
+          <View style={s.gridRow}>
+            <View style={s.gridLabel}>
               <Text>Khách hàng (Buyer)</Text>
             </View>
-            <View style={js.infoValue}>
+            <View style={s.gridValue}>
               <Text>{data.customerName ?? ""}</Text>
-              {data.customerAddress && (
-                <Text style={{ fontWeight: "normal", fontSize: 8 }}>
+              {data.customerAddress ? (
+                <Text
+                  style={{ fontWeight: "normal", fontSize: 8, marginTop: 1 }}
+                >
                   Địa chỉ : {data.customerAddress}
                 </Text>
-              )}
+              ) : null}
             </View>
           </View>
 
-          {/* Delivery address */}
-          {data.deliveryAddress && (
-            <View style={js.infoRow}>
-              <View style={js.infoLabel}>
-                <Text>Giao hàng đến địa điểm chỉ{"\n"}định của Jesang{"\n"}(Delivery to address that{"\n"}Jesang requests)</Text>
-              </View>
-              <View style={js.infoValue}>
-                <Text>{data.deliveryAddress}</Text>
-              </View>
+          {/* Row 2: Delivery — name + address inline */}
+          <View style={s.gridRow}>
+            <View style={s.gridLabel}>
+              <Text>
+                Giao hàng đến địa điểm chỉ{"\n"}định của Jesang{"\n"}(Delivery
+                to address that{"\n"}Jesang requests)
+              </Text>
             </View>
-          )}
+            <View style={s.gridValue}>
+              <Text>{data.deliveryName ?? ""}</Text>
+              {data.deliveryAddress ? (
+                <Text
+                  style={{ fontWeight: "normal", fontSize: 8, marginTop: 1 }}
+                >
+                  Địa chỉ : {data.deliveryAddress}
+                </Text>
+              ) : null}
+            </View>
+          </View>
 
-          {/* Driver + Receiver */}
-          <View style={js.infoHalfRow}>
-            <View style={js.infoHalfLabel}>
-              <Text>Tên tài xế (Driver&apos;s name)</Text>
+          {/* Row 3: Driver + Receiver */}
+          <View style={[s.gridRow, { minHeight: 28 }]}>
+            <View style={s.gridHalfLabel}>
+              <Text>Tên tài xế (Driver{"'"}s name)</Text>
             </View>
-            <View style={js.infoHalfValue}>
+            <View style={s.gridHalfValueBorder}>
               <Text>{data.driverName ?? ""}</Text>
             </View>
-            <View style={js.infoHalfLabel}>
+            <View style={s.gridHalfLabel}>
               <Text>Người nhận (Receiver)</Text>
             </View>
-            <View style={{ width: "25%", padding: 4, fontSize: 9 }}>
+            <View style={s.gridHalfValue}>
               <Text>{data.receiverName ?? ""}</Text>
             </View>
           </View>
 
-          {/* Vehicle + Phone */}
-          <View style={{ ...js.infoHalfRow, borderBottomWidth: 0 }}>
-            <View style={js.infoHalfLabel}>
+          {/* Row 4: Vehicle + Phone */}
+          <View style={s.gridRowLast}>
+            <View style={s.gridHalfLabel}>
               <Text>Số xe (Vehicle Identification)</Text>
             </View>
-            <View style={js.infoHalfValue}>
+            <View style={s.gridHalfValueBorder}>
               <Text>{data.vehicleId ?? ""}</Text>
             </View>
-            <View style={js.infoHalfLabel}>
+            <View style={s.gridHalfLabel}>
               <Text>Số điện thoại (Number phone)</Text>
             </View>
-            <View style={{ width: "25%", padding: 4, fontSize: 9 }}>
+            <View style={s.gridHalfValue}>
               <Text>{data.receiverPhone ?? ""}</Text>
             </View>
           </View>
         </View>
 
-        {/* ── Items table ── */}
-        <View style={js.tableWrap}>
-          {/* Table header */}
-          <View style={js.tableHeader}>
-            {columns.map((col, i) => (
-              <View
-                key={col.key}
-                style={[
-                  js.th,
-                  { width: col.width },
-                  i === columns.length - 1 ? { borderRightWidth: 0 } : {},
-                ]}
-              >
-                <Text>{col.label}</Text>
-              </View>
-            ))}
+        {/* ═══ ITEMS TABLE ═══ */}
+        <View style={s.table}>
+          {/* Header — bilingual, fixed columns */}
+          <View style={s.thRow}>
+            <View style={[s.th, { width: COL.stt }]}>
+              <Text>STT</Text>
+              <Text style={s.thSub}>No</Text>
+            </View>
+            <View style={[s.th, { width: COL.contract }]}>
+              <Text>Hợp đồng</Text>
+              <Text style={s.thSub}>Contract No</Text>
+            </View>
+            <View style={[s.th, { width: COL.item }]}>
+              <Text>Tên hàng</Text>
+              <Text style={s.thSub}>Item</Text>
+            </View>
+            <View style={[s.th, { width: COL.lot }]}>
+              <Text>Số Lô</Text>
+              <Text style={s.thSub}>Lot No</Text>
+            </View>
+            <View style={[s.th, { width: COL.box }]}>
+              <Text>Số thùng /</Text>
+              <Text>kiện</Text>
+              <Text style={s.thSub}>Box Qty</Text>
+            </View>
+            <View style={[s.th, { width: COL.weight }]}>
+              <Text>Cân nặng</Text>
+              <Text style={s.thSub}>Net Weight (kg)</Text>
+            </View>
+            <View style={[s.th, { width: COL.invoice, borderRightWidth: 0 }]}>
+              <Text>Hóa đơn</Text>
+              <Text style={s.thSub}>Invoice VAT</Text>
+            </View>
           </View>
 
-          {/* Table rows */}
+          {/* Data rows */}
           {items.map((item, i) => (
-            <View key={i} style={js.tableRow}>
-              {columns.map((col, ci) => (
-                <View
-                  key={col.key}
-                  style={[
-                    js.td,
-                    { width: col.width, textAlign: (col.align ?? "left") as "left" | "right" | "center" },
-                    ci === columns.length - 1 ? { borderRightWidth: 0 } : {},
-                  ]}
-                >
-                  <Text>{getCellValue(item, col, i)}</Text>
-                </View>
-              ))}
+            <View key={i} style={s.tdRow}>
+              <View style={[s.td, { width: COL.stt, textAlign: "center" }]}>
+                <Text>{i + 1}</Text>
+              </View>
+              <View style={[s.td, { width: COL.contract }]}>
+                <Text>{String(item.customFields?.["contractNo"] ?? "")}</Text>
+              </View>
+              <View style={[s.td, { width: COL.item }]}>
+                <Text>{item.productName}</Text>
+              </View>
+              <View style={[s.td, { width: COL.lot }]}>
+                <Text>{String(item.customFields?.["lotNo"] ?? "")}</Text>
+              </View>
+              <View style={[s.td, { width: COL.box, textAlign: "center" }]}>
+                <Text>
+                  {String(item.customFields?.["boxQty"] ?? "")}
+                </Text>
+              </View>
+              <View style={[s.td, { width: COL.weight, textAlign: "right" }]}>
+                <Text>
+                  {String(
+                    item.customFields?.["netWeight"] ?? "",
+                  )}
+                </Text>
+              </View>
+              <View style={[s.td, { width: COL.invoice, borderRightWidth: 0 }]}>
+                <Text>{String(item.customFields?.["invoiceVat"] ?? "")}</Text>
+              </View>
             </View>
           ))}
 
-          {/* Total row */}
-          {showTotal && (
-            <View style={{ ...js.totalRow, borderBottomWidth: 0 }}>
-              {columns.map((col, ci) => {
-                const isBeforeAmount = ci < columns.length - 2;
-                const isTotalLabel = ci === 1;
-                const isAmountCol = col.key === "amount" || ci === columns.length - 2;
-                return (
-                  <View
-                    key={col.key}
-                    style={[
-                      js.td,
-                      { width: col.width },
-                      ci === columns.length - 1 ? { borderRightWidth: 0 } : {},
-                    ]}
-                  >
-                    {isTotalLabel && (
-                      <Text style={{ fontWeight: "bold", textAlign: "center" }}>Tổng Cộng (Total)</Text>
-                    )}
-                    {isAmountCol && hasAmount && (
-                      <Text style={{ fontWeight: "bold", textAlign: "right" }}>{fmtCurrency(total)}</Text>
-                    )}
-                  </View>
-                );
-              })}
+          {/* Total row — merge STT+Contract+Item+Lot into single "Tổng Cộng" cell */}
+          <View style={s.totalRow}>
+            <View
+              style={[
+                s.td,
+                {
+                  width: "54%",
+                  borderBottomWidth: 0,
+                  borderRightWidth: B,
+                  borderRightColor: BC,
+                },
+              ]}
+            >
+              <Text
+                style={{
+                  fontWeight: "bold",
+                  textAlign: "center",
+                }}
+              >
+                Tổng Cộng (Total)
+              </Text>
             </View>
-          )}
+            <View
+              style={[
+                s.td,
+                { width: COL.box, textAlign: "center", borderBottomWidth: 0 },
+              ]}
+            >
+              <Text style={{ fontWeight: "bold" }}>
+                {totalBox > 0 ? (Number.isInteger(totalBox) ? String(totalBox) : totalBox.toFixed(2)) : ""}
+              </Text>
+            </View>
+            <View
+              style={[
+                s.td,
+                { width: COL.weight, textAlign: "right", borderBottomWidth: 0 },
+              ]}
+            >
+              <Text style={{ fontWeight: "bold" }}>
+                {totalWeight > 0 ? `${Number.isInteger(totalWeight) ? String(totalWeight) : totalWeight.toFixed(2)} kg` : ""}
+              </Text>
+            </View>
+            <View
+              style={[
+                s.td,
+                {
+                  width: COL.invoice,
+                  borderRightWidth: 0,
+                  borderBottomWidth: 0,
+                },
+              ]}
+            >
+              <Text />
+            </View>
+          </View>
         </View>
 
-        {/* ── Notes ── */}
+        {/* ═══ NOTES ═══ */}
         {data.notes && (
-          <View style={js.notes}>
-            <Text style={{ fontWeight: 700, marginBottom: 2 }}>Ghi chú:</Text>
+          <View style={s.notes}>
             {data.notes.split("\n").map((line, i) => (
               <Text key={i}>{line}</Text>
             ))}
           </View>
         )}
 
-        {/* ── Signatures ── */}
-        <View style={js.sigRow}>
-          {signatureLabels.map((label, i) => {
-            const parts = label.split("\n");
-            const vn = parts[0] ?? label;
-            const en = parts[1] ?? "";
-            return (
-              <View
-                key={i}
-                style={[
-                  js.sigBlock,
-                  i === signatureLabels.length - 1 ? { borderRightWidth: 0 } : {},
-                ]}
-              >
-                <Text style={js.sigTitle}>{vn}</Text>
-                {en && <Text style={js.sigSub}>{en}</Text>}
+        {/* ═══ SIGNATURES — 3 rows: VN titles, EN titles, empty space ═══ */}
+        {(() => {
+          const sigs = [
+            { vn: "Người mua", en: "Buyer" },
+            { vn: "Người nhận", en: "Receiver" },
+            { vn: "Thủ kho", en: "W/H Keeper" },
+            { vn: "Kế toán", en: "Chief Accountant" },
+            { vn: "Người lập phiếu", en: "Receipt by" },
+          ];
+          const last = sigs.length - 1;
+          return (
+            <View style={s.sigWrap}>
+              {/* Row 1: VN + EN titles in same row */}
+              <View style={s.sigTitleRow}>
+                {sigs.map(({ vn, en }, i) => (
+                  <View
+                    key={i}
+                    style={[
+                      s.sigTitleCell,
+                      i === last ? { borderRightWidth: 0 } : {},
+                    ]}
+                  >
+                    <Text style={s.sigTitleVn}>{vn}</Text>
+                    <Text style={s.sigTitleEn}>{en}</Text>
+                  </View>
+                ))}
               </View>
-            );
-          })}
-        </View>
+              {/* Row 3: Empty signing space */}
+              <View style={s.sigSpaceRow}>
+                {sigs.map((_, i) => (
+                  <View
+                    key={i}
+                    style={[
+                      s.sigSpaceCell,
+                      i === last ? { borderRightWidth: 0 } : {},
+                    ]}
+                  />
+                ))}
+              </View>
+            </View>
+          );
+        })()}
       </Page>
     </Document>
   );

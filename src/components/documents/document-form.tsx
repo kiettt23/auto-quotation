@@ -17,6 +17,7 @@ import type { DocumentRow } from "@/services/document.service";
 import type { DocumentTypeRow } from "@/services/document-type.service";
 import { Plus, Trash2, RotateCcw } from "lucide-react";
 import { autoCalculateWidths, type ColumnDef } from "@/lib/types/column-def";
+import { getExtraFormFields, getTemplateItemColumns } from "@/lib/pdf/template-registry";
 
 interface ProductOption {
   id: string;
@@ -64,6 +65,19 @@ export function DocumentForm({ products, customers, documentTypes, document: doc
   const [receiverPhone, setReceiverPhone] = useState(
     existingData?.receiverPhone ?? "",
   );
+  const [documentDate, setDocumentDate] = useState(
+    existingData?.date ?? new Date().toISOString().slice(0, 10),
+  );
+  // Extra template fields (e.g. deliveryAddress, driverName, vehicleId)
+  const [extraFields, setExtraFields] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {};
+    if (existingData?.deliveryName) init.deliveryName = existingData.deliveryName;
+    if (existingData?.deliveryAddress) init.deliveryAddress = existingData.deliveryAddress;
+    if (existingData?.driverName) init.driverName = existingData.driverName;
+    if (existingData?.vehicleId) init.vehicleId = existingData.vehicleId;
+    return init;
+  });
+
   const [items, setItems] = useState<DocumentItem[]>(
     existingData?.items?.length
       ? existingData.items
@@ -84,8 +98,11 @@ export function DocumentForm({ products, customers, documentTypes, document: doc
   const [columnOverride, setColumnOverride] = useState<ColumnDef[] | null>(
     existingData?.columns ?? null,
   );
-  const columns = columnOverride ?? defaultColumns;
-  const showTotal = selectedType?.showTotal ?? true;
+  const templateId = (selectedType as Record<string, unknown> | undefined)?.templateId as string | null | undefined;
+  const templateItemColumns = useMemo(() => getTemplateItemColumns(templateId), [templateId]);
+  const columns = templateItemColumns ?? columnOverride ?? defaultColumns;
+  const showTotal = templateItemColumns ? false : (selectedType?.showTotal ?? true);
+  const templateExtraFields = useMemo(() => getExtraFormFields(templateId), [templateId]);
   const [showColumnEditor, setShowColumnEditor] = useState(false);
 
   // When type changes, reset column override
@@ -107,6 +124,7 @@ export function DocumentForm({ products, customers, documentTypes, document: doc
   function buildPayload() {
     return {
       typeId,
+      date: documentDate || undefined,
       customerId: customerId || undefined,
       customerName,
       customerAddress,
@@ -118,6 +136,10 @@ export function DocumentForm({ products, customers, documentTypes, document: doc
       })),
       notes,
       ...(columnOverride ? { columns: columnOverride } : {}),
+      ...(extraFields.deliveryName ? { deliveryName: extraFields.deliveryName } : {}),
+      ...(extraFields.deliveryAddress ? { deliveryAddress: extraFields.deliveryAddress } : {}),
+      ...(extraFields.driverName ? { driverName: extraFields.driverName } : {}),
+      ...(extraFields.vehicleId ? { vehicleId: extraFields.vehicleId } : {}),
     };
   }
 
@@ -147,6 +169,23 @@ export function DocumentForm({ products, customers, documentTypes, document: doc
         />
       )}
 
+      {/* Date input */}
+      <div className="rounded-xl border border-slate-200 bg-white p-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Ngày chứng từ
+            </label>
+            <input
+              type="date"
+              value={documentDate}
+              onChange={(e) => setDocumentDate(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      </div>
+
       <DocumentCustomerSection
         customers={customers}
         customerId={customerId}
@@ -160,6 +199,28 @@ export function DocumentForm({ products, customers, documentTypes, document: doc
         onReceiverNameChange={setReceiverName}
         onReceiverPhoneChange={setReceiverPhone}
       />
+
+      {/* Template-specific extra fields */}
+      {templateExtraFields.length > 0 && (
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <h2 className="mb-4 text-base font-semibold text-slate-900">Thông tin bổ sung</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {templateExtraFields.map((field) => (
+              <div key={field.key}>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  {field.label}
+                </label>
+                <input
+                  value={extraFields[field.key] ?? ""}
+                  onChange={(e) => setExtraFields((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                  placeholder={field.placeholder}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Inline column customization */}
       <div className="flex items-center justify-between">

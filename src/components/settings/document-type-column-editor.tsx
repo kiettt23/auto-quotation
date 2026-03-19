@@ -274,6 +274,27 @@ function DocumentTypeCard({
       {/* Column editor */}
       {expanded && (
         <div className="border-t border-slate-100 px-4 py-4">
+          {/* Template selector — always show */}
+          <div className="mb-4">
+            <span className="mb-2 block text-sm font-medium text-slate-700">Mẫu PDF</span>
+            <select
+              value={selectedTemplate}
+              onChange={(e) => { setSelectedTemplate(e.target.value); setDirty(true); }}
+              className="rounded border border-slate-200 px-3 py-1.5 text-sm"
+            >
+              {templateList.map((t) => (
+                <option key={t.id} value={t.id}>{t.name} — {t.description}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Fixed template — hide column/signature editors */}
+          {selectedTemplate !== "default" ? (
+            <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              Mẫu PDF này sử dụng layout cố định. Cột và chữ ký được quản lý bởi template.
+            </div>
+          ) : (
+          <>
           {/* Column list */}
           <div className="mb-3 space-y-2">
             {/* Header row */}
@@ -399,19 +420,8 @@ function DocumentTypeCard({
             </div>
           </div>
 
-          {/* Template selector */}
-          <div className="mb-4">
-            <span className="mb-2 block text-sm font-medium text-slate-700">Mẫu PDF</span>
-            <select
-              value={selectedTemplate}
-              onChange={(e) => { setSelectedTemplate(e.target.value); setDirty(true); }}
-              className="rounded border border-slate-200 px-3 py-1.5 text-sm"
-            >
-              {templateList.map((t) => (
-                <option key={t.id} value={t.id}>{t.name} — {t.description}</option>
-              ))}
-            </select>
-          </div>
+          </>
+          )}
 
           {/* Save */}
           {dirty && (

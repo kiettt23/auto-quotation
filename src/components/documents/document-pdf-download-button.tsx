@@ -51,7 +51,7 @@ export function DocumentPdfDownloadButton({
         <TemplateComponent
           title={title}
           documentNumber={doc.documentNumber}
-          date={formatDate(doc.createdAt)}
+          date={data.date ? data.date.split("-").reverse().join("/") : formatDate(doc.createdAt)}
           company={company}
           data={data}
           columns={columns}
