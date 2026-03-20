@@ -1,12 +1,12 @@
 import { pgTable, text, timestamp, integer } from "drizzle-orm/pg-core";
-import { company } from "./company";
+import { user } from "./auth";
 import { category } from "./category";
 import { unit } from "./unit";
 
 /** Products/services catalog */
 export const product = pgTable("product", {
   id: text("id").primaryKey(),
-  companyId: text("company_id").notNull().references(() => company.id),
+  userId: text("user_id").notNull().references(() => user.id),
   name: text("name").notNull(),
   categoryId: text("category_id").references(() => category.id),
   unitId: text("unit_id").references(() => unit.id),

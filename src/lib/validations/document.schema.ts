@@ -13,6 +13,8 @@ const documentItemSchema = z.object({
 });
 
 export const createDocumentSchema = z.object({
+  /** Company ID (FK to company table) */
+  companyId: z.string().min(1, "Chọn công ty"),
   /** Document type ID (FK to document_type table) */
   typeId: z.string().min(1, "Chọn loại chứng từ"),
   /** @deprecated Kept for backward compat during migration */

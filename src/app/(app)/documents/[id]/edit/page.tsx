@@ -1,8 +1,9 @@
-import { requireCompanyId } from "@/lib/auth/get-company-id";
+import { requireUserId } from "@/lib/auth/get-user-id";
 import { getDocumentById } from "@/services/document.service";
 import { listProducts } from "@/services/product.service";
 import { listCustomers } from "@/services/customer.service";
 import { listDocumentTypes, getDocumentTypeById } from "@/services/document-type.service";
+import { listCompanies } from "@/services/company.service";
 import { notFound } from "next/navigation";
 import { DocumentForm } from "@/components/documents/document-form";
 
@@ -12,13 +13,14 @@ export default async function EditDocumentPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const companyId = await requireCompanyId();
+  const userId = await requireUserId();
 
-  const [doc, products, customers, documentTypes] = await Promise.all([
-    getDocumentById(id, companyId),
-    listProducts(companyId),
-    listCustomers(companyId),
-    listDocumentTypes(companyId),
+  const [doc, products, customers, documentTypes, companies] = await Promise.all([
+    getDocumentById(id, userId),
+    listProducts(userId),
+    listCustomers(userId),
+    listDocumentTypes(userId),
+    listCompanies(userId),
   ]);
 
   if (!doc) notFound();
@@ -26,7 +28,7 @@ export default async function EditDocumentPage({
   // Resolve type label from document_type table or fallback
   let typeLabel = doc.documentNumber;
   if (doc.typeId) {
-    const docType = await getDocumentTypeById(doc.typeId, companyId);
+    const docType = await getDocumentTypeById(doc.typeId, userId);
     if (docType) typeLabel = `${docType.label} — ${doc.documentNumber}`;
   }
 
@@ -39,6 +41,7 @@ export default async function EditDocumentPage({
         products={products}
         customers={customers}
         documentTypes={documentTypes}
+        companies={companies}
         document={doc}
       />
     </div>

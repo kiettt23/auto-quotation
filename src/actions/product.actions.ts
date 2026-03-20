@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireCompanyId } from "@/lib/auth/get-company-id";
+import { requireUserId } from "@/lib/auth/get-user-id";
 import { productFormSchema } from "@/lib/validations/product.schema";
 import * as productService from "@/services/product.service";
 import { ok, err, type ActionResult } from "@/lib/utils/action-result";
@@ -10,7 +10,7 @@ export async function createProductAction(
   formData: FormData
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const companyId = await requireCompanyId();
+    const userId = await requireUserId();
 
     const parsed = productFormSchema.safeParse({
       name: formData.get("name"),
@@ -25,7 +25,7 @@ export async function createProductAction(
       return err(parsed.error.issues[0].message);
     }
 
-    const product = await productService.createProduct(companyId, parsed.data);
+    const product = await productService.createProduct(userId, parsed.data);
     revalidatePath("/products");
     return ok({ id: product.id });
   } catch {
@@ -38,7 +38,7 @@ export async function updateProductAction(
   formData: FormData
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const companyId = await requireCompanyId();
+    const userId = await requireUserId();
 
     const parsed = productFormSchema.safeParse({
       name: formData.get("name"),
@@ -53,7 +53,7 @@ export async function updateProductAction(
       return err(parsed.error.issues[0].message);
     }
 
-    const product = await productService.updateProduct(companyId, productId, parsed.data);
+    const product = await productService.updateProduct(userId, productId, parsed.data);
     revalidatePath("/products");
     return ok({ id: product.id });
   } catch {
@@ -65,8 +65,8 @@ export async function deleteProductAction(
   productId: string
 ): Promise<ActionResult> {
   try {
-    const companyId = await requireCompanyId();
-    await productService.deleteProduct(companyId, productId);
+    const userId = await requireUserId();
+    await productService.deleteProduct(userId, productId);
     revalidatePath("/products");
     return ok(undefined);
   } catch {

@@ -11,12 +11,12 @@ export type ProductWithRelations = ProductRow & {
   unitName: string | null;
 };
 
-/** List active products for a company */
-export async function listProducts(companyId: string, search?: string) {
+/** List active products for a user */
+export async function listProducts(userId: string, search?: string) {
   let query = db
     .select({
       id: product.id,
-      companyId: product.companyId,
+      userId: product.userId,
       name: product.name,
       categoryId: product.categoryId,
       unitId: product.unitId,
@@ -34,7 +34,7 @@ export async function listProducts(companyId: string, search?: string) {
     .leftJoin(unit, eq(product.unitId, unit.id))
     .where(
       and(
-        eq(product.companyId, companyId),
+        eq(product.userId, userId),
         isNull(product.deletedAt),
         search ? ilike(product.name, `%${escapeLike(search)}%`) : undefined
       )
@@ -46,14 +46,14 @@ export async function listProducts(companyId: string, search?: string) {
 }
 
 /** Get single product by ID */
-export async function getProductById(companyId: string, productId: string) {
+export async function getProductById(userId: string, productId: string) {
   const rows = await db
     .select()
     .from(product)
     .where(
       and(
         eq(product.id, productId),
-        eq(product.companyId, companyId),
+        eq(product.userId, userId),
         isNull(product.deletedAt)
       )
     )
@@ -64,7 +64,7 @@ export async function getProductById(companyId: string, productId: string) {
 
 /** Create a new product */
 export async function createProduct(
-  companyId: string,
+  userId: string,
   data: {
     name: string;
     categoryId?: string;
@@ -77,7 +77,7 @@ export async function createProduct(
   const id = generateId();
   const [row] = await db
     .insert(product)
-    .values({ id, companyId, ...data })
+    .values({ id, userId, ...data })
     .returning();
 
   return row;
@@ -85,7 +85,7 @@ export async function createProduct(
 
 /** Update a product */
 export async function updateProduct(
-  companyId: string,
+  userId: string,
   productId: string,
   data: {
     name?: string;
@@ -99,18 +99,18 @@ export async function updateProduct(
   const [row] = await db
     .update(product)
     .set({ ...data, updatedAt: new Date() })
-    .where(and(eq(product.id, productId), eq(product.companyId, companyId)))
+    .where(and(eq(product.id, productId), eq(product.userId, userId)))
     .returning();
 
   return row;
 }
 
 /** Soft-delete a product */
-export async function deleteProduct(companyId: string, productId: string) {
+export async function deleteProduct(userId: string, productId: string) {
   const [row] = await db
     .update(product)
     .set({ deletedAt: new Date() })
-    .where(and(eq(product.id, productId), eq(product.companyId, companyId)))
+    .where(and(eq(product.id, productId), eq(product.userId, userId)))
     .returning();
 
   return row;

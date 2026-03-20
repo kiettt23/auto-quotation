@@ -1,10 +1,10 @@
 import { pgTable, text, timestamp, jsonb, boolean, integer, unique } from "drizzle-orm/pg-core";
-import { company } from "./company";
+import { user } from "./auth";
 
-/** Configurable document types with custom column templates per company */
+/** Configurable document types with custom column templates per user */
 export const documentType = pgTable("document_type", {
   id: text("id").primaryKey(),
-  companyId: text("company_id").notNull().references(() => company.id),
+  userId: text("user_id").notNull().references(() => user.id),
   /** Internal key e.g. "QUOTATION", "WAREHOUSE_EXPORT", or user-defined */
   key: text("key").notNull(),
   /** Display name e.g. "Báo giá" */
@@ -24,5 +24,5 @@ export const documentType = pgTable("document_type", {
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 }, (t) => [
-  unique("uq_document_type_company_key").on(t.companyId, t.key),
+  unique("uq_document_type_user_key").on(t.userId, t.key),
 ]);

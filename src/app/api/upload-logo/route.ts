@@ -1,13 +1,17 @@
 import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
-import { requireCompanyId } from "@/lib/auth/get-company-id";
-import { updateCompany } from "@/services/company.service";
+import { requireUserId } from "@/lib/auth/get-user-id";
+import { requireSession } from "@/lib/auth/get-session";
+import { listCompanies, updateCompany } from "@/services/company.service";
 
 export async function POST(request: Request) {
   try {
-    const companyId = await requireCompanyId();
+    const session = await requireSession();
+    const userId = session.user.id;
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
+    const companyId = formData.get("companyId") as string | null;
 
     if (!file) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
@@ -23,13 +27,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "File too large (max 2MB)" }, { status: 400 });
     }
 
-    // Upload to Vercel Blob
-    const blob = await put(`logos/${companyId}-${Date.now()}.${file.name.split(".").pop()}`, file, {
-      access: "public",
-    });
+    // Resolve which company to update — use provided companyId or fall back to first company
+    let targetCompanyId = companyId;
+    if (!targetCompanyId) {
+      const companies = await listCompanies(userId);
+      if (!companies.length) {
+        return NextResponse.json({ error: "No company found" }, { status: 400 });
+      }
+      targetCompanyId = companies[0].id;
+    }
 
-    // Save URL to company
-    await updateCompany(companyId, { logoUrl: blob.url });
+    // Upload to Vercel Blob
+    const blob = await put(
+      `logos/${targetCompanyId}-${Date.now()}.${file.name.split(".").pop()}`,
+      file,
+      { access: "public" }
+    );
+
+    // Save URL to company with ownership check
+    await updateCompany(targetCompanyId, userId, { logoUrl: blob.url });
 
     return NextResponse.json({ url: blob.url });
   } catch {

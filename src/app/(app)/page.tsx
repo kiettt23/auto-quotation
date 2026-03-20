@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { FileText } from "lucide-react";
-import { requireCompanyId } from "@/lib/auth/get-company-id";
+import { requireUserId } from "@/lib/auth/get-user-id";
 import { listRecentDocuments } from "@/services/document.service";
 import { DocumentRowCard } from "@/components/documents/document-row-card";
 
 export default async function HomePage() {
-  const companyId = await requireCompanyId();
-  const documents = await listRecentDocuments(companyId);
+  const userId = await requireUserId();
+  const documents = await listRecentDocuments(userId);
 
   return (
     <div className="flex flex-col gap-8 p-6 lg:p-10">

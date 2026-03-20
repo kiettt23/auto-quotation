@@ -1,6 +1,6 @@
 "use server";
 
-import { requireCompanyId } from "@/lib/auth/get-company-id";
+import { requireUserId } from "@/lib/auth/get-user-id";
 import {
   listDocumentTypes,
   createDocumentType,
@@ -11,8 +11,8 @@ import { ok, err } from "@/lib/utils/action-result";
 import type { ColumnDef } from "@/lib/types/column-def";
 
 export async function listDocumentTypesAction() {
-  const companyId = await requireCompanyId();
-  const types = await listDocumentTypes(companyId);
+  const userId = await requireUserId();
+  const types = await listDocumentTypes(userId);
   return ok(types);
 }
 
@@ -24,8 +24,8 @@ export async function createDocumentTypeAction(data: {
   showTotal?: boolean;
 }) {
   try {
-    const companyId = await requireCompanyId();
-    const row = await createDocumentType(companyId, { ...data, sortOrder: 99 });
+    const userId = await requireUserId();
+    const row = await createDocumentType(userId, { ...data, sortOrder: 99 });
     return ok(row);
   } catch {
     return err("Không thể tạo loại chứng từ.");
@@ -37,8 +37,8 @@ export async function updateDocumentTypeAction(
   data: { label?: string; shortLabel?: string; columns?: ColumnDef[]; showTotal?: boolean; signatureLabels?: string[]; templateId?: string | null }
 ) {
   try {
-    const companyId = await requireCompanyId();
-    const row = await updateDocumentType(id, companyId, data);
+    const userId = await requireUserId();
+    const row = await updateDocumentType(id, userId, data);
     if (!row) return err("Không tìm thấy loại chứng từ.");
     return ok(row);
   } catch {
@@ -48,8 +48,8 @@ export async function updateDocumentTypeAction(
 
 export async function deleteDocumentTypeAction(id: string) {
   try {
-    const companyId = await requireCompanyId();
-    const row = await deleteDocumentType(id, companyId);
+    const userId = await requireUserId();
+    const row = await deleteDocumentType(id, userId);
     if (!row) return err("Không tìm thấy loại chứng từ.");
     return ok(row);
   } catch {

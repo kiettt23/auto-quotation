@@ -49,7 +49,7 @@ export function CustomerDialog({ open, onOpenChange, customer }: CustomerDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {isEdit ? "Sửa khách hàng" : "Thêm khách hàng"}
@@ -116,6 +116,15 @@ export function CustomerDialog({ open, onOpenChange, customer }: CustomerDialogP
               Thông tin giao hàng mặc định
             </p>
             <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="deliveryName">Tên nơi giao</Label>
+                <Input
+                  id="deliveryName"
+                  name="deliveryName"
+                  placeholder="VD: Công Ty TNHH Kyong Gi Vina"
+                  defaultValue={customer?.deliveryName ?? ""}
+                />
+              </div>
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="deliveryAddress">Địa chỉ giao hàng</Label>
                 <Input

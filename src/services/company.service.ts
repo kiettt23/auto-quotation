@@ -1,46 +1,82 @@
-import { cache } from "react";
 import { db } from "@/db";
 import { company } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import { generateId } from "@/lib/utils/generate-id";
 
 export type CompanyRow = typeof company.$inferSelect;
 export type CompanyInsert = typeof company.$inferInsert;
 
-/** Get company by owner (user) ID — cached per request */
-export const getCompanyByOwnerId = cache(async (ownerId: string) => {
+/** List all active companies for a user */
+export async function listCompanies(userId: string) {
+  return db
+    .select()
+    .from(company)
+    .where(and(eq(company.userId, userId), isNull(company.deletedAt)));
+}
+
+/** Get a single company by ID with ownership check */
+export async function getCompanyById(companyId: string, userId: string) {
   const rows = await db
     .select()
     .from(company)
-    .where(eq(company.ownerId, ownerId))
+    .where(
+      and(
+        eq(company.id, companyId),
+        eq(company.userId, userId),
+        isNull(company.deletedAt)
+      )
+    )
     .limit(1);
 
   return rows[0] ?? null;
-});
+}
 
 /** Create a new company for a user */
 export async function createCompany(
-  ownerId: string,
-  data: { name: string; address?: string; phone?: string; taxCode?: string }
+  userId: string,
+  data: {
+    name: string;
+    address?: string;
+    phone?: string;
+    taxCode?: string;
+    email?: string;
+    bankName?: string;
+    bankAccount?: string;
+    driverName?: string;
+    vehicleId?: string;
+    logoUrl?: string;
+  }
 ) {
   const id = generateId();
   const [row] = await db
     .insert(company)
-    .values({ id, ownerId, ...data })
+    .values({ id, userId, ...data })
     .returning();
 
   return row;
 }
 
-/** Update company info */
+/** Update company info with ownership check */
 export async function updateCompany(
   companyId: string,
-  data: Partial<Omit<CompanyInsert, "id" | "ownerId" | "createdAt">>
+  userId: string,
+  data: Partial<Omit<CompanyInsert, "id" | "userId" | "createdAt">>
 ) {
   const [row] = await db
     .update(company)
     .set({ ...data, updatedAt: new Date() })
-    .where(eq(company.id, companyId))
+    .where(and(eq(company.id, companyId), eq(company.userId, userId)))
+    .returning();
+
+  return row;
+}
+
+/** Soft-delete a company with ownership check */
+export async function deleteCompany(companyId: string, userId: string) {
+  const [row] = await db
+    .update(company)
+    .set({ deletedAt: new Date() })
+    .where(and(eq(company.id, companyId), eq(company.userId, userId)))
     .returning();
 
   return row;

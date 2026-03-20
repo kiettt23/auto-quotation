@@ -6,6 +6,7 @@ export const customerFormSchema = z.object({
   phone: z.string().optional(),
   email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
   taxCode: z.string().optional(),
+  deliveryName: z.string().optional(),
   deliveryAddress: z.string().optional(),
   receiverName: z.string().optional(),
   receiverPhone: z.string().optional(),

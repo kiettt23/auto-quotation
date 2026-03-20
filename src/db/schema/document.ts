@@ -1,4 +1,5 @@
 import { pgTable, text, timestamp, jsonb, unique } from "drizzle-orm/pg-core";
+import { user } from "./auth";
 import { company } from "./company";
 import { customer } from "./customer";
 import { documentType } from "./document-type";
@@ -10,6 +11,7 @@ export type DocumentType = (typeof documentTypeEnum)[number];
 /** All business documents (quotes, PXK, PGH) stored in one table */
 export const document = pgTable("document", {
   id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => user.id),
   companyId: text("company_id").notNull().references(() => company.id),
   customerId: text("customer_id").references(() => customer.id),
   /** @deprecated Use typeId instead */

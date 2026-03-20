@@ -1,6 +1,7 @@
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { user } from "./auth";
 
-/** Company info — 1:1 with user (owner) */
+/** Company info — many per user */
 export const company = pgTable("company", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
@@ -14,7 +15,13 @@ export const company = pgTable("company", {
   logoUrl: text("logo_url"),
   /** Header layout: "left" (logo left, info right) or "center" (centered) */
   headerLayout: text("header_layout").default("left"),
-  ownerId: text("owner_id").notNull(),
+  /** Owner user ID */
+  userId: text("user_id").notNull().references(() => user.id),
+  /** Default driver name for delivery documents */
+  driverName: text("driver_name"),
+  /** Default vehicle ID for delivery documents */
+  vehicleId: text("vehicle_id"),
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });

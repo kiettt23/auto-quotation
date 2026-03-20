@@ -15,6 +15,7 @@ import type { DocumentItem } from "@/lib/validations/document.schema";
 import type { DocumentData } from "@/lib/types/document-data";
 import type { DocumentRow } from "@/services/document.service";
 import type { DocumentTypeRow } from "@/services/document-type.service";
+import type { CompanyRow } from "@/services/company.service";
 import { Plus, Trash2, RotateCcw } from "lucide-react";
 import { autoCalculateWidths, type ColumnDef } from "@/lib/types/column-def";
 import { getExtraFormFields, getTemplateItemColumns } from "@/lib/pdf/template-registry";
@@ -33,22 +34,29 @@ interface CustomerOption {
   address: string | null;
   receiverName: string | null;
   receiverPhone: string | null;
+  deliveryName: string | null;
+  deliveryAddress: string | null;
 }
 
 interface Props {
   products: ProductOption[];
   customers: CustomerOption[];
   documentTypes: DocumentTypeRow[];
+  companies: CompanyRow[];
   /** If provided, form is in edit mode */
   document?: DocumentRow;
 }
 
-export function DocumentForm({ products, customers, documentTypes, document: doc }: Props) {
+export function DocumentForm({ products, customers, documentTypes, companies, document: doc }: Props) {
   const router = useRouter();
   const isEdit = !!doc;
   const existingData = doc?.data as DocumentData | undefined;
 
   const [isPending, setIsPending] = useState(false);
+  // Company selection — default to the company on the existing doc, or the first available
+  const [companyId, setCompanyId] = useState(
+    doc?.companyId ?? companies[0]?.id ?? "",
+  );
   const [typeId, setTypeId] = useState(
     doc?.typeId ?? documentTypes[0]?.id ?? "",
   );
@@ -69,12 +77,19 @@ export function DocumentForm({ products, customers, documentTypes, document: doc
     existingData?.date ?? new Date().toISOString().slice(0, 10),
   );
   // Extra template fields (e.g. deliveryAddress, driverName, vehicleId)
+  // On initial load: use existing doc data, or auto-fill from selected company
   const [extraFields, setExtraFields] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
     if (existingData?.deliveryName) init.deliveryName = existingData.deliveryName;
     if (existingData?.deliveryAddress) init.deliveryAddress = existingData.deliveryAddress;
     if (existingData?.driverName) init.driverName = existingData.driverName;
     if (existingData?.vehicleId) init.vehicleId = existingData.vehicleId;
+    // Auto-fill from default company on new documents
+    if (!isEdit) {
+      const defaultCompany = companies.find((c) => c.id === (doc?.companyId ?? companies[0]?.id));
+      if (defaultCompany?.driverName && !init.driverName) init.driverName = defaultCompany.driverName;
+      if (defaultCompany?.vehicleId && !init.vehicleId) init.vehicleId = defaultCompany.vehicleId;
+    }
     return init;
   });
 
@@ -119,10 +134,29 @@ export function DocumentForm({ products, customers, documentTypes, document: doc
     setCustomerAddress(customer.address ?? "");
     setReceiverName(customer.receiverName ?? "");
     setReceiverPhone(customer.receiverPhone ?? "");
+    // Auto-fill delivery info from customer into extra fields
+    setExtraFields((prev) => ({
+      ...prev,
+      ...(customer.deliveryName ? { deliveryName: customer.deliveryName } : {}),
+      ...(customer.deliveryAddress ? { deliveryAddress: customer.deliveryAddress } : {}),
+    }));
+  }
+
+  function handleCompanyChange(id: string) {
+    setCompanyId(id);
+    // Auto-fill driverName and vehicleId from selected company
+    const company = companies.find((c) => c.id === id);
+    if (!company) return;
+    setExtraFields((prev) => ({
+      ...prev,
+      ...(company.driverName ? { driverName: company.driverName } : {}),
+      ...(company.vehicleId ? { vehicleId: company.vehicleId } : {}),
+    }));
   }
 
   function buildPayload() {
     return {
+      companyId,
       typeId,
       date: documentDate || undefined,
       customerId: customerId || undefined,
@@ -161,6 +195,35 @@ export function DocumentForm({ products, customers, documentTypes, document: doc
 
   return (
     <div className="flex flex-col gap-6">
+      {/* Company selector — shown always */}
+      {companies.length === 0 ? (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+          Vui lòng tạo công ty trước khi tạo tài liệu.{" "}
+          <a href="/companies/new" className="font-medium underline">
+            Tạo công ty
+          </a>
+        </div>
+      ) : (
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <div className="max-w-sm">
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              Công ty
+            </label>
+            <select
+              value={companyId}
+              onChange={(e) => handleCompanyChange(e.target.value)}
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              {companies.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+
       {!isEdit && (
         <DocumentTypeSelector
           types={documentTypes}

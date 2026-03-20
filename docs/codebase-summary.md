@@ -1,0 +1,330 @@
+# Codebase Summary
+
+## Project Overview
+
+**Auto Quotation** is a Next.js 14 + PostgreSQL web application for managing business documents (quotations, warehouse exports, delivery orders). Users can manage multiple companies and generate PDF documents with customizable headers and layouts.
+
+**Tech Stack**:
+- Frontend: Next.js 14, React 18, TypeScript, shadcn/ui components
+- Backend: Next.js Server Actions, TypeScript
+- Database: PostgreSQL + Drizzle ORM
+- Authentication: Auth provider (Clerk-based session)
+- PDF Generation: pdfkit
+- Styling: Tailwind CSS
+
+**Latest Major Change**: Multi-company refactor (March 2026) — moved from tenant-based to user-based data isolation.
+
+## Directory Structure
+
+```
+src/
+├── app/                           # Next.js app router
+│   ├── (auth)/                    # Unprotected routes
+│   │   ├── login/                 # Sign in page
+│   │   ├── register/              # Sign up page
+│   │   └── layout.tsx             # Auth layout
+│   ├── (app)/                     # Protected routes (require userId)
+│   │   ├── layout.tsx             # App layout with nav
+│   │   ├── page.tsx               # Dashboard
+│   │   ├── companies/             # Multi-company CRUD
+│   │   │   ├── page.tsx           # List companies
+│   │   │   ├── company-page-client.tsx
+│   │   │   ├── company-table.tsx
+│   │   │   └── company-dialog.tsx
+│   │   ├── customers/             # Customer CRUD
+│   │   ├── products/              # Product CRUD
+│   │   ├── documents/             # Document CRUD + view/edit
+│   │   │   ├── page.tsx           # List documents
+│   │   │   ├── new/page.tsx       # Create document
+│   │   │   └── [id]/              # View/edit document
+│   │   ├── settings/              # Settings (doc types, categories, units)
+│   │   └── api/                   # API routes (e.g., logo upload)
+│   ├── onboarding/                # First-time user flow
+│   └── layout.tsx                 # Root layout
+├── actions/                       # Server actions (call from client)
+│   ├── customer.actions.ts
+│   ├── product.actions.ts
+│   ├── category.actions.ts
+│   ├── unit.actions.ts
+│   ├── document-type.actions.ts
+│   ├── document.actions.ts
+│   └── company.actions.ts
+├── components/                    # React components
+│   ├── layout/                    # Layout components
+│   │   ├── navbar.tsx
+│   │   ├── nav-items.ts           # Navigation menu items
+│   │   └── sidebar.tsx
+│   ├── ui/                        # shadcn/ui primitives
+│   └── {feature}/                 # Feature-specific components
+├── db/
+│   ├── schema/                    # Drizzle table definitions
+│   │   ├── auth.ts                # user table
+│   │   ├── company.ts             # company table
+│   │   ├── customer.ts            # customer table
+│   │   ├── product.ts             # product table
+│   │   ├── category.ts            # category table
+│   │   ├── unit.ts                # unit table
+│   │   ├── document-type.ts       # document_type table
+│   │   ├── document.ts            # document table
+│   │   └── index.ts               # Schema exports
+│   └── client.ts                  # Database client setup
+├── lib/
+│   ├── auth/                      # Auth helpers
+│   │   ├── get-user-id.ts         # requireUserId() helper
+│   │   └── session.ts             # requireSession() helper
+│   ├── validations/               # Zod schemas
+│   │   ├── company.schema.ts
+│   │   ├── customer.schema.ts
+│   │   ├── product.schema.ts
+│   │   ├── category.schema.ts
+│   │   ├── unit.schema.ts
+│   │   ├── document-type.schema.ts
+│   │   └── document.schema.ts
+│   └── utils.ts                   # Utility functions
+├── services/                      # Business logic
+│   ├── company.service.ts         # Company CRUD
+│   ├── customer.service.ts        # Customer CRUD
+│   ├── product.service.ts         # Product CRUD
+│   ├── category.service.ts        # Category CRUD
+│   ├── unit.service.ts            # Unit CRUD
+│   ├── document-type.service.ts   # Document type CRUD
+│   ├── document.service.ts        # Document CRUD + number generation
+│   └── pdf.service.ts             # PDF rendering
+├── types/                         # TypeScript type definitions
+│   └── index.ts                   # Custom types
+├── .env                           # Environment variables (not committed)
+└── .env.local                     # Local overrides
+
+drizzle/                           # Database migrations
+└── {timestamp}_*.sql              # Auto-generated by drizzle-kit
+
+```
+
+## Key Files & Their Roles
+
+### Database Schema (`src/db/schema/`)
+
+All tables implement soft deletes (optional `deletedAt` field). Multi-company refactor added `userId` to most tables.
+
+| File | Table | Key Change |
+|------|-------|-----------|
+| `auth.ts` | `user` | Root entity from auth provider |
+| `company.ts` | `company` | Now `userId` (was `ownerId`), added `driverName`, `vehicleId`, `deletedAt` |
+| `customer.ts` | `customer` | Added `userId`, removed `companyId`, added `deliveryName` |
+| `product.ts` | `product` | Added `userId`, removed `companyId` |
+| `category.ts` | `category` | Added `userId`, removed `companyId` |
+| `unit.ts` | `unit` | Added `userId`, removed `companyId` |
+| `document-type.ts` | `document_type` | Added `userId`, removed `companyId`, updated unique to `(userId, key)` |
+| `document.ts` | `document` | Added `userId`, keeps `companyId` for document scoping |
+
+### Services (`src/services/`)
+
+Business logic layer between actions and database.
+
+**Naming Convention**: `{entity}.service.ts` exports async functions:
+- `list{Entity}s(userId)` — all records for user
+- `get{Entity}ById(id, userId)` — single record with ownership check
+- `create{Entity}(userId, data)` — new record
+- `update{Entity}(id, userId, data)` — modify record
+- `delete{Entity}(id, userId)` — soft delete
+
+**Special Cases**:
+- `document.service.generateDocumentNumber(companyId, typeId)` — scoped by company
+- `pdf.service.renderDocument(documentId, userId)` — PDF generation
+
+### Actions (`src/actions/`)
+
+Server-side functions called from client components. All wrapped with `requireUserId()` for auth.
+
+**Pattern**:
+```typescript
+export async function create{Entity}Action(formData: FormData) {
+  const userId = await requireUserId();
+  const parsed = schema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) return { error: parsed.error.flatten() };
+
+  try {
+    const result = await service.create{Entity}(userId, parsed.data);
+    revalidatePath(path);
+    return { success: true, data: result };
+  } catch (error) {
+    return { error: message };
+  }
+}
+```
+
+### Pages (`src/app/(app)/`)
+
+Protected routes requiring `requireUserId()`.
+
+#### `/companies` — Company Management
+- **page.tsx**: Server component, calls `listCompanies(userId)`
+- **company-page-client.tsx**: Client search/state
+- **company-table.tsx**: Table display, delete actions
+- **company-dialog.tsx**: Create/edit form
+
+#### `/{customers|products}/` — CRUD Pages
+Similar structure:
+- Server page fetches data
+- Client page handles search, create/edit dialogs
+- Table component with edit/delete buttons
+
+#### `/documents/` — Document Management
+- **page.tsx**: List with filters (company, date range, search)
+- **new/page.tsx**: Create form with company dropdown (auto-fills company defaults)
+- **[id]/page.tsx**: View document, render PDF preview
+- **[id]/edit/page.tsx**: Modify document details
+
+#### `/settings/` — Configuration
+- Document type management (custom names, patterns)
+- Category management
+- Unit management
+- **Removed**: Company info section (now in `/companies`)
+
+### Validations (`src/lib/validations/`)
+
+Zod schemas for form validation. Updated in refactor to reflect schema changes.
+
+**Example - Company Schema**:
+```typescript
+const createCompanySchema = z.object({
+  name: z.string().min(1),
+  address: z.string().optional(),
+  driverName: z.string().optional(),     // New in refactor
+  vehicleId: z.string().optional(),      // New in refactor
+  // ... other fields
+});
+```
+
+## Data Flow Examples
+
+### Creating a Document
+```
+User fills form → document-form.tsx
+  ↓
+submitDocumentAction(formData)  [server action]
+  ↓
+requireUserId() → get userId
+  ↓
+documentSchema.safeParse()
+  ↓
+document.service.createDocument(userId, { companyId, customerId, ... })
+  ↓
+db.insert(document).values({userId, companyId, ...})
+  ↓
+revalidatePath("/documents")
+  ↓
+success response → update UI
+```
+
+### Listing User's Customers
+```
+customers/page.tsx [server component]
+  ↓
+requireUserId() → get userId
+  ↓
+customer.service.listCustomers(userId)
+  ↓
+db.select().from(customer).where(eq(customer.userId, userId))
+  ↓
+returns [] customer[]
+  ↓
+Pass to CustomerListClient component
+  ↓
+Render table with edit/delete buttons
+```
+
+## Conversion Notes: Tenant → Multi-Company
+
+Changes in March 2026 refactor:
+
+### Before (Tenant Model)
+- 1 user = 1 company (1:1)
+- `requireCompanyId()` fetched single company
+- `CompanyProvider` context distributed companyId
+- Company managed in settings page only
+- All data filtered by `companyId`
+
+### After (Multi-Company Model)
+- 1 user = N companies (1:N)
+- `requireUserId()` just returns session.user.id
+- No context provider (no single company)
+- Company is full CRUD entity at `/companies`
+- Most data filtered by `userId`, documents by both `userId` and `companyId`
+
+### Migration Impact
+- 7 database tables updated
+- 7 service files refactored (companyId → userId)
+- 14 action files updated
+- 9 page files updated
+- App layout simplified (removed CompanyProvider)
+- 2 auth helper files deleted
+
+## Environment Variables
+
+Required in `.env` or `.env.local`:
+
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `CLERK_SECRET_KEY` | Auth provider secret |
+| `CLERK_PUBLISHABLE_KEY` | Auth provider public key |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Auth provider public key (client) |
+
+## Building & Running
+
+```bash
+# Install dependencies
+pnpm install
+
+# Generate database types
+npx drizzle-kit generate
+
+# Push migrations (be careful with production!)
+npx drizzle-kit push
+
+# Run dev server
+pnpm dev
+
+# Build for production
+pnpm build
+
+# Type check
+pnpm tsc --noEmit
+
+# Lint
+pnpm lint
+```
+
+## Testing
+
+Currently no automated tests. Recommend adding:
+- Unit tests for services (using Jest)
+- Integration tests for actions
+- E2E tests for critical flows (using Playwright)
+
+## Common Tasks
+
+### Add a New Entity
+1. Create schema in `src/db/schema/{entity}.ts` with `userId` field
+2. Create service in `src/services/{entity}.service.ts`
+3. Create actions in `src/actions/{entity}.actions.ts`
+4. Create validation schema in `src/lib/validations/{entity}.schema.ts`
+5. Create page in `src/app/(app)/{entities}/page.tsx`
+6. Add nav item in `src/components/layout/nav-items.ts`
+
+### Update Document Form
+- Form component usually at `src/app/(app)/documents/new/page.tsx` or component
+- Update validation in `src/lib/validations/document.schema.ts`
+- Update action in `src/actions/document.actions.ts`
+- May need to update PDF rendering in `src/services/pdf.service.ts`
+
+### Customize PDF Header
+- Logo URL and layout stored in `company.logoUrl`, `company.headerLayout`
+- Rendering logic in `src/services/pdf.service.ts`
+- User uploads via `/companies` page (integrates with logo upload API)
+
+### Add Company-Scoped Data
+- Some data (like document numbers) is scoped by company, not just user
+- Use `(companyId, fieldName)` unique constraints
+- Filter queries with both `companyId` and `userId` when needed

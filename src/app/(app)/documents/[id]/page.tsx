@@ -1,7 +1,7 @@
-import { requireCompanyId } from "@/lib/auth/get-company-id";
+import { requireUserId } from "@/lib/auth/get-user-id";
 import { requireSession } from "@/lib/auth/get-session";
 import { getDocumentById } from "@/services/document.service";
-import { getCompanyByOwnerId } from "@/services/company.service";
+import { listCompanies } from "@/services/company.service";
 import { getDocumentTypeById } from "@/services/document-type.service";
 import { notFound } from "next/navigation";
 import { DocumentDetailClient } from "./document-detail-client";
@@ -15,13 +15,16 @@ export default async function DocumentDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const companyId = await requireCompanyId();
   const session = await requireSession();
+  const userId = session.user.id;
 
-  const [doc, company] = await Promise.all([
-    getDocumentById(id, companyId),
-    getCompanyByOwnerId(session.user.id),
+  const [doc, companies] = await Promise.all([
+    getDocumentById(id, userId),
+    listCompanies(userId),
   ]);
+
+  // Find company linked to this document
+  const company = companies.find((c) => c.id === doc?.companyId) ?? companies[0] ?? null;
 
   if (!doc || !company) notFound();
 
@@ -37,7 +40,7 @@ export default async function DocumentDetailPage({
   if (docData?.columns) {
     columns = docData.columns;
   } else if (doc.typeId) {
-    const docType = await getDocumentTypeById(doc.typeId, companyId);
+    const docType = await getDocumentTypeById(doc.typeId, userId);
     if (docType) {
       columns = docType.columns as ColumnDef[];
       showTotal = docType.showTotal;

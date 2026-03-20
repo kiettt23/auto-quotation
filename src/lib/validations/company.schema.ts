@@ -5,6 +5,12 @@ export const createCompanySchema = z.object({
   address: z.string().optional(),
   phone: z.string().optional(),
   taxCode: z.string().optional(),
+  email: z.string().email("Email không hợp lệ").optional().or(z.literal("")),
+  bankName: z.string().optional(),
+  bankAccount: z.string().optional(),
+  driverName: z.string().optional(),
+  vehicleId: z.string().optional(),
+  logoUrl: z.string().optional(),
 });
 
 export const updateCompanySchema = z.object({
@@ -16,6 +22,9 @@ export const updateCompanySchema = z.object({
   bankName: z.string().optional(),
   bankAccount: z.string().optional(),
   headerLayout: z.enum(["left", "center"]).optional(),
+  driverName: z.string().optional(),
+  vehicleId: z.string().optional(),
+  logoUrl: z.string().optional(),
 });
 
 export type CreateCompanyInput = z.infer<typeof createCompanySchema>;

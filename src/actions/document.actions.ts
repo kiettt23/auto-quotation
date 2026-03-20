@@ -1,7 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireCompanyId } from "@/lib/auth/get-company-id";
+import { requireUserId } from "@/lib/auth/get-user-id";
+import { requireSession } from "@/lib/auth/get-session";
 import { createDocumentSchema } from "@/lib/validations/document.schema";
 import {
   createDocument,
@@ -9,6 +10,7 @@ import {
   deleteDocument,
   duplicateDocument,
 } from "@/services/document.service";
+import { listCompanies } from "@/services/company.service";
 import { ok, err, type ActionResult } from "@/lib/utils/action-result";
 import type { DocumentRow } from "@/services/document.service";
 
@@ -21,16 +23,25 @@ export async function createDocumentAction(
   input: unknown
 ): Promise<ActionResult<DocumentRow>> {
   try {
-    const companyId = await requireCompanyId();
+    const session = await requireSession();
+    const userId = session.user.id;
     const parsed = createDocumentSchema.safeParse(input);
 
     if (!parsed.success) {
       return err(parsed.error.issues[0].message);
     }
 
-    const { typeId, type, customerId, items, ...rest } = parsed.data;
+    const { companyId, typeId, type, customerId, items, ...rest } = parsed.data;
 
-    const doc = await createDocument(companyId, {
+    // Validate that the selected company belongs to the current user
+    const userCompanies = await listCompanies(userId);
+    const validCompany = userCompanies.find((c) => c.id === companyId);
+    if (!validCompany) {
+      return err("Công ty không hợp lệ.");
+    }
+
+    const doc = await createDocument(userId, {
+      companyId,
       typeId,
       type,
       customerId: customerId || undefined,
@@ -49,7 +60,7 @@ export async function updateDocumentAction(
   input: unknown
 ): Promise<ActionResult<DocumentRow>> {
   try {
-    const companyId = await requireCompanyId();
+    const userId = await requireUserId();
     const parsed = createDocumentSchema.safeParse(input);
 
     if (!parsed.success) {
@@ -58,7 +69,7 @@ export async function updateDocumentAction(
 
     const { customerId, items, type: _type, typeId: _typeId, ...rest } = parsed.data;
 
-    const doc = await updateDocument(documentId, companyId, {
+    const doc = await updateDocument(documentId, userId, {
       customerId: customerId || undefined,
       data: { ...rest, items },
     });
@@ -75,8 +86,8 @@ export async function deleteDocumentAction(
   documentId: string
 ): Promise<ActionResult<null>> {
   try {
-    const companyId = await requireCompanyId();
-    await deleteDocument(documentId, companyId);
+    const userId = await requireUserId();
+    await deleteDocument(documentId, userId);
     revalidateDocuments();
     return ok(null);
   } catch {
@@ -88,8 +99,8 @@ export async function duplicateDocumentAction(
   documentId: string
 ): Promise<ActionResult<DocumentRow>> {
   try {
-    const companyId = await requireCompanyId();
-    const doc = await duplicateDocument(documentId, companyId);
+    const userId = await requireUserId();
+    const doc = await duplicateDocument(documentId, userId);
     if (!doc) return err("Không tìm thấy tài liệu gốc.");
     revalidateDocuments();
     return ok(doc);

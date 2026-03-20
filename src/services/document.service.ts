@@ -6,34 +6,34 @@ import { generateId } from "@/lib/utils/generate-id";
 
 export type DocumentRow = typeof document.$inferSelect;
 
-/** List documents for a company (excluding soft-deleted) */
-export async function listDocuments(companyId: string) {
+/** List documents for a user (excluding soft-deleted) */
+export async function listDocuments(userId: string) {
   return db
     .select()
     .from(document)
-    .where(and(eq(document.companyId, companyId), isNull(document.deletedAt)))
+    .where(and(eq(document.userId, userId), isNull(document.deletedAt)))
     .orderBy(desc(document.createdAt));
 }
 
 /** List recent documents (limit) */
-export async function listRecentDocuments(companyId: string, limit = 5) {
+export async function listRecentDocuments(userId: string, limit = 5) {
   return db
     .select()
     .from(document)
-    .where(and(eq(document.companyId, companyId), isNull(document.deletedAt)))
+    .where(and(eq(document.userId, userId), isNull(document.deletedAt)))
     .orderBy(desc(document.createdAt))
     .limit(limit);
 }
 
-/** Get single document by ID */
-export async function getDocumentById(documentId: string, companyId: string) {
+/** Get single document by ID with user ownership check */
+export async function getDocumentById(documentId: string, userId: string) {
   const rows = await db
     .select()
     .from(document)
     .where(
       and(
         eq(document.id, documentId),
-        eq(document.companyId, companyId),
+        eq(document.userId, userId),
         isNull(document.deletedAt)
       )
     )
@@ -42,7 +42,7 @@ export async function getDocumentById(documentId: string, companyId: string) {
   return rows[0] ?? null;
 }
 
-/** Generate next document number using shortLabel from document_type */
+/** Generate next document number using shortLabel from document_type, scoped to companyId */
 async function generateDocumentNumber(
   companyId: string,
   shortLabel: string
@@ -65,12 +65,12 @@ async function generateDocumentNumber(
 }
 
 /** Resolve shortLabel from typeId, fallback to old type enum */
-async function resolveShortLabel(companyId: string, typeId?: string, type?: DocumentType): Promise<string> {
+async function resolveShortLabel(userId: string, typeId?: string, type?: DocumentType): Promise<string> {
   if (typeId) {
     const rows = await db
       .select({ shortLabel: documentType.shortLabel })
       .from(documentType)
-      .where(and(eq(documentType.id, typeId), eq(documentType.companyId, companyId)))
+      .where(and(eq(documentType.id, typeId), eq(documentType.userId, userId)))
       .limit(1);
     if (rows[0]) return rows[0].shortLabel;
   }
@@ -85,8 +85,9 @@ async function resolveShortLabel(companyId: string, typeId?: string, type?: Docu
 
 /** Create a new document */
 export async function createDocument(
-  companyId: string,
+  userId: string,
   data: {
+    companyId: string;
     typeId?: string;
     type?: DocumentType;
     customerId?: string;
@@ -94,8 +95,8 @@ export async function createDocument(
   }
 ) {
   const id = generateId();
-  const shortLabel = await resolveShortLabel(companyId, data.typeId, data.type);
-  const documentNumber = await generateDocumentNumber(companyId, shortLabel);
+  const shortLabel = await resolveShortLabel(userId, data.typeId, data.type);
+  const documentNumber = await generateDocumentNumber(data.companyId, shortLabel);
 
   // Determine old type field for backward compat
   let legacyType: DocumentType = "QUOTATION";
@@ -116,7 +117,8 @@ export async function createDocument(
     .insert(document)
     .values({
       id,
-      companyId,
+      userId,
+      companyId: data.companyId,
       customerId: data.customerId,
       type: legacyType,
       typeId: data.typeId,
@@ -128,10 +130,10 @@ export async function createDocument(
   return row;
 }
 
-/** Update document */
+/** Update document with user ownership check */
 export async function updateDocument(
   documentId: string,
-  companyId: string,
+  userId: string,
   data: {
     customerId?: string;
     data?: Record<string, unknown>;
@@ -140,18 +142,18 @@ export async function updateDocument(
   const [row] = await db
     .update(document)
     .set({ ...data, updatedAt: new Date() })
-    .where(and(eq(document.id, documentId), eq(document.companyId, companyId)))
+    .where(and(eq(document.id, documentId), eq(document.userId, userId)))
     .returning();
 
   return row;
 }
 
-/** Soft-delete document */
-export async function deleteDocument(documentId: string, companyId: string) {
+/** Soft-delete document with user ownership check */
+export async function deleteDocument(documentId: string, userId: string) {
   const [row] = await db
     .update(document)
     .set({ deletedAt: new Date() })
-    .where(and(eq(document.id, documentId), eq(document.companyId, companyId)))
+    .where(and(eq(document.id, documentId), eq(document.userId, userId)))
     .returning();
 
   return row;
@@ -160,12 +162,13 @@ export async function deleteDocument(documentId: string, companyId: string) {
 /** Duplicate a document */
 export async function duplicateDocument(
   documentId: string,
-  companyId: string
+  userId: string
 ) {
-  const original = await getDocumentById(documentId, companyId);
+  const original = await getDocumentById(documentId, userId);
   if (!original) return null;
 
-  return createDocument(companyId, {
+  return createDocument(userId, {
+    companyId: original.companyId,
     typeId: original.typeId ?? undefined,
     type: original.type as DocumentType,
     customerId: original.customerId ?? undefined,

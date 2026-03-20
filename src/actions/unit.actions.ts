@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireCompanyId } from "@/lib/auth/get-company-id";
+import { requireUserId } from "@/lib/auth/get-user-id";
 import { createUnit, deleteUnit } from "@/services/unit.service";
 import { ok, err, type ActionResult } from "@/lib/utils/action-result";
 
@@ -9,9 +9,9 @@ export async function createUnitAction(
   name: string
 ): Promise<ActionResult<{ id: string }>> {
   try {
-    const companyId = await requireCompanyId();
+    const userId = await requireUserId();
     if (!name.trim()) return err("Tên đơn vị không được trống");
-    const u = await createUnit(companyId, name.trim());
+    const u = await createUnit(userId, name.trim());
     revalidatePath("/settings");
     revalidatePath("/products");
     return ok({ id: u.id });
@@ -24,8 +24,8 @@ export async function deleteUnitAction(
   unitId: string
 ): Promise<ActionResult<null>> {
   try {
-    const companyId = await requireCompanyId();
-    await deleteUnit(companyId, unitId);
+    const userId = await requireUserId();
+    await deleteUnit(userId, unitId);
     revalidatePath("/settings");
     revalidatePath("/products");
     return ok(null);

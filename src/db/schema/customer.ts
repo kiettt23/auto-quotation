@@ -1,10 +1,10 @@
 import { pgTable, text, timestamp } from "drizzle-orm/pg-core";
-import { company } from "./company";
+import { user } from "./auth";
 
 /** Customer/client records */
 export const customer = pgTable("customer", {
   id: text("id").primaryKey(),
-  companyId: text("company_id").notNull().references(() => company.id),
+  userId: text("user_id").notNull().references(() => user.id),
   name: text("name").notNull(),
   address: text("address"),
   phone: text("phone"),
@@ -12,6 +12,8 @@ export const customer = pgTable("customer", {
   taxCode: text("tax_code"),
   /** Default delivery info — auto-fill when creating documents */
   deliveryAddress: text("delivery_address"),
+  /** Delivery contact name (e.g. "Nguyễn Văn A") */
+  deliveryName: text("delivery_name"),
   receiverName: text("receiver_name"),
   receiverPhone: text("receiver_phone"),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
