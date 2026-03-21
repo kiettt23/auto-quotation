@@ -6,7 +6,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
 
-  --font-sans: var(--font-geist-sans);
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
   --font-mono: var(--font-geist-mono);
   --font-poppins: var(--font-poppins), 'Poppins', sans-serif;
 
@@ -50,9 +50,9 @@
 }
 
 /*
- * AutoQuote Design System — Light theme (Modern SaaS)
+ * autoquotation Design System — Light theme (Modern SaaS)
  * Primary: Indigo-500 (#6366F1) + Violet-500 gradient
- * Font: DM Sans
+ * Font: Plus Jakarta Sans
  * Surface: Slate-50 (#F8FAFC)
  * Text: Slate-900/500/400
  * Border: Slate-200
@@ -116,5 +116,9 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Focus-visible a11y: indigo ring for keyboard navigation */
+  :focus-visible {
+    @apply outline-none ring-2 ring-indigo-500 ring-offset-2;
   }
 }

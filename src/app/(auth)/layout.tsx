@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/get-session";
-import { AppLogo } from "@/components/layout/app-logo";
+import { AppBrand } from "@/components/layout/app-brand";
 import { FileText, Zap, Shield } from "lucide-react";
 
 const features = [
@@ -30,12 +30,9 @@ export default async function AuthLayout({
         </div>
 
         <div className="relative z-10 flex flex-col items-center gap-8">
-          <AppLogo size="lg" showText={false} />
+          <AppBrand size="lg" showIcon />
 
           <div className="flex flex-col items-center gap-3">
-            <h1 className="text-4xl font-bold tracking-tight text-white">
-              AutoQuote
-            </h1>
             <p className="max-w-xs text-center text-base leading-relaxed text-slate-300">
               Tạo báo giá, phiếu xuất kho, phiếu giao hàng
               nhanh chóng và chuyên nghiệp.

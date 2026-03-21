@@ -7,6 +7,7 @@ import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { signOut } from "@/lib/auth/auth-client";
 import { navItems } from "./nav-items";
+import { AppBrand } from "./app-brand";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -68,11 +69,8 @@ export function AppHeader({ userName, userEmail }: AppHeaderProps) {
     <header className="sticky top-0 z-50 bg-slate-900">
       <div className="mx-auto flex h-12 max-w-[1400px] items-end justify-center px-10">
         {/* Brand name */}
-        <Link
-          href="/"
-          className="absolute left-10 top-1/2 -translate-y-1/2 font-poppins text-[28px] font-bold tracking-tight text-white"
-        >
-          autoquotation
+        <Link href="/" className="absolute left-10 top-1/2 -translate-y-1/2">
+          <AppBrand />
         </Link>
 
         {/* Navigation tabs — centered */}

@@ -2,17 +2,19 @@
 
 ## Project Overview
 
-**Auto Quotation** is a Next.js 14 + PostgreSQL web application for managing business documents (quotations, warehouse exports, delivery orders). Users can manage multiple companies and generate PDF documents with customizable headers and layouts.
+**autoquotation** is a Next.js 16 + PostgreSQL web application for managing business documents (quotations, warehouse exports, delivery orders). Users can manage multiple companies and generate PDF documents with professional templates.
 
 **Tech Stack**:
-- Frontend: Next.js 14, React 18, TypeScript, shadcn/ui components
+- Frontend: Next.js 16.1, React 19, TypeScript, shadcn/ui 3.8.5
 - Backend: Next.js Server Actions, TypeScript
-- Database: PostgreSQL + Drizzle ORM
-- Authentication: Auth provider (Clerk-based session)
-- PDF Generation: pdfkit
-- Styling: Tailwind CSS
+- Database: PostgreSQL 14+ with Drizzle ORM 0.45.1
+- Authentication: better-auth 1.5.5 (email/password)
+- PDF Generation: @react-pdf/renderer 4.3.2 with template registry
+- File Storage: @vercel/blob
+- Styling: Tailwind CSS 4, radix-ui
+- Validation: Zod 4
 
-**Latest Major Change**: Multi-company refactor (March 2026) — moved from tenant-based to user-based data isolation.
+**Latest Major Change**: UI/UX Redesign (March 2026) + Multi-company refactor (March 2026)
 
 ## Directory Structure
 
@@ -20,28 +22,38 @@
 src/
 ├── app/                           # Next.js app router
 │   ├── (auth)/                    # Unprotected routes
-│   │   ├── login/                 # Sign in page
-│   │   ├── register/              # Sign up page
+│   │   ├── login/page.tsx         # Sign in page
+│   │   ├── register/page.tsx      # Sign up page
 │   │   └── layout.tsx             # Auth layout
 │   ├── (app)/                     # Protected routes (require userId)
-│   │   ├── layout.tsx             # App layout with nav
-│   │   ├── page.tsx               # Dashboard
-│   │   ├── companies/             # Multi-company CRUD
-│   │   │   ├── page.tsx           # List companies
-│   │   │   ├── company-page-client.tsx
-│   │   │   ├── company-table.tsx
-│   │   │   └── company-dialog.tsx
-│   │   ├── customers/             # Customer CRUD
-│   │   ├── products/              # Product CRUD
-│   │   ├── documents/             # Document CRUD + view/edit
-│   │   │   ├── page.tsx           # List documents
+│   │   ├── layout.tsx             # App layout with AppHeader
+│   │   ├── page.tsx               # Home → redirects to /documents
+│   │   ├── loading.tsx            # Loading skeleton
+│   │   ├── companies/             # Multi-company CRUD (master-detail)
+│   │   │   ├── page.tsx           # Server component
+│   │   │   └── company-page-client.tsx
+│   │   ├── customers/             # Customer CRUD (master-detail)
+│   │   │   ├── page.tsx
+│   │   │   └── customer-page-client.tsx
+│   │   ├── products/              # Product CRUD (master-detail)
+│   │   │   ├── page.tsx
+│   │   │   └── product-page-client.tsx
+│   │   ├── documents/             # Document management
+│   │   │   ├── page.tsx           # List documents with filters
+│   │   │   ├── document-list-client.tsx
+│   │   │   ├── document-detail-edit-panel.tsx
 │   │   │   ├── new/page.tsx       # Create document
-│   │   │   └── [id]/              # View/edit document
-│   │   ├── settings/              # Settings (doc types, categories, units)
-│   │   └── api/                   # API routes (e.g., logo upload)
+│   │   │   └── [id]/
+│   │   │       ├── page.tsx       # View document + PDF preview
+│   │   │       └── document-detail-client.tsx
+│   │   └── settings/              # Configuration page
+│   │       ├── page.tsx
+│   │       └── settings-page-client.tsx
+│   ├── api/auth/[...all]/        # better-auth routes
+│   ├── api/upload-logo/          # File upload handler
 │   ├── onboarding/                # First-time user flow
-│   └── layout.tsx                 # Root layout
-├── actions/                       # Server actions (call from client)
+│   └── layout.tsx                 # Root layout (Plus Jakarta Sans font)
+├── actions/                       # Server actions
 │   ├── customer.actions.ts
 │   ├── product.actions.ts
 │   ├── category.actions.ts
@@ -49,29 +61,78 @@ src/
 │   ├── document-type.actions.ts
 │   ├── document.actions.ts
 │   └── company.actions.ts
-├── components/                    # React components
+├── components/
 │   ├── layout/                    # Layout components
-│   │   ├── navbar.tsx
-│   │   ├── nav-items.ts           # Navigation menu items
-│   │   └── sidebar.tsx
-│   ├── ui/                        # shadcn/ui primitives
-│   └── {feature}/                 # Feature-specific components
+│   │   ├── app-header.tsx         # Top header with user menu
+│   │   ├── app-brand.tsx          # App logo
+│   │   ├── app-sidebar.tsx        # Sidebar (if needed)
+│   │   ├── mobile-bottom-nav.tsx  # Mobile navigation
+│   │   └── nav-items.ts           # Navigation menu items
+│   ├── documents/                 # Document-specific
+│   │   ├── document-form.tsx
+│   │   ├── document-items-table.tsx
+│   │   ├── document-pdf-viewer.tsx
+│   │   ├── document-pdf-download-button.tsx
+│   │   ├── document-type-selector.tsx
+│   │   └── document-customer-section.tsx
+│   ├── settings/                  # Settings components
+│   │   ├── simple-list-manager.tsx
+│   │   └── document-type-column-editor.tsx
+│   ├── shared/                    # Shared components
+│   │   ├── delete-confirm-dialog.tsx
+│   │   ├── labeled-field.tsx
+│   │   ├── page-header.tsx
+│   │   ├── table-pagination.tsx
+│   │   ├── table-toolbar.tsx
+│   │   └── sidebar-user-card.tsx
+│   ├── customers/                 # Customer-specific
+│   │   └── customer-table.tsx
+│   ├── products/                  # Product-specific
+│   │   └── product-table.tsx
+│   └── ui/                        # shadcn/ui components
+│       ├── alert-dialog.tsx
+│       ├── badge.tsx
+│       ├── button.tsx
+│       ├── calendar.tsx
+│       ├── date-picker.tsx
+│       ├── dialog.tsx
+│       ├── dropdown-menu.tsx
+│       ├── input.tsx
+│       ├── label.tsx
+│       ├── popover.tsx
+│       ├── select.tsx
+│       ├── separator.tsx
+│       ├── table.tsx
+│       ├── tabs.tsx
+│       └── textarea.tsx
 ├── db/
-│   ├── schema/                    # Drizzle table definitions
-│   │   ├── auth.ts                # user table
-│   │   ├── company.ts             # company table
-│   │   ├── customer.ts            # customer table
-│   │   ├── product.ts             # product table
-│   │   ├── category.ts            # category table
-│   │   ├── unit.ts                # unit table
-│   │   ├── document-type.ts       # document_type table
-│   │   ├── document.ts            # document table
-│   │   └── index.ts               # Schema exports
-│   └── client.ts                  # Database client setup
+│   ├── index.ts                   # Neon serverless client
+│   └── schema/
+│       ├── auth.ts                # User table (better-auth)
+│       ├── company.ts
+│       ├── customer.ts
+│       ├── product.ts
+│       ├── category.ts
+│       ├── unit.ts
+│       ├── document-type.ts
+│       ├── document.ts
+│       └── index.ts
 ├── lib/
-│   ├── auth/                      # Auth helpers
-│   │   ├── get-user-id.ts         # requireUserId() helper
-│   │   └── session.ts             # requireSession() helper
+│   ├── auth/
+│   │   ├── auth.ts                # better-auth config
+│   │   ├── auth-client.ts         # Client auth helper
+│   │   ├── get-session.ts         # Get current session
+│   │   └── get-user-id.ts         # requireUserId() helper
+│   ├── pdf/                       # PDF rendering
+│   │   ├── pdf-helpers.ts
+│   │   ├── pdf-styles.ts
+│   │   ├── template-props.ts
+│   │   ├── template-registry.ts   # Template loading
+│   │   ├── register-fonts.ts
+│   │   ├── preset-config.ts
+│   │   └── templates/             # PDF templates
+│   │       ├── default-template.tsx
+│   │       └── jesang-delivery-template.tsx
 │   ├── validations/               # Zod schemas
 │   │   ├── company.schema.ts
 │   │   ├── customer.schema.ts
@@ -80,20 +141,30 @@ src/
 │   │   ├── unit.schema.ts
 │   │   ├── document-type.schema.ts
 │   │   └── document.schema.ts
-│   └── utils.ts                   # Utility functions
+│   ├── constants/
+│   │   └── default-column-presets.ts
+│   ├── types/
+│   │   ├── column-def.ts
+│   │   └── document-data.ts
+│   └── utils/
+│       ├── cn.ts
+│       ├── action-result.ts
+│       ├── document-helpers.ts
+│       ├── escape-like.ts
+│       └── generate-id.ts
 ├── services/                      # Business logic
-│   ├── company.service.ts         # Company CRUD
-│   ├── customer.service.ts        # Customer CRUD
-│   ├── product.service.ts         # Product CRUD
-│   ├── category.service.ts        # Category CRUD
-│   ├── unit.service.ts            # Unit CRUD
-│   ├── document-type.service.ts   # Document type CRUD
-│   ├── document.service.ts        # Document CRUD + number generation
-│   └── pdf.service.ts             # PDF rendering
-├── types/                         # TypeScript type definitions
-│   └── index.ts                   # Custom types
-├── .env                           # Environment variables (not committed)
-└── .env.local                     # Local overrides
+│   ├── company.service.ts
+│   ├── customer.service.ts
+│   ├── product.service.ts
+│   ├── category.service.ts
+│   ├── unit.service.ts
+│   ├── document-type.service.ts
+│   ├── document.service.ts
+│   └── stats.service.ts           # Dashboard stats
+├── hooks/
+│   └── use-active-path.ts
+├── .env.example                   # Environment template
+└── .env.local                     # Local overrides (not committed)
 
 drizzle/                           # Database migrations
 └── {timestamp}_*.sql              # Auto-generated by drizzle-kit
@@ -266,10 +337,9 @@ Required in `.env` or `.env.local`:
 
 | Variable | Purpose |
 |----------|---------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `CLERK_SECRET_KEY` | Auth provider secret |
-| `CLERK_PUBLISHABLE_KEY` | Auth provider public key |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Auth provider public key (client) |
+| `DATABASE_URL` | PostgreSQL connection string (Neon format) |
+| `BLOB_READ_WRITE_TOKEN` | @vercel/blob token for file uploads |
+| `BETTER_AUTH_SECRET` | Secret key for better-auth session encryption |
 
 ## Building & Running
 
@@ -319,10 +389,12 @@ Currently no automated tests. Recommend adding:
 - Update action in `src/actions/document.actions.ts`
 - May need to update PDF rendering in `src/services/pdf.service.ts`
 
-### Customize PDF Header
-- Logo URL and layout stored in `company.logoUrl`, `company.headerLayout`
-- Rendering logic in `src/services/pdf.service.ts`
-- User uploads via `/companies` page (integrates with logo upload API)
+### Add PDF Template
+1. Create React component in `src/lib/pdf/templates/{name}-template.tsx`
+2. Component receives `PdfTemplateProps` (document, company, template config)
+3. Use @react-pdf/renderer components (Document, Page, View, Text, Image)
+4. Register in `src/lib/pdf/template-registry.ts` with extra form fields
+5. Template appears in document form type selector
 
 ### Add Company-Scoped Data
 - Some data (like document numbers) is scoped by company, not just user

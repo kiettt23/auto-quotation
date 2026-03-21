@@ -4,6 +4,8 @@ import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { X, Plus, Trash2, Save, Printer, Copy, Loader2 } from "lucide-react";
+import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -30,26 +32,7 @@ import type { ProductWithRelations } from "@/services/product.service";
 import type { CustomerRow } from "@/services/customer.service";
 import type { CompanyRow } from "@/services/company.service";
 import type { DocumentTypeRow } from "@/services/document-type.service";
-
-/** Compact labeled field — label always visible above input */
-function LabeledField({
-  label,
-  children,
-  className,
-}: {
-  label: string;
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={className}>
-      <span className="mb-0.5 block text-[10px] font-medium text-slate-400">
-        {label}
-      </span>
-      {children}
-    </div>
-  );
-}
+import { LabeledField } from "@/components/shared/labeled-field";
 
 interface Props {
   doc: DocumentRow;
@@ -313,15 +296,7 @@ export function DocumentDetailEditPanel({
           <Copy className="h-3 w-3" />
           Sao
         </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 gap-1 px-2 text-xs text-red-500 hover:bg-red-50 hover:text-red-600"
-          onClick={handleDelete}
-        >
-          <Trash2 className="h-3 w-3" />
-          Xóa
-        </Button>
+        <DeleteConfirmDialog name={doc.type} onConfirm={handleDelete} />
         <button
           onClick={onClose}
           className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
@@ -546,7 +521,7 @@ export function DocumentDetailEditPanel({
                   )}
                 </div>
                 {(item.specification || item.unit) && (
-                  <p className="mt-0.5 text-[10px] text-slate-400">
+                  <p className="mt-0.5 text-[11px] text-slate-400">
                     {[item.specification, item.unit]
                       .filter(Boolean)
                       .join(" · ")}
@@ -564,7 +539,7 @@ export function DocumentDetailEditPanel({
                       className="h-7 text-xs"
                     />
                   </LabeledField>
-                  <span className="mt-3.5 text-[10px] text-slate-300">×</span>
+                  <span className="mt-3.5 text-[11px] text-slate-300">×</span>
                   <LabeledField label="Đơn giá" className="flex-1">
                     <Input
                       type="number"
@@ -613,11 +588,11 @@ export function DocumentDetailEditPanel({
 
         {/* Notes */}
         <LabeledField label="Ghi chú">
-          <textarea
+          <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            className="w-full rounded-lg border border-slate-200 px-3 py-2 text-xs focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="text-xs"
           />
         </LabeledField>
       </div>

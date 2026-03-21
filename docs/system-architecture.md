@@ -2,7 +2,13 @@
 
 ## Overview
 
-Auto Quotation is a Next.js + PostgreSQL application for managing business documents (quotations, warehouse exports, delivery orders). It uses multi-company architecture where a single user can manage multiple companies, with each document tied to a specific company.
+autoquotation is a Next.js 16 + PostgreSQL web application for managing business documents (quotations, warehouse exports, delivery orders). It implements a multi-company architecture where a single authenticated user manages multiple companies and generates professional PDF documents using a template registry.
+
+**Key Technologies:**
+- better-auth for authentication
+- @react-pdf/renderer for PDF generation
+- Drizzle ORM for type-safe database access
+- Next.js Server Actions for backend logic
 
 ## Architecture Principles
 
@@ -126,8 +132,8 @@ Services in `src/services` handle business logic:
 - Navigation bar with company selector (if companies exist)
 
 ### Home Page (`(app)/page.tsx`)
-- Dashboard showing document stats
-- Quick actions (create quotation, etc.)
+- Redirects to `/documents` (no separate dashboard)
+- Users land directly on document list for quick access
 
 ### Companies (`(app)/companies/page.tsx`)
 - List all companies for user
@@ -169,29 +175,48 @@ Services in `src/services` handle business logic:
 - Render PDF preview
 - Link to edit page
 
-#### Edit (`(app)/documents/[id]/edit/page.tsx`)
-- Modify document (most fields)
+#### Edit (Inline Panel)
+- Edit documents via `document-detail-edit-panel.tsx`
+- Rendered as inline panel in document detail view
 - Prevent company/number change
+- No separate /edit page
 
 ## Authentication & Authorization
 
 ### User Authentication
-- Uses session from auth provider (e.g., Clerk)
+- Uses better-auth 1.5.5 with email/password strategy
+- Session stored in database (managed by better-auth)
+- `getSession()` helper in `src/lib/auth/get-session.ts`
 - `requireUserId()` helper in `src/lib/auth/get-user-id.ts`
+- App layout enforces auth redirect on protected routes
 
 ### Data Access Control
-- All queries filtered by `userId` (except document.companyId references)
+- All queries filtered by `userId` at database level
+- Service functions perform ownership checks before returning data
 - Users cannot access other users' data
 - Company deletion is soft (deletedAt timestamp)
+- Documents scoped by both `userId` and `companyId`
 
 ## PDF Generation
 
-Located in `src/services/pdf.service.ts`:
+Uses @react-pdf/renderer with template registry pattern:
 
-- Renders documents using pdfkit
-- Company header: logo + company info (uses logoUrl, headerLayout)
-- Company defaults: driverName, vehicleId from selected company
-- Document-specific: items, customer, terms from form data
+**Template System** (`src/lib/pdf/`)
+- `template-registry.ts` — Registry of available templates (default, jesang-delivery)
+- Each template is a React component receiving `PdfTemplateProps`
+- Templates define optional `extraFormFields` and `itemColumns` for customization
+- Lazy-loaded via `getTemplateComponent()` helper
+
+**Rendering Flow**
+1. Document form selects template type
+2. Template registry loads matching component
+3. Service calls template with document data
+4. @react-pdf/renderer generates PDF in browser
+5. User downloads via browser's download mechanism
+
+**Current Templates**
+- `DefaultTemplate` — Modern layout with header, customer section, items table, terms
+- `JesangDeliveryTemplate` — Bilingual delivery order with custom columns and 5-signature section
 
 ## Migration from Tenant Model
 

@@ -18,7 +18,7 @@ function MobileNavLink({ href, label, icon: Icon }: NavItem) {
       )}
     >
       <Icon className="h-5 w-5" />
-      <span className="text-[10px]">{label}</span>
+      <span className="text-[11px]">{label}</span>
     </Link>
   );
 }

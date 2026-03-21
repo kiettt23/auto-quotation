@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-**Auto Quotation** is a web application designed to streamline business document management. Users can create, manage, and export professional quotations, warehouse export documents, and delivery orders as PDF files. The system supports multi-company management, allowing a single user to handle multiple business entities with separate customer and product lists.
+**autoquotation** is a web application designed to streamline business document management. Users can create, manage, and export professional quotations, warehouse export documents, and delivery orders as PDF files. The system supports multi-company management, allowing a single user to handle multiple business entities with separate customer and product lists.
 
 **Current Version:** Post-refactor (March 2026)
 **Status:** Active Development / Production-Ready
@@ -83,10 +83,12 @@ Enable SMEs to:
 - Soft delete strategy preserves audit trail
 
 ### Security
-- User authentication via session (Clerk or similar)
+- User authentication via better-auth with email/password
+- Session-based access control via `requireUserId()` helper
 - All data access controlled by `userId`
 - No cross-user data leakage
 - Soft deletes for data recovery
+- SQL-level ownership checks on all queries
 
 ### Reliability
 - PostgreSQL transactions ensure data consistency
@@ -102,12 +104,15 @@ Enable SMEs to:
 ## Current Architecture
 
 ### Tech Stack
-- **Frontend:** Next.js 14, React 18, TypeScript, shadcn/ui
+- **Frontend:** Next.js 16.1, React 19, TypeScript, shadcn/ui 3.8.5
 - **Backend:** Next.js Server Actions, Node.js runtime
-- **Database:** PostgreSQL with Drizzle ORM
-- **Auth:** Session-based (Clerk-compatible)
-- **PDF:** pdfkit library
-- **Styling:** Tailwind CSS
+- **Database:** PostgreSQL 14+ with Drizzle ORM 0.45.1
+- **Auth:** better-auth 1.5.5 (email/password authentication)
+- **PDF:** @react-pdf/renderer 4.3.2 with template registry
+- **Storage:** @vercel/blob for file uploads
+- **Styling:** Tailwind CSS 4, shadcn/ui components
+- **Validation:** Zod 4 for input validation
+- **Package Manager:** pnpm
 
 ### Data Model
 | Entity | Scope | Purpose |
@@ -208,10 +213,11 @@ Enable SMEs to:
 5. **No API layer** — Direct UI only (future: REST/GraphQL API)
 
 ### Technical Constraints
-1. **PDF generation speed** — pdfkit is single-threaded (worker threads needed at scale)
-2. **File storage** — Logos stored as data URLs (consider S3 for production)
-3. **Database tuning** — Staging DB only (production DB needs performance review)
-4. **No caching layer** — All queries hit database (consider Redis at scale)
+1. **PDF generation speed** — @react-pdf/renderer runs client-side (may be slow for large batch exports)
+2. **File storage** — Logos uploaded via @vercel/blob (embedded as URLs in documents)
+3. **Template customization** — Currently 2 fixed templates (default + jesang-delivery)
+4. **Database tuning** — Staging DB only (production DB needs performance review)
+5. **No caching layer** — All queries hit database (consider Redis at scale)
 
 ### Deployment Constraints
 1. **Staging DB only** — Must promote to production manually
@@ -238,10 +244,10 @@ Enable SMEs to:
 ## Dependencies & Prerequisites
 
 ### External Services
-- **Auth Provider:** Clerk (or compatible OAuth provider)
-- **Database:** PostgreSQL 14+ with proper backups
-- **File Storage:** S3 or equivalent for logo uploads (future)
-- **Email Service:** For document delivery (future)
+- **Auth System:** better-auth (self-hosted in app, no external provider)
+- **Database:** PostgreSQL 14+ (Neon serverless recommended)
+- **File Storage:** @vercel/blob (built-in, serverless)
+- **Email Service:** Needed for future notifications/sharing features
 
 ### Internal Dependencies
 - Drizzle ORM for database access
@@ -263,17 +269,28 @@ Enable SMEs to:
 
 ## Change History
 
+### March 21, 2026 — UI/UX Redesign (IN PROGRESS)
+**Summary:** Complete visual redesign with improved layouts and components.
+
+**Changes:**
+- Redesigned header with user card and navigation
+- Master-detail inline edit panels for CRUD pages (no modal dialogs)
+- Added date picker, calendar, popover UI components
+- Responsive layout with mobile bottom navigation
+- Upgraded to Tailwind CSS 4 and modern component library
+- Added page headers with breadcrumbs and actions
+
 ### March 19, 2026 — Multi-Company Refactor (COMPLETED)
 **Summary:** Migrated from tenant-based (1 user = 1 company) to user-based (1 user = N companies) architecture.
 
 **Changes:**
 - Added `userId` to 6 tables (customer, product, category, unit, document_type, document)
-- Removed `companyId` FK from 6 tables (kept only for documents)
+- Removed `companyId` FK from user-level entities
 - Renamed `company.ownerId` → `company.userId`
 - Added `company.driverName`, `company.vehicleId`
-- Created `/companies` CRUD page
+- Created `/companies` CRUD page with full CRUD operations
 - Updated document form with company dropdown
-- Removed company info from settings page
+- Removed company info from settings page (now at /companies)
 - Replaced `requireCompanyId()` → `requireUserId()` in all actions
 - Deleted CompanyProvider context
 

@@ -9,6 +9,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import {
   documentTypeConfig,
   calculateTotal,
@@ -104,7 +105,7 @@ export function DocumentListClient({
       <div
         className={cn(
           "flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]",
-          selectedDoc ? "flex-[3]" : "flex-1",
+          selectedDoc ? "flex-3" : "flex-1",
         )}
       >
         {/* Toolbar — single row */}
@@ -153,6 +154,8 @@ export function DocumentListClient({
             <Plus className="h-3.5 w-3.5" />
           </Link>
         </div>
+
+        <Separator />
 
         {/* List */}
         {documents.length === 0 ? (
@@ -211,7 +214,7 @@ export function DocumentListClient({
                             <span className="text-[13px] font-semibold text-slate-900">
                               {doc.documentNumber}
                             </span>
-                            <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-500">
+                            <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-500">
                               {config?.label ?? doc.type}
                             </span>
                           </div>
@@ -262,7 +265,7 @@ export function DocumentListClient({
         className={cn(
           "overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]",
           selectedDoc
-            ? "ml-6 flex-[2] opacity-100"
+            ? "ml-6 flex-2 opacity-100"
             : "ml-0 w-0 flex-[0] opacity-0",
         )}
       >

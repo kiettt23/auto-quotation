@@ -5,6 +5,17 @@ import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 interface ListItem {
@@ -46,7 +57,6 @@ export function SimpleListManager({
   }
 
   async function handleDelete(item: ListItem) {
-    if (!confirm(`Xóa "${item.name}"?`)) return;
     const result = await onDelete(item.id);
     if (result.success) {
       toast.success(`Đã xóa "${item.name}"`);
@@ -92,12 +102,27 @@ export function SimpleListManager({
               }`}
             >
               <span className="text-sm text-slate-700">{item.name}</span>
-              <button
-                onClick={() => handleDelete(item)}
-                className="cursor-pointer rounded-md p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <button className="cursor-pointer rounded-md p-1.5 text-slate-400 transition-colors hover:bg-red-50 hover:text-red-500">
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </AlertDialogTrigger>
+                <AlertDialogContent size="sm">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Xác nhận xóa</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Bạn có chắc muốn xóa &quot;{item.name}&quot;?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Hủy</AlertDialogCancel>
+                    <AlertDialogAction variant="destructive" onClick={() => handleDelete(item)}>
+                      Xóa
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           ))}
         </div>

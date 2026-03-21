@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document defines coding standards, file organization, and architectural patterns used in Auto Quotation. All code contributions must follow these guidelines to maintain consistency and readability.
+This document defines coding standards, file organization, and architectural patterns used in autoquotation. All code contributions must follow these guidelines to maintain consistency and readability.
 
 ## File Organization
 
@@ -36,13 +36,13 @@ src/
 
 | File Type | Convention | Examples |
 |-----------|-----------|----------|
-| React components | PascalCase | `CustomerForm.tsx`, `ProductCard.tsx` |
-| TypeScript/JavaScript | camelCase | `getCustomerId.ts`, `document.service.ts` |
+| React components (files) | kebab-case | `customer-form.tsx`, `product-card.tsx` |
+| Component names (exports) | PascalCase | `export function CustomerForm()` |
 | Folders | kebab-case | `src/app/(app)/customers`, `src/lib/auth` |
 | Database schema | camelCase | `company.ts`, `customer.ts` |
-| Server actions | camelCase + suffix | `customer.actions.ts` |
-| Services | camelCase + suffix | `customer.service.ts` |
-| Validation schemas | camelCase + suffix | `customer.schema.ts` |
+| Server actions | kebab-case | `customer.actions.ts` |
+| Services | kebab-case | `customer.service.ts` |
+| Validation schemas | kebab-case | `customer.schema.ts` |
 
 ### File Size Guidelines
 - **Code files:** Keep under 200 lines (split if exceeds)
@@ -116,6 +116,7 @@ All server actions must follow this structure:
 // src/actions/customer.actions.ts
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { requireUserId } from "@/lib/auth/get-user-id";
 import { customerService } from "@/services/customer.service";
 import { customerSchema } from "@/lib/validations/customer.schema";
@@ -125,7 +126,7 @@ export async function createCustomerAction(formData: FormData) {
   const userId = await requireUserId();
 
   // 2. Parse & validate input
-  const parsed = customerSchema.createCustomerSchema.safeParse(
+  const parsed = customerSchema.createSchema.safeParse(
     Object.fromEntries(formData)
   );
   if (!parsed.success) {
@@ -144,7 +145,8 @@ export async function createCustomerAction(formData: FormData) {
 
     return { success: true, data: customer };
   } catch (error) {
-    return { error: `Failed to create customer: ${(error as Error).message}` };
+    console.error("Create customer error:", error);
+    return { error: "Failed to create customer. Please try again." };
   }
 }
 ```
@@ -235,32 +237,48 @@ export const customerService = {
 // src/components/customers/customer-form.tsx
 "use client";
 
-import { useFormStatus } from "react-dom";
+import { useState } from "react";
 import { createCustomerAction } from "@/actions/customer.actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   onSuccess?: () => void;
 }
 
 export function CustomerForm({ onSuccess }: Props) {
-  const { pending } = useFormStatus();
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPending(true);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const result = await createCustomerAction(formData);
+      if (result.success) {
+        onSuccess?.();
+      }
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
-    <form action={createCustomerAction}>
-      <input
+    <form onSubmit={handleSubmit}>
+      <Input
         type="text"
         name="name"
         placeholder="Customer name"
         required
       />
-      <input
+      <Input
         type="email"
         name="email"
         placeholder="Email"
       />
-      <button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending}>
         {pending ? "Creating..." : "Create Customer"}
-      </button>
+      </Button>
     </form>
   );
 }
