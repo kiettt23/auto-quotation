@@ -1,9 +1,18 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { DM_Sans, Poppins } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin", "vietnamese"] });
+const dmSans = DM_Sans({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const poppins = Poppins({
+  subsets: ["latin", "latin-ext"],
+  weight: ["500", "600", "700"],
+  variable: "--font-poppins",
+});
 
 export const metadata: Metadata = {
   title: "Auto Quotation",
@@ -18,7 +27,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${dmSans.className} ${poppins.variable} antialiased`}>
         {children}
         <Toaster position="top-center" richColors />
       </body>

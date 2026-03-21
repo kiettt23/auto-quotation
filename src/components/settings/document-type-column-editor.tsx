@@ -126,7 +126,7 @@ export function DocumentTypeColumnEditor({ documentTypes: initialTypes }: Props)
               value={newLabel}
               onChange={(e) => setNewLabel(e.target.value)}
               placeholder="VD: Hợp đồng"
-              className="w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm focus:border-indigo-500 focus:outline-none"
             />
           </div>
           <div className="w-24">
@@ -136,7 +136,7 @@ export function DocumentTypeColumnEditor({ documentTypes: initialTypes }: Props)
               onChange={(e) => setNewShortLabel(e.target.value.toUpperCase())}
               placeholder="VD: HĐ"
               maxLength={5}
-              className="w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm uppercase focus:border-blue-500 focus:outline-none"
+              className="w-full rounded-md border border-slate-200 px-3 py-1.5 text-sm uppercase focus:border-indigo-500 focus:outline-none"
             />
           </div>
           <Button size="sm" onClick={handleAddType} disabled={isPending || !newLabel.trim() || !newShortLabel.trim()}>
@@ -257,7 +257,7 @@ function DocumentTypeCard({
       >
         <div className="flex items-center gap-2">
           {expanded ? <ChevronDown className="h-4 w-4 text-slate-400" /> : <ChevronRight className="h-4 w-4 text-slate-400" />}
-          <FileText className="h-4 w-4 text-blue-600" />
+          <FileText className="h-4 w-4 text-indigo-600" />
           <span className="font-medium text-slate-900">{type.label}</span>
           <span className="rounded bg-slate-100 px-1.5 py-0.5 text-xs text-slate-500">{type.shortLabel}</span>
           <span className="text-xs text-slate-400">{cols.length} cột</span>
@@ -369,7 +369,7 @@ function DocumentTypeCard({
           {/* Add column button */}
           <button
             onClick={addColumn}
-            className="mb-4 flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700"
+            className="mb-4 flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700"
           >
             <Plus className="h-4 w-4" />
             Thêm cột
@@ -412,7 +412,7 @@ function DocumentTypeCard({
               ))}
               <button
                 onClick={() => { setSigLabels([...sigLabels, "Người ký"]); setDirty(true); }}
-                className="flex items-center gap-1 rounded border border-dashed border-slate-300 px-2 py-1 text-xs text-slate-500 hover:border-blue-400 hover:text-blue-600"
+                className="flex items-center gap-1 rounded border border-dashed border-slate-300 px-2 py-1 text-xs text-slate-500 hover:border-indigo-400 hover:text-indigo-600"
               >
                 <Plus className="h-3 w-3" />
                 Thêm ô ký

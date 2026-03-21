@@ -4,7 +4,7 @@ import { AppLogo } from "@/components/layout/app-logo";
 import { FileText, Zap, Shield } from "lucide-react";
 
 const features = [
-  { icon: FileText, color: "text-blue-400", text: "3 loại tài liệu: Báo giá, PXK, PGH" },
+  { icon: FileText, color: "text-indigo-400", text: "3 loại tài liệu: Báo giá, PXK, PGH" },
   { icon: Zap, color: "text-yellow-400", text: "Tạo PDF chuyên nghiệp trong vài giây" },
   { icon: Shield, color: "text-green-400", text: "Quản lý sản phẩm, khách hàng tập trung" },
 ];
@@ -25,7 +25,7 @@ export default async function AuthLayout({
       <div className="hidden lg:flex lg:w-1/2 relative flex-col items-center justify-center gap-10 bg-linear-to-br from-slate-900 via-slate-800 to-blue-900 p-16 overflow-hidden">
         {/* Background glow */}
         <div className="absolute inset-0 opacity-[0.07]">
-          <div className="absolute top-20 left-10 h-64 w-64 rounded-full bg-blue-500 blur-3xl" />
+          <div className="absolute top-20 left-10 h-64 w-64 rounded-full bg-indigo-500 blur-3xl" />
           <div className="absolute bottom-20 right-10 h-48 w-48 rounded-full bg-indigo-500 blur-3xl" />
         </div>
 

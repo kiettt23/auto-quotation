@@ -3,25 +3,28 @@ import type { DocumentType } from "@/db/schema/document";
 /** Map document type to display info */
 export const documentTypeConfig: Record<
   DocumentType,
-  { label: string; prefix: string; badgeBg: string; badgeText: string }
+  { label: string; prefix: string; badgeBg: string; badgeText: string; dotColor: string }
 > = {
   QUOTATION: {
     label: "Báo giá",
     prefix: "BG",
-    badgeBg: "bg-blue-100",
-    badgeText: "text-blue-700",
+    badgeBg: "bg-indigo-100",
+    badgeText: "text-indigo-700",
+    dotColor: "bg-indigo-500",
   },
   WAREHOUSE_EXPORT: {
     label: "Phiếu xuất kho",
     prefix: "PXK",
     badgeBg: "bg-amber-100",
     badgeText: "text-amber-700",
+    dotColor: "bg-amber-500",
   },
   DELIVERY_ORDER: {
     label: "Phiếu giao hàng",
     prefix: "PGH",
     badgeBg: "bg-indigo-100",
     badgeText: "text-indigo-700",
+    dotColor: "bg-emerald-500",
   },
 };
 

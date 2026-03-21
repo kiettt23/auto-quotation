@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/shared/page-header";
+import { TableToolbar } from "@/components/shared/table-toolbar";
 import { CompanyTable } from "./company-table";
 import { CompanyDialog } from "./company-dialog";
 import type { CompanyRow } from "@/services/company.service";
@@ -23,23 +24,28 @@ export function CompanyPageClient({ companies }: Props) {
     : companies;
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900">Công ty</h1>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-1.5 h-4 w-4" />
-          Thêm công ty
-        </Button>
-      </div>
-
-      <Input
-        placeholder="Tìm công ty..."
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="max-w-xs"
+    <div className="flex flex-col gap-7 p-6 lg:p-10">
+      <PageHeader
+        title="Công ty"
+        actions={
+          <Button
+            onClick={() => setDialogOpen(true)}
+            className="rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 shadow-lg shadow-indigo-500/30"
+          >
+            <Plus className="mr-1.5 h-4 w-4" />
+            Thêm công ty
+          </Button>
+        }
       />
 
-      <CompanyTable companies={filtered} />
+      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+        <TableToolbar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Tìm công ty..."
+        />
+        <CompanyTable companies={filtered} />
+      </div>
 
       <CompanyDialog open={dialogOpen} onOpenChange={setDialogOpen} />
     </div>

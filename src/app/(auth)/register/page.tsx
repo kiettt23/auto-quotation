@@ -86,7 +86,7 @@ export default function RegisterPage() {
         {loading ? "Đang đăng ký..." : "Đăng ký"}
       </Button>
 
-      <p className="text-center text-sm text-blue-500">
+      <p className="text-center text-sm text-indigo-500">
         <Link href="/login">Đã có tài khoản? Đăng nhập</Link>
       </p>
     </form>

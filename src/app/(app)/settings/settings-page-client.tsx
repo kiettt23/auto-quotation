@@ -27,11 +27,11 @@ export function SettingsPageClient({ categories, units, documentTypes }: Props) 
   const [activeTab, setActiveTab] = useState("categories");
 
   return (
-    <div className="flex flex-col gap-6 p-6 lg:p-10">
+    <div className="flex flex-col gap-7 p-6 lg:p-10">
       <h1 className="text-2xl font-bold text-slate-900">Cài đặt</h1>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-2xl">
-        <TabsList className="mb-6 w-full justify-start">
+        <TabsList className="mb-6 w-full justify-start bg-slate-100">
           <TabsTrigger value="categories" className="gap-1.5">
             <Tags className="h-4 w-4" />
             Danh mục

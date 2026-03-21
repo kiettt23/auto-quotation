@@ -86,7 +86,7 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
     if (existingData?.vehicleId) init.vehicleId = existingData.vehicleId;
     // Auto-fill from default company on new documents
     if (!isEdit) {
-      const defaultCompany = companies.find((c) => c.id === (doc?.companyId ?? companies[0]?.id));
+      const defaultCompany = companies.find((c) => c.id === companies[0]?.id);
       if (defaultCompany?.driverName && !init.driverName) init.driverName = defaultCompany.driverName;
       if (defaultCompany?.vehicleId && !init.vehicleId) init.vehicleId = defaultCompany.vehicleId;
     }
@@ -212,7 +212,7 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
             <select
               value={companyId}
               onChange={(e) => handleCompanyChange(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             >
               {companies.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -243,7 +243,7 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
               type="date"
               value={documentDate}
               onChange={(e) => setDocumentDate(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
           </div>
         </div>
@@ -277,7 +277,7 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
                   value={extraFields[field.key] ?? ""}
                   onChange={(e) => setExtraFields((prev) => ({ ...prev, [field.key]: e.target.value }))}
                   placeholder={field.placeholder}
-                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
             ))}
@@ -296,7 +296,7 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
             }
             setShowColumnEditor(!showColumnEditor);
           }}
-          className="text-sm text-blue-600 hover:text-blue-700"
+          className="text-sm text-indigo-600 hover:text-indigo-700"
         >
           {showColumnEditor ? "Ẩn tùy chỉnh cột" : "Tùy chỉnh cột"}
         </button>
@@ -330,7 +330,7 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
-          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           placeholder="VD: Giá đã bao gồm VAT. Báo giá có hiệu lực 30 ngày."
         />
       </div>
@@ -371,7 +371,7 @@ function InlineColumnEditor({
   }
 
   return (
-    <div className="rounded-lg border border-blue-200 bg-blue-50/50 p-4">
+    <div className="rounded-lg border border-indigo-200 bg-indigo-50/50 p-4">
       <div className="mb-3 flex items-center justify-between">
         <span className="text-sm font-medium text-slate-700">Cột hiển thị</span>
         <button onClick={onReset} className="flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700">
@@ -410,7 +410,7 @@ function InlineColumnEditor({
         ))}
       </div>
 
-      <button onClick={addCol} className="mt-2 flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700">
+      <button onClick={addCol} className="mt-2 flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700">
         <Plus className="h-4 w-4" />
         Thêm cột
       </button>

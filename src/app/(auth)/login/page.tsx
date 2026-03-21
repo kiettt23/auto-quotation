@@ -78,7 +78,7 @@ export default function LoginPage() {
         <div className="h-px flex-1 bg-slate-200" />
       </div>
 
-      <p className="text-center text-sm text-blue-500">
+      <p className="text-center text-sm text-indigo-500">
         <Link href="/register">Chưa có tài khoản? Đăng ký</Link>
       </p>
     </form>

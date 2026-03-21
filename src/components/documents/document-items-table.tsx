@@ -197,7 +197,7 @@ export function DocumentItemsTable({ items, products, columns, showTotal, onItem
           variant="ghost"
           size="sm"
           onClick={addItem}
-          className="text-blue-600 hover:text-blue-700"
+          className="text-indigo-600 hover:text-indigo-700"
         >
           <Plus className="mr-1 h-4 w-4" />
           Thêm sản phẩm
@@ -206,7 +206,7 @@ export function DocumentItemsTable({ items, products, columns, showTotal, onItem
         {showTotal && (
           <div className="flex items-center gap-4 pr-12">
             <span className="text-base font-semibold text-slate-900">Tổng cộng:</span>
-            <span className="text-xl font-bold text-blue-600">{formatCurrency(total)}</span>
+            <span className="text-xl font-bold text-indigo-600">{formatCurrency(total)}</span>
           </div>
         )}
       </div>

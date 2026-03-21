@@ -35,8 +35,8 @@ export function OnboardingForm() {
       className="w-full max-w-[520px] rounded-2xl border bg-white p-10"
     >
       <div className="flex flex-col gap-7">
-        <div className="inline-flex w-fit rounded-full bg-blue-50 px-4 py-1.5">
-          <span className="text-xs font-medium text-blue-600">Bước 1 / 1</span>
+        <div className="inline-flex w-fit rounded-full bg-indigo-50 px-4 py-1.5">
+          <span className="text-xs font-medium text-indigo-600">Bước 1 / 1</span>
         </div>
 
         <div>

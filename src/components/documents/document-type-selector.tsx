@@ -10,7 +10,7 @@ interface Props {
 
 /** Badge color cycling for document types */
 const BADGE_STYLES = [
-  { bg: "bg-blue-100", text: "text-blue-700" },
+  { bg: "bg-indigo-100", text: "text-indigo-700" },
   { bg: "bg-amber-100", text: "text-amber-700" },
   { bg: "bg-indigo-100", text: "text-indigo-700" },
   { bg: "bg-emerald-100", text: "text-emerald-700" },
@@ -31,7 +31,7 @@ export function DocumentTypeSelector({ types, selectedId, onSelect }: Props) {
             onClick={() => onSelect(type.id)}
             className={`flex w-44 flex-col items-center gap-2 rounded-xl border-2 bg-white p-5 transition-colors ${
               isActive
-                ? "border-blue-500 ring-1 ring-blue-500"
+                ? "border-indigo-500 ring-1 ring-indigo-500"
                 : "border-slate-200 hover:border-slate-300"
             }`}
           >
