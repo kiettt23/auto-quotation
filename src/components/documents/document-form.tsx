@@ -39,6 +39,7 @@ interface ProductOption {
   unitPrice: number;
   specification?: string | null;
   unitName?: string | null;
+  customData?: Record<string, string | number> | null;
 }
 
 interface CustomerOption {
@@ -49,6 +50,7 @@ interface CustomerOption {
   receiverPhone: string | null;
   deliveryName: string | null;
   deliveryAddress: string | null;
+  customData?: Record<string, string | number> | null;
 }
 
 interface Props {
@@ -140,6 +142,10 @@ export function DocumentForm({ products, customers, companies, document: doc }: 
       ...prev,
       ...(customer.deliveryName ? { deliveryName: customer.deliveryName } : {}),
       ...(customer.deliveryAddress ? { deliveryAddress: customer.deliveryAddress } : {}),
+      // Merge customData into template fields
+      ...(customer.customData ? Object.fromEntries(
+        Object.entries(customer.customData).map(([k, v]) => [k, String(v)])
+      ) : {}),
     }));
   }
 
@@ -151,6 +157,10 @@ export function DocumentForm({ products, customers, companies, document: doc }: 
       ...prev,
       ...(company.driverName ? { driverName: company.driverName } : {}),
       ...(company.vehicleId ? { vehicleId: company.vehicleId } : {}),
+      // Merge customData into template fields
+      ...(company.customData ? Object.fromEntries(
+        Object.entries(company.customData).map(([k, v]) => [k, String(v)])
+      ) : {}),
     }));
   }
 

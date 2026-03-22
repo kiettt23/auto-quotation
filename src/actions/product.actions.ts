@@ -12,6 +12,7 @@ export async function createProductAction(
   try {
     const userId = await requireUserId();
 
+    const customDataRaw = formData.get("customData") as string | null;
     const parsed = productFormSchema.safeParse({
       name: formData.get("name"),
       categoryId: formData.get("categoryId") || undefined,
@@ -19,6 +20,7 @@ export async function createProductAction(
       unitPrice: formData.get("unitPrice"),
       specification: formData.get("specification") || undefined,
       description: formData.get("description") || undefined,
+      customData: customDataRaw ? JSON.parse(customDataRaw) : undefined,
     });
 
     if (!parsed.success) {
@@ -40,6 +42,7 @@ export async function updateProductAction(
   try {
     const userId = await requireUserId();
 
+    const customDataRaw = formData.get("customData") as string | null;
     const parsed = productFormSchema.safeParse({
       name: formData.get("name"),
       categoryId: formData.get("categoryId") || undefined,
@@ -47,6 +50,7 @@ export async function updateProductAction(
       unitPrice: formData.get("unitPrice"),
       specification: formData.get("specification") || undefined,
       description: formData.get("description") || undefined,
+      customData: customDataRaw ? JSON.parse(customDataRaw) : undefined,
     });
 
     if (!parsed.success) {

@@ -23,6 +23,7 @@ export async function listProducts(userId: string, search?: string) {
       unitPrice: product.unitPrice,
       specification: product.specification,
       description: product.description,
+      customData: product.customData,
       deletedAt: product.deletedAt,
       createdAt: product.createdAt,
       updatedAt: product.updatedAt,
@@ -72,6 +73,7 @@ export async function createProduct(
     unitPrice: number;
     specification?: string;
     description?: string;
+    customData?: Record<string, string | number> | null;
   }
 ) {
   const id = generateId();
@@ -94,6 +96,7 @@ export async function updateProduct(
     unitPrice?: number;
     specification?: string | null;
     description?: string | null;
+    customData?: Record<string, string | number> | null;
   }
 ) {
   const [row] = await db

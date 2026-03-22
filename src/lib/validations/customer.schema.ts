@@ -10,6 +10,7 @@ export const customerFormSchema = z.object({
   deliveryAddress: z.string().optional(),
   receiverName: z.string().optional(),
   receiverPhone: z.string().optional(),
+  customData: z.record(z.string(), z.union([z.string(), z.coerce.number()])).nullable().optional(),
 });
 
 export type CustomerFormValues = z.infer<typeof customerFormSchema>;

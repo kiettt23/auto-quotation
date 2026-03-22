@@ -11,6 +11,7 @@ export const createCompanySchema = z.object({
   driverName: z.string().optional(),
   vehicleId: z.string().optional(),
   logoUrl: z.string().optional(),
+  customData: z.record(z.string(), z.union([z.string(), z.coerce.number()])).nullable().optional(),
 });
 
 export const updateCompanySchema = z.object({
@@ -25,6 +26,7 @@ export const updateCompanySchema = z.object({
   driverName: z.string().optional(),
   vehicleId: z.string().optional(),
   logoUrl: z.string().optional(),
+  customData: z.record(z.string(), z.union([z.string(), z.coerce.number()])).nullable().optional(),
 });
 
 export type CreateCompanyInput = z.infer<typeof createCompanySchema>;

@@ -131,6 +131,9 @@ export function DocumentDetailEditPanel({
       ...prev,
       ...(c.deliveryName ? { deliveryName: c.deliveryName } : {}),
       ...(c.deliveryAddress ? { deliveryAddress: c.deliveryAddress } : {}),
+      ...(c.customData ? Object.fromEntries(
+        Object.entries(c.customData).map(([k, v]) => [k, String(v)])
+      ) : {}),
     }));
   }
 
@@ -143,6 +146,9 @@ export function DocumentDetailEditPanel({
       ...prev,
       ...(company.driverName ? { driverName: company.driverName } : {}),
       ...(company.vehicleId ? { vehicleId: company.vehicleId } : {}),
+      ...(company.customData ? Object.fromEntries(
+        Object.entries(company.customData).map(([k, v]) => [k, String(v)])
+      ) : {}),
     }));
   }
 
@@ -157,6 +163,7 @@ export function DocumentDetailEditPanel({
       unitPrice: Number(p.unitPrice) || 0,
       quantity: items[index].quantity ?? 1,
       amount: (items[index].quantity ?? 1) * (Number(p.unitPrice) || 0),
+      ...(p.customData ? { customFields: { ...items[index].customFields, ...p.customData } } : {}),
     });
   }
 

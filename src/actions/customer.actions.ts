@@ -7,6 +7,7 @@ import * as customerService from "@/services/customer.service";
 import { ok, err, type ActionResult } from "@/lib/utils/action-result";
 
 function parseFormData(formData: FormData) {
+  const customDataRaw = formData.get("customData") as string | null;
   return customerFormSchema.safeParse({
     name: formData.get("name"),
     address: formData.get("address") || undefined,
@@ -17,6 +18,7 @@ function parseFormData(formData: FormData) {
     deliveryAddress: formData.get("deliveryAddress") || undefined,
     receiverName: formData.get("receiverName") || undefined,
     receiverPhone: formData.get("receiverPhone") || undefined,
+    customData: customDataRaw ? JSON.parse(customDataRaw) : undefined,
   });
 }
 

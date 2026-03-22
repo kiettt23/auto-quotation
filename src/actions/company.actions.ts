@@ -22,6 +22,7 @@ export async function setupCompanyAction(
     const session = await requireSession();
     const userId = session.user.id;
 
+    const customDataRaw = formData.get("customData") as string | null;
     const parsed = createCompanySchema.safeParse({
       name: formData.get("name"),
       address: formData.get("address"),
@@ -33,6 +34,7 @@ export async function setupCompanyAction(
       driverName: formData.get("driverName"),
       vehicleId: formData.get("vehicleId"),
       logoUrl: formData.get("logoUrl"),
+      customData: customDataRaw ? JSON.parse(customDataRaw) : undefined,
     });
 
     if (!parsed.success) {
@@ -52,6 +54,7 @@ export async function createCompanyAction(
   try {
     const userId = await requireUserId();
 
+    const customDataRaw = formData.get("customData") as string | null;
     const parsed = createCompanySchema.safeParse({
       name: formData.get("name"),
       address: formData.get("address"),
@@ -63,6 +66,7 @@ export async function createCompanyAction(
       driverName: formData.get("driverName"),
       vehicleId: formData.get("vehicleId"),
       logoUrl: formData.get("logoUrl"),
+      customData: customDataRaw ? JSON.parse(customDataRaw) : undefined,
     });
 
     if (!parsed.success) {
@@ -85,6 +89,7 @@ export async function updateCompanyAction(
   try {
     const userId = await requireUserId();
 
+    const customDataRaw = formData.get("customData") as string | null;
     const parsed = updateCompanySchema.safeParse({
       name: formData.get("name"),
       address: formData.get("address"),
@@ -97,6 +102,7 @@ export async function updateCompanyAction(
       driverName: formData.get("driverName"),
       vehicleId: formData.get("vehicleId"),
       logoUrl: formData.get("logoUrl"),
+      customData: customDataRaw ? JSON.parse(customDataRaw) : undefined,
     });
 
     if (!parsed.success) {

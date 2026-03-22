@@ -1,5 +1,6 @@
 "use client";
 import { LabeledField } from "@/components/shared/labeled-field";
+import { KeyValueEditor } from "@/components/shared/key-value-editor";
 
 import { useState, useMemo } from "react";
 import { Plus, Package, X, Save, Loader2 } from "lucide-react";
@@ -182,6 +183,9 @@ function ProductDetailPanel({
   const [unitPrice, setUnitPrice] = useState(product?.unitPrice ?? 0);
   const [specification, setSpecification] = useState(product?.specification ?? "");
   const [description, setDescription] = useState(product?.description ?? "");
+  const [customData, setCustomData] = useState<Record<string, string | number>>(
+    (product?.customData as Record<string, string | number>) ?? {},
+  );
 
   const isDirty =
     isNew ||
@@ -190,7 +194,8 @@ function ProductDetailPanel({
     unitId !== (product?.unitId ?? "") ||
     unitPrice !== (product?.unitPrice ?? 0) ||
     specification !== (product?.specification ?? "") ||
-    description !== (product?.description ?? "");
+    description !== (product?.description ?? "") ||
+    JSON.stringify(customData) !== JSON.stringify((product?.customData as Record<string, string | number>) ?? {});
 
   async function handleSave() {
     if (!name.trim()) { toast.error("Tên không được để trống"); return; }
@@ -202,6 +207,9 @@ function ProductDetailPanel({
     formData.set("unitPrice", String(unitPrice));
     formData.set("specification", specification);
     formData.set("description", description);
+    if (Object.keys(customData).length > 0) {
+      formData.set("customData", JSON.stringify(customData));
+    }
 
     const result = isNew
       ? await createProductAction(formData)
@@ -295,6 +303,11 @@ function ProductDetailPanel({
               />
             </LabeledField>
           </div>
+        </fieldset>
+
+        <fieldset className="mt-4">
+          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Thông tin bổ sung</legend>
+          <KeyValueEditor value={customData} onChange={setCustomData} />
         </fieldset>
       </div>
     </div>

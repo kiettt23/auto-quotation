@@ -7,6 +7,7 @@ export const productFormSchema = z.object({
   unitPrice: z.coerce.number().int().min(0, "Đơn giá phải >= 0"),
   specification: z.string().optional(),
   description: z.string().optional(),
+  customData: z.record(z.string(), z.union([z.string(), z.coerce.number()])).nullable().optional(),
 });
 
 export type ProductFormValues = z.infer<typeof productFormSchema>;

@@ -1,5 +1,6 @@
 "use client";
 import { LabeledField } from "@/components/shared/labeled-field";
+import { KeyValueEditor } from "@/components/shared/key-value-editor";
 
 import { useState, useMemo } from "react";
 import { Plus, Building2, X, Save, Loader2 } from "lucide-react";
@@ -175,6 +176,9 @@ function CompanyDetailPanel({
   const [driverName, setDriverName] = useState(company?.driverName ?? "");
   const [vehicleId, setVehicleId] = useState(company?.vehicleId ?? "");
   const [logoUrl, setLogoUrl] = useState(company?.logoUrl ?? "");
+  const [customData, setCustomData] = useState<Record<string, string | number>>(
+    (company?.customData as Record<string, string | number>) ?? {},
+  );
 
   const isDirty =
     isNew ||
@@ -187,7 +191,8 @@ function CompanyDetailPanel({
     bankAccount !== (company?.bankAccount ?? "") ||
     driverName !== (company?.driverName ?? "") ||
     vehicleId !== (company?.vehicleId ?? "") ||
-    logoUrl !== (company?.logoUrl ?? "");
+    logoUrl !== (company?.logoUrl ?? "") ||
+    JSON.stringify(customData) !== JSON.stringify((company?.customData as Record<string, string | number>) ?? {});
 
   async function handleSave() {
     if (!name.trim()) {
@@ -206,6 +211,9 @@ function CompanyDetailPanel({
     formData.set("driverName", driverName);
     formData.set("vehicleId", vehicleId);
     formData.set("logoUrl", logoUrl);
+    if (Object.keys(customData).length > 0) {
+      formData.set("customData", JSON.stringify(customData));
+    }
 
     const result = isNew
       ? await createCompanyAction(formData)
@@ -379,6 +387,16 @@ function CompanyDetailPanel({
               placeholder="https://..."
             />
           </LabeledField>
+        </fieldset>
+
+        <Separator className="my-3" />
+
+        {/* Group 5: Custom Data */}
+        <fieldset>
+          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            Thông tin bổ sung
+          </legend>
+          <KeyValueEditor value={customData} onChange={setCustomData} />
         </fieldset>
       </div>
     </div>

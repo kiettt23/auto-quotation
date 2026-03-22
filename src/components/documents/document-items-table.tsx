@@ -20,6 +20,7 @@ interface Product {
   unitPrice: number;
   specification?: string | null;
   unitName?: string | null;
+  customData?: Record<string, string | number> | null;
 }
 
 interface Props {
@@ -85,6 +86,8 @@ export function DocumentItemsTable({ items, products, columns, showTotal, onItem
         unit: product.unitName ?? "",
         unitPrice: product.unitPrice,
         amount: (item.quantity ?? 1) * product.unitPrice,
+        // Merge product.customData into item.customFields
+        ...(product.customData ? { customFields: { ...item.customFields, ...product.customData } } : {}),
       };
       return patched;
     });

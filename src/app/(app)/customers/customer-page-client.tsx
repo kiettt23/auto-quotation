@@ -1,5 +1,6 @@
 "use client";
 import { LabeledField } from "@/components/shared/labeled-field";
+import { KeyValueEditor } from "@/components/shared/key-value-editor";
 
 import { useState, useMemo } from "react";
 import { Plus, Users, X, Save, Loader2 } from "lucide-react";
@@ -159,6 +160,9 @@ function CustomerDetailPanel({
   const [deliveryAddress, setDeliveryAddress] = useState(customer?.deliveryAddress ?? "");
   const [receiverName, setReceiverName] = useState(customer?.receiverName ?? "");
   const [receiverPhone, setReceiverPhone] = useState(customer?.receiverPhone ?? "");
+  const [customData, setCustomData] = useState<Record<string, string | number>>(
+    (customer?.customData as Record<string, string | number>) ?? {},
+  );
 
   const isDirty =
     isNew ||
@@ -170,7 +174,8 @@ function CustomerDetailPanel({
     deliveryName !== (customer?.deliveryName ?? "") ||
     deliveryAddress !== (customer?.deliveryAddress ?? "") ||
     receiverName !== (customer?.receiverName ?? "") ||
-    receiverPhone !== (customer?.receiverPhone ?? "");
+    receiverPhone !== (customer?.receiverPhone ?? "") ||
+    JSON.stringify(customData) !== JSON.stringify((customer?.customData as Record<string, string | number>) ?? {});
 
   async function handleSave() {
     if (!name.trim()) { toast.error("Tên không được để trống"); return; }
@@ -185,6 +190,9 @@ function CustomerDetailPanel({
     formData.set("deliveryAddress", deliveryAddress);
     formData.set("receiverName", receiverName);
     formData.set("receiverPhone", receiverPhone);
+    if (Object.keys(customData).length > 0) {
+      formData.set("customData", JSON.stringify(customData));
+    }
 
     const result = isNew
       ? await createCustomerAction(formData)
@@ -276,6 +284,13 @@ function CustomerDetailPanel({
               </LabeledField>
             </div>
           </div>
+        </fieldset>
+
+        <Separator className="my-3" />
+
+        <fieldset>
+          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Thông tin bổ sung</legend>
+          <KeyValueEditor value={customData} onChange={setCustomData} />
         </fieldset>
       </div>
     </div>
