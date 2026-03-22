@@ -253,12 +253,12 @@ export function JesangDeliveryTemplate({
               </Text>
             </View>
             <View style={s.gridValue}>
-              <Text>{data.deliveryName ?? ""}</Text>
-              {data.deliveryAddress ? (
+              <Text>{data.templateFields?.deliveryName ?? ""}</Text>
+              {data.templateFields?.deliveryAddress ? (
                 <Text
                   style={{ fontWeight: "normal", fontSize: 8, marginTop: 1 }}
                 >
-                  Địa chỉ : {data.deliveryAddress}
+                  Địa chỉ : {data.templateFields?.deliveryAddress}
                 </Text>
               ) : null}
             </View>
@@ -270,7 +270,7 @@ export function JesangDeliveryTemplate({
               <Text>Tên tài xế (Driver{"'"}s name)</Text>
             </View>
             <View style={s.gridHalfValueBorder}>
-              <Text>{data.driverName ?? ""}</Text>
+              <Text>{data.templateFields?.driverName ?? ""}</Text>
             </View>
             <View style={s.gridHalfLabel}>
               <Text>Người nhận (Receiver)</Text>
@@ -286,7 +286,7 @@ export function JesangDeliveryTemplate({
               <Text>Số xe (Vehicle Identification)</Text>
             </View>
             <View style={s.gridHalfValueBorder}>
-              <Text>{data.vehicleId ?? ""}</Text>
+              <Text>{data.templateFields?.vehicleId ?? ""}</Text>
             </View>
             <View style={s.gridHalfLabel}>
               <Text>Số điện thoại (Number phone)</Text>

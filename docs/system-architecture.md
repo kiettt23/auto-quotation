@@ -2,270 +2,158 @@
 
 ## Overview
 
-autoquotation is a Next.js 16 + PostgreSQL web application for managing business documents (quotations, warehouse exports, delivery orders). It implements a multi-company architecture where a single authenticated user manages multiple companies and generates professional PDF documents using a template registry.
+autoquotation is a Next.js 16 + PostgreSQL web app for managing business documents (quotations, delivery orders). Single authenticated user manages multiple companies and generates PDF documents via a template registry.
 
-**Key Technologies:**
-- better-auth for authentication
-- @react-pdf/renderer for PDF generation
-- Drizzle ORM for type-safe database access
-- Next.js Server Actions for backend logic
+**Tech Stack:** Next.js 16.1, React 19, TypeScript, shadcn/ui, Drizzle ORM, better-auth, @react-pdf/renderer, Tailwind CSS 4, Zod 4
 
 ## Architecture Principles
 
-- **User-Based Data Isolation**: All data (customers, products, categories, units, document types) scoped by `userId`
+- **User-Based Data Isolation**: All data scoped by `userId`
 - **Company-Centric Documents**: Documents belong to a user and reference a specific company
-- **CRUD Entity Model**: Companies managed via dedicated page with full CRUD operations
-- **Type-Safe Database**: Drizzle ORM with PostgreSQL for schema management
+- **Template Registry as Single Source of Truth**: All document type config (columns, showTotal, signatureLabels, colors, extraFormFields) defined in code, not DB
+- **No document_type table**: Removed — template-registry.ts replaces it entirely
 
 ## Data Model
 
-### Core Tables
+### Core Tables (10 total)
 
-#### Users (`user`)
-- Managed by authentication provider (e.g., Clerk)
-- Root entity for data isolation
+| Table | Relationship | Key Fields |
+|-------|-------------|------------|
+| `user` | Root entity | Managed by better-auth |
+| `account` | Auth accounts | Managed by better-auth |
+| `session` | Auth sessions | Managed by better-auth |
+| `verification` | Auth verification | Managed by better-auth |
+| `company` | 1 user → N companies | `userId`, `name`, `address`, `phone`, `taxCode`, `logoUrl`, `headerLayout`, `driverName`, `vehicleId` |
+| `customer` | 1 user → N customers | `userId`, `name`, `address`, `deliveryAddress`, `deliveryName`, `receiverName`, `receiverPhone` |
+| `product` | 1 user → N products | `userId`, `name`, `unitPrice`, `specification`, `categoryId`, `unitId` |
+| `category` | 1 user → N categories | `userId`, `name` |
+| `unit` | 1 user → N units | `userId`, `name` |
+| `document` | N docs → 1 company | `userId`, `companyId`, `customerId`, `templateId`, `type` (legacy), `documentNumber`, `data` (JSONB) |
 
-#### Companies (`company`)
-- **Relationship**: One-to-Many (1 user → N companies)
-- **Key Fields**:
-  - `userId` — FK to user, defines ownership
-  - `name`, `address`, `phone`, `taxCode`, `email` — company info
-  - `bankName`, `bankAccount` — payment details
-  - `logoUrl`, `headerLayout` — PDF rendering
-  - `driverName`, `vehicleId` — delivery defaults
-  - `deletedAt` — soft delete support
+### Document JSONB `data` Structure
 
-#### Customers (`customer`)
-- **Relationship**: One-to-Many (1 user → N customers)
-- **Key Fields**:
-  - `userId` — FK to user, no longer filtered by company
-  - `name`, `address`, `phone`, `email`, `taxCode` — contact info
-  - `deliveryAddress`, `deliveryName` — auto-fill on documents
-  - `receiverName`, `receiverPhone` — warehouse export data
-  - `deletedAt` — soft delete support
+```typescript
+interface DocumentData {
+  date?: string;              // Custom date override
+  customerName?: string;
+  customerAddress?: string;
+  receiverName?: string;
+  receiverPhone?: string;
+  notes?: string;
+  columns?: ColumnDef[];      // Per-document column override
+  items?: DocumentDataItem[];
+  templateFields?: Record<string, string>; // Template-specific fields (nested, not flat)
+}
+```
 
-#### Products (`product`)
-- **Relationship**: One-to-Many (1 user → N products)
-- **Key Fields**:
-  - `userId` — FK to user
-  - `name` — product name
-  - `unit` — unit of measurement (FK to unit table)
-  - `deletedAt` — soft delete support
+**Important**: Template-specific fields (e.g. `deliveryName`, `driverName`, `vehicleId`) are stored under `templateFields` to avoid polluting shared data. Never store them as flat top-level fields.
 
-#### Categories (`category`)
-- **Relationship**: One-to-Many (1 user → N categories)
-- **Key Fields**:
-  - `userId` — FK to user
-  - `name` — category name
-  - `deletedAt` — soft delete support
+## Template Registry (`src/lib/pdf/template-registry.ts`)
 
-#### Units (`unit`)
-- **Relationship**: One-to-Many (1 user → N units)
-- **Key Fields**:
-  - `userId` — FK to user
-  - `name` — unit label (e.g., "Cái", "Tấn", "Lít")
-  - `shortLabel` — for document number generation (e.g., "C", "T", "L")
-  - `deletedAt` — soft delete support
+**Single source of truth** for document types. No DB table — all config in code.
 
-#### Document Types (`document_type`)
-- **Relationship**: One-to-Many (1 user → N types)
-- **Key Fields**:
-  - `userId` — FK to user
-  - `key` — identifier (e.g., "QUOTATION", "DELIVERY_ORDER")
-  - `label` — display name (e.g., "Báo giá", "Phiếu giao hàng")
-  - `pattern` — template regex for document numbers (e.g., "QUOTATION-{shortLabel}-{number}")
-  - **Unique Constraint**: `(userId, key)` — one type per user per key
+### Adding a New Template
 
-#### Documents (`document`)
-- **Relationship**: Many-to-One (N documents → 1 company)
-- **Key Fields**:
-  - `userId` — FK to user (for filtering "my documents")
-  - `companyId` — FK to company (which company issued the document)
-  - `customerId` — FK to customer (optional, for linked documents)
-  - `typeId` — FK to document_type (document category)
-  - `documentNumber` — sequential ID
-  - `data` — JSONB with form data (customer details, items, terms)
-  - **Unique Constraint**: `(companyId, documentNumber)` — numbers scoped per company
-  - `deletedAt` — soft delete support
+1. Add entry to `registry` array in `template-registry.ts`:
+   - `id`, `name`, `description`, `shortLabel` (for doc numbers)
+   - `columns: ColumnDef[]` — item table columns for form + PDF
+   - `showTotal` — whether to show totals row
+   - `signatureLabels` — PDF signature block labels
+   - `color` — badge colors for document list UI
+   - `extraFormFields` — template-specific form fields (stored in `data.templateFields`)
+   - `component` — React PDF component (lazy-loaded)
+2. If layout differs from existing: create PDF component in `src/lib/pdf/templates/`
+3. If layout matches existing: reuse `DefaultTemplate` component
+4. Update legacy type maps if needed (`legacyTypeToTemplateId`, `templateIdToLegacyType`)
 
-## API Layer (Actions)
+### Current Templates
 
-All server actions (`src/actions`) require `requireUserId()` authentication. Structure:
+| ID | Name | Short | PDF Component |
+|----|------|-------|---------------|
+| `quotation` | Báo giá | BG | `DefaultTemplate` |
+| `delivery-order` | Phiếu giao hàng | PGH | `JesangDeliveryTemplate` |
+
+### Key Functions
+
+- `getTemplateList()` — all templates (without component, safe for serialization)
+- `getTemplateEntry(id)` — single template by ID
+- `getTemplateColumns(id)` — columns for a template
+- `getExtraFormFields(id)` — extra form fields for a template
+- `getTemplateComponent(id)` — React PDF component
+
+## API Layer
+
+### Actions (`src/actions/`)
+
+All require `requireUserId()` authentication. Return `ActionResult<T>`.
 
 ```
-/actions
+├── company.actions.ts      — Company CRUD
 ├── customer.actions.ts     — Customer CRUD
 ├── product.actions.ts      — Product CRUD
 ├── category.actions.ts     — Category CRUD
 ├── unit.actions.ts         — Unit CRUD
-├── document-type.actions.ts — Document type CRUD
-├── document.actions.ts     — Document CRUD + PDF generation
-└── company.actions.ts      — Company CRUD
+└── document.actions.ts     — Document CRUD
 ```
 
-## Service Layer
+### Services (`src/services/`)
 
-Services in `src/services` handle business logic:
+Business logic between actions and DB. Pattern: `list`, `getById`, `create`, `update`, `delete`.
 
-- **customer.service**: List, get, create, update, delete by userId
-- **product.service**: List, get, create, update, delete by userId
-- **category.service**: List, get, create, update, delete by userId
-- **unit.service**: List, get, create, update, delete by userId
-- **document-type.service**: List, get, create, update, delete by userId
-- **document.service**:
-  - `listDocuments(userId)` — filter by userId
-  - `getDocumentById(documentId, userId)` — ownership check
-  - `createDocument(userId, { companyId, ... })` — companyId from form
-  - `generateDocumentNumber(companyId, typeId)` — scoped per company
-- **company.service**:
-  - `listCompanies(userId)` — all companies for user
-  - `getCompanyById(companyId, userId)` — ownership check
-  - `createCompany(userId, data)` — new company
-  - `updateCompany(companyId, userId, data)` — modify company
-  - `deleteCompany(companyId, userId)` — soft delete
+- `document.service.createDocument(userId, { companyId, templateId, data })` — generates doc number from template shortLabel
+- `document.service.duplicateDocument(id, userId)` — copies doc with new number
 
 ## Pages & Routes
 
-### App Layout (`(app)/layout.tsx`)
-- Protects all routes with `requireUserId()`
-- No CompanyProvider context (removed in refactor)
-- Navigation bar with company selector (if companies exist)
+| Route | Description |
+|-------|-------------|
+| `(app)/` | Redirects to `/documents` |
+| `(app)/documents/` | Document list (master-detail) with template tabs |
+| `(app)/documents/new/` | Create document — template selector + form |
+| `(app)/documents/[id]/` | Document detail + PDF preview |
+| `(app)/companies/` | Company CRUD (master-detail) |
+| `(app)/customers/` | Customer CRUD (master-detail) |
+| `(app)/products/` | Product CRUD (master-detail) |
+| `(app)/settings/` | Categories + Units management |
+| `(auth)/login/` | Sign in |
+| `(auth)/register/` | Sign up |
 
-### Home Page (`(app)/page.tsx`)
-- Redirects to `/documents` (no separate dashboard)
-- Users land directly on document list for quick access
+### Document List Tabs
 
-### Companies (`(app)/companies/page.tsx`)
-- List all companies for user
-- Create, edit, delete operations
-- Logo upload per company
-- New navigation item "Công ty"
+Generated dynamically from template registry. Filter by `doc.templateId`. No hardcoded tab values.
 
-### Customers (`(app)/customers/page.tsx`)
-- List all customers for user
-- CRUD operations
-- Delivery info (address, name, receiver)
+### Settings Page
 
-### Products (`(app)/products/page.tsx`)
-- List all products for user
-- CRUD operations
-- Category assignment
+Only has Categories and Units tabs. No "Document Types" tab (removed — template registry replaces it).
 
-### Settings (`(app)/settings/page.tsx`)
-- Document types (custom names/patterns)
-- Categories (product grouping)
-- Units (measurement units)
-- **Removed**: Company info section (now at `/companies`)
+## PDF Generation Flow
 
-### Documents
+1. User creates/views document
+2. `doc.templateId` resolves template from registry
+3. Template component receives `PdfTemplateProps` (company, data, columns, signatureLabels)
+4. Template-specific fields read from `data.templateFields`
+5. @react-pdf/renderer generates PDF in browser
 
-#### List (`(app)/documents/page.tsx`)
-- List all documents for user
-- Filter/search by customer, company, date range
-- View, edit, delete, export to PDF
+## Authentication
 
-#### Create (`(app)/documents/new/page.tsx`)
-- Company dropdown (first field, required)
-- Auto-fill PDF header from company data
-- Auto-fill customer info if selected
-- Auto-fill delivery info from customer
+- better-auth 1.5.5 with email/password
+- `requireSession()` / `requireUserId()` helpers
+- All queries filtered by `userId` at DB level
 
-#### Detail (`(app)/documents/[id]/page.tsx`)
-- View document details
-- Render PDF preview
-- Link to edit page
+## Key Patterns
 
-#### Edit (Inline Panel)
-- Edit documents via `document-detail-edit-panel.tsx`
-- Rendered as inline panel in document detail view
-- Prevent company/number change
-- No separate /edit page
+### Per-Document Column Override
 
-## Authentication & Authorization
+Documents can override template default columns via `data.columns`. Used for user-customized item tables. If not set, falls back to template defaults.
 
-### User Authentication
-- Uses better-auth 1.5.5 with email/password strategy
-- Session stored in database (managed by better-auth)
-- `getSession()` helper in `src/lib/auth/get-session.ts`
-- `requireUserId()` helper in `src/lib/auth/get-user-id.ts`
-- App layout enforces auth redirect on protected routes
+### Template Extra Fields
 
-### Data Access Control
-- All queries filtered by `userId` at database level
-- Service functions perform ownership checks before returning data
-- Users cannot access other users' data
-- Company deletion is soft (deletedAt timestamp)
-- Documents scoped by both `userId` and `companyId`
+Template-specific form fields (e.g. delivery address, driver name) are:
+1. Defined in template registry as `extraFormFields`
+2. Rendered dynamically in document form
+3. Stored in `data.templateFields` (nested Record, not flat)
+4. Read by PDF templates from `data.templateFields`
 
-## PDF Generation
+### Legacy Type Compatibility
 
-Uses @react-pdf/renderer with template registry pattern:
-
-**Template System** (`src/lib/pdf/`)
-- `template-registry.ts` — Registry of available templates (default, jesang-delivery)
-- Each template is a React component receiving `PdfTemplateProps`
-- Templates define optional `extraFormFields` and `itemColumns` for customization
-- Lazy-loaded via `getTemplateComponent()` helper
-
-**Rendering Flow**
-1. Document form selects template type
-2. Template registry loads matching component
-3. Service calls template with document data
-4. @react-pdf/renderer generates PDF in browser
-5. User downloads via browser's download mechanism
-
-**Current Templates**
-- `DefaultTemplate` — Modern layout with header, customer section, items table, terms
-- `JesangDeliveryTemplate` — Bilingual delivery order with custom columns and 5-signature section
-
-## Migration from Tenant Model
-
-Previous architecture used `companyId` as primary isolation. Changes:
-
-| Aspect | Before | After |
-|--------|--------|-------|
-| Isolation key | `companyId` | `userId` (for most tables) |
-| Company model | Single per user (1:1) | Multiple per user (1:N) |
-| Document scoping | `(companyId, documentNumber)` | Same (documents still reference company) |
-| User context | CompanyProvider context | Just userId from session |
-| Auth check | requireCompanyId() | requireUserId() |
-| Company CRUD | Settings page only | Dedicated `/companies` page |
-
-## Key Flows
-
-### Creating a Document
-1. User selects company (dropdown)
-2. User selects/creates customer
-3. User fills items, terms, notes
-4. Server action calls `document.service.createDocument(userId, { companyId, customerId, ... })`
-5. Service generates documentNumber scoped by company
-6. Document created with both userId and companyId
-
-### Setting Up New Company
-1. Navigate to `/companies` page
-2. Click "Add Company"
-3. Fill basic info: name, address, contact
-4. Optional: upload logo, set driverName/vehicleId
-5. Company created and available in document form
-
-### Querying User Data
-All queries follow pattern:
-```typescript
-// Example: Get user's customers
-const customers = await customerService.listCustomers(userId);
-// Filter applied in database: WHERE customer.user_id = $1
-```
-
-## Performance Considerations
-
-- Indexes on `userId` columns for fast filtering
-- Unique constraint on `(companyId, documentNumber)` for document lookups
-- Unique constraint on `(userId, key)` for document types
-- JSONB `data` column avoids N+1 queries for document fields
-
-## Security
-
-- All actions protected by `requireUserId()`
-- No global admin functions (users see only their data)
-- Soft deletes preserve audit trail
-- No company cross-contamination in queries
+`document.type` column (enum: QUOTATION, DELIVERY_ORDER) kept for backward compat. New documents use `templateId`. Mapping functions exist in template-registry.ts.

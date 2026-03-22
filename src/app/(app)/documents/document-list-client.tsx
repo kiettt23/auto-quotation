@@ -11,41 +11,40 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
-  documentTypeConfig,
   calculateTotal,
   formatCurrency,
   formatDate,
 } from "@/lib/utils/document-helpers";
+import { getTemplateEntry, getTemplateList, legacyTypeToTemplateId } from "@/lib/pdf/template-registry";
 import { cn } from "@/lib/utils/cn";
 import { DocumentDetailEditPanel } from "./document-detail-edit-panel";
 import type { DocumentRow } from "@/services/document.service";
-import type { DocumentType } from "@/db/schema/document";
 import type { DocumentData } from "@/lib/types/document-data";
 import type { ProductWithRelations } from "@/services/product.service";
 import type { CustomerRow } from "@/services/customer.service";
-import type { DocumentTypeRow } from "@/services/document-type.service";
 import type { CompanyRow } from "@/services/company.service";
 
 const PAGE_SIZE = 20;
 
+const templateList = getTemplateList();
 const tabs = [
   { label: "Tất cả", value: "all" },
-  { label: "Báo giá", value: "QUOTATION" },
-  { label: "Giao hàng", value: "DELIVERY_ORDER" },
-  { label: "Xuất kho", value: "WAREHOUSE_EXPORT" },
+  ...templateList.map((t) => ({ label: t.name, value: t.id })),
 ];
+
+function resolveTemplateId(doc: DocumentRow): string {
+  return doc.templateId ?? legacyTypeToTemplateId(doc.type);
+}
 
 export function DocumentListClient({
   documents,
   products,
   customers,
-  documentTypes,
   companies,
 }: {
   documents: DocumentRow[];
   products: ProductWithRelations[];
   customers: CustomerRow[];
-  documentTypes: DocumentTypeRow[];
   companies: CompanyRow[];
 }) {
   const router = useRouter();
@@ -78,7 +77,7 @@ export function DocumentListClient({
   const filtered = useMemo(() => {
     let list = documents;
     if (activeTab !== "all") {
-      list = list.filter((d) => d.type === activeTab);
+      list = list.filter((d) => resolveTemplateId(d) === activeTab);
     }
     return list;
   }, [documents, activeTab]);
@@ -170,8 +169,8 @@ export function DocumentListClient({
               ) : (
                 <div className="space-y-1">
                   {paginated.map((doc) => {
-                    const config =
-                      documentTypeConfig[doc.type as DocumentType];
+                    const tid = resolveTemplateId(doc);
+                    const template = getTemplateEntry(tid);
                     const data = doc.data as DocumentData;
                     const total = data?.items
                       ? calculateTotal(data.items)
@@ -198,14 +197,10 @@ export function DocumentListClient({
                         <div
                           className={cn(
                             "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-white",
-                            doc.type === "QUOTATION"
-                              ? "bg-indigo-500"
-                              : doc.type === "DELIVERY_ORDER"
-                                ? "bg-emerald-500"
-                                : "bg-amber-500",
+                            template?.color.dotColor ?? "bg-slate-500",
                           )}
                         >
-                          {config?.prefix ?? "?"}
+                          {template?.shortLabel ?? "?"}
                         </div>
 
                         {/* Main info */}
@@ -214,8 +209,12 @@ export function DocumentListClient({
                             <span className="text-[13px] font-semibold text-slate-900">
                               {doc.documentNumber}
                             </span>
-                            <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-medium text-slate-500">
-                              {config?.label ?? doc.type}
+                            <span className={cn(
+                              "rounded-md px-1.5 py-0.5 text-[11px] font-medium",
+                              template?.color.badgeBg ?? "bg-slate-100",
+                              template?.color.badgeText ?? "text-slate-500",
+                            )}>
+                              {template?.name ?? doc.type}
                             </span>
                           </div>
                           <p className="mt-0.5 truncate text-xs text-slate-400">
@@ -266,7 +265,7 @@ export function DocumentListClient({
           "overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]",
           selectedDoc
             ? "ml-6 flex-2 opacity-100"
-            : "ml-0 w-0 flex-[0] opacity-0",
+            : "ml-0 w-0 flex-0 opacity-0",
         )}
       >
         {selectedDoc && (
@@ -276,7 +275,6 @@ export function DocumentListClient({
             products={products}
             customers={customers}
             companies={companies}
-            documentTypes={documentTypes}
             onClose={() => setSelectedId(null)}
             onSaved={() => router.refresh()}
             onDeleted={handleDeleted}

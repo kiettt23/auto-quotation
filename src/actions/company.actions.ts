@@ -13,7 +13,6 @@ import {
   deleteCompany,
 } from "@/services/company.service";
 import { ok, err, type ActionResult } from "@/lib/utils/action-result";
-import { seedDefaultDocumentTypes } from "@/services/document-type.service";
 import { revalidatePath } from "next/cache";
 
 export async function setupCompanyAction(
@@ -41,7 +40,6 @@ export async function setupCompanyAction(
     }
 
     const company = await createCompany(userId, parsed.data);
-    await seedDefaultDocumentTypes(userId);
     return ok({ companyId: company.id });
   } catch {
     return err("Đã xảy ra lỗi. Vui lòng thử lại.");

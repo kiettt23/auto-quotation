@@ -8,15 +8,15 @@ export interface DocumentData {
   customerAddress?: string;
   receiverName?: string;
   receiverPhone?: string;
-  /** Delivery-specific fields (used by delivery templates) */
-  deliveryName?: string;
-  deliveryAddress?: string;
-  driverName?: string;
-  vehicleId?: string;
   notes?: string;
-  /** Per-document column override — if set, overrides document type defaults */
+  /** Per-document column override — if set, overrides template defaults */
   columns?: ColumnDef[];
   items?: DocumentDataItem[];
+  /**
+   * Template-specific extra fields (e.g. deliveryName, driverName).
+   * Nested to avoid polluting shared data fields.
+   */
+  templateFields?: Record<string, string>;
 }
 
 export interface DocumentDataItem {

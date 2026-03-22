@@ -25,13 +25,12 @@ import {
   duplicateDocumentAction,
 } from "@/actions/document.actions";
 import { formatCurrency } from "@/lib/utils/document-helpers";
-import { getExtraFormFields } from "@/lib/pdf/template-registry";
+import { getExtraFormFields, getTemplateEntry, legacyTypeToTemplateId } from "@/lib/pdf/template-registry";
 import type { DocumentRow } from "@/services/document.service";
 import type { DocumentData, DocumentDataItem } from "@/lib/types/document-data";
 import type { ProductWithRelations } from "@/services/product.service";
 import type { CustomerRow } from "@/services/customer.service";
 import type { CompanyRow } from "@/services/company.service";
-import type { DocumentTypeRow } from "@/services/document-type.service";
 import { LabeledField } from "@/components/shared/labeled-field";
 
 interface Props {
@@ -39,7 +38,6 @@ interface Props {
   products: ProductWithRelations[];
   customers: CustomerRow[];
   companies: CompanyRow[];
-  documentTypes: DocumentTypeRow[];
   onClose: () => void;
   onSaved: () => void;
   onDeleted: (id: string) => void;
@@ -50,7 +48,6 @@ export function DocumentDetailEditPanel({
   products,
   customers,
   companies,
-  documentTypes,
   onClose,
   onSaved,
   onDeleted,
@@ -59,15 +56,14 @@ export function DocumentDetailEditPanel({
   const existingData = doc.data as DocumentData;
 
   // Resolve template for extra fields
-  const selectedType = useMemo(
-    () => documentTypes.find((t) => t.id === doc.typeId),
-    [documentTypes, doc.typeId],
+  const resolvedTemplateId = doc.templateId ?? legacyTypeToTemplateId(doc.type);
+  const template = useMemo(
+    () => getTemplateEntry(resolvedTemplateId),
+    [resolvedTemplateId],
   );
-  const templateId = (selectedType as Record<string, unknown> | undefined)
-    ?.templateId as string | null | undefined;
   const templateExtraFields = useMemo(
-    () => getExtraFormFields(templateId),
-    [templateId],
+    () => getExtraFormFields(resolvedTemplateId),
+    [resolvedTemplateId],
   );
 
   const [isPending, setIsPending] = useState(false);
@@ -90,14 +86,7 @@ export function DocumentDetailEditPanel({
     existingData?.date ?? new Date().toISOString().slice(0, 10),
   );
   const [extraFields, setExtraFields] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {};
-    if (existingData?.deliveryName)
-      init.deliveryName = existingData.deliveryName;
-    if (existingData?.deliveryAddress)
-      init.deliveryAddress = existingData.deliveryAddress;
-    if (existingData?.driverName) init.driverName = existingData.driverName;
-    if (existingData?.vehicleId) init.vehicleId = existingData.vehicleId;
-    return init;
+    return { ...(existingData?.templateFields ?? {}) };
   });
   const [notes, setNotes] = useState(existingData?.notes ?? "");
   const [items, setItems] = useState<DocumentDataItem[]>(
@@ -106,7 +95,6 @@ export function DocumentDetailEditPanel({
       : [{ productName: "", quantity: 1, unitPrice: 0, amount: 0 }],
   );
 
-  // Mark form as dirty on any change
   function markDirty() {
     if (!isDirty) setIsDirty(true);
   }
@@ -139,7 +127,6 @@ export function DocumentDetailEditPanel({
     setCustomerAddress(c.address ?? "");
     setReceiverName(c.receiverName ?? "");
     setReceiverPhone(c.receiverPhone ?? "");
-    // Auto-fill delivery info from customer
     setExtraFields((prev) => ({
       ...prev,
       ...(c.deliveryName ? { deliveryName: c.deliveryName } : {}),
@@ -203,8 +190,7 @@ export function DocumentDetailEditPanel({
     setIsPending(true);
     const payload = {
       companyId,
-      typeId: doc.typeId,
-      type: doc.type,
+      templateId: resolvedTemplateId,
       date: documentDate || undefined,
       customerId: customerId || undefined,
       customerName,
@@ -216,14 +202,7 @@ export function DocumentDetailEditPanel({
         amount: (it.quantity ?? 0) * (it.unitPrice ?? 0),
       })),
       notes,
-      ...(extraFields.deliveryName
-        ? { deliveryName: extraFields.deliveryName }
-        : {}),
-      ...(extraFields.deliveryAddress
-        ? { deliveryAddress: extraFields.deliveryAddress }
-        : {}),
-      ...(extraFields.driverName ? { driverName: extraFields.driverName } : {}),
-      ...(extraFields.vehicleId ? { vehicleId: extraFields.vehicleId } : {}),
+      ...(Object.keys(extraFields).length > 0 ? { templateFields: extraFields } : {}),
     };
 
     const result = await updateDocumentAction(doc.id, payload);
@@ -252,7 +231,11 @@ export function DocumentDetailEditPanel({
     const result = await duplicateDocumentAction(doc.id);
     if (result.success) {
       toast.success("Đã nhân bản");
-      router.refresh();
+      if (result.data?.id) {
+        router.push(`/documents/${result.data.id}`);
+      } else {
+        router.refresh();
+      }
     } else {
       toast.error(result.error);
     }
@@ -296,7 +279,7 @@ export function DocumentDetailEditPanel({
           <Copy className="h-3 w-3" />
           Sao
         </Button>
-        <DeleteConfirmDialog name={doc.type} onConfirm={handleDelete} />
+        <DeleteConfirmDialog name={template?.name ?? doc.type} onConfirm={handleDelete} />
         <button
           onClick={onClose}
           className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
@@ -423,7 +406,7 @@ export function DocumentDetailEditPanel({
           <>
             <Separator className="my-3" />
 
-            {/* Group 3 — Nơi giao (only for templates with delivery fields) */}
+            {/* Group 3 — Nơi giao */}
             <fieldset className="mb-3">
               <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                 Nơi giao

@@ -15,10 +15,8 @@ const documentItemSchema = z.object({
 export const createDocumentSchema = z.object({
   /** Company ID (FK to company table) */
   companyId: z.string().min(1, "Chọn công ty"),
-  /** Document type ID (FK to document_type table) */
-  typeId: z.string().min(1, "Chọn loại chứng từ"),
-  /** @deprecated Kept for backward compat during migration */
-  type: z.enum(["QUOTATION", "WAREHOUSE_EXPORT", "DELIVERY_ORDER"]).optional(),
+  /** Template registry ID: "quotation", "delivery-order" */
+  templateId: z.string().min(1, "Chọn loại chứng từ"),
   /** Custom date (dd/MM/yyyy) — overrides createdAt on PDF */
   date: z.string().optional(),
   customerId: z.string().optional(),
@@ -26,11 +24,8 @@ export const createDocumentSchema = z.object({
   customerAddress: z.string().optional(),
   receiverName: z.string().optional(),
   receiverPhone: z.string().optional(),
-  /** Delivery-specific fields (used by delivery templates) */
-  deliveryName: z.string().optional(),
-  deliveryAddress: z.string().optional(),
-  driverName: z.string().optional(),
-  vehicleId: z.string().optional(),
+  /** Template-specific extra fields (nested to avoid polluting shared data) */
+  templateFields: z.record(z.string(), z.string()).optional(),
   items: z.array(documentItemSchema).min(1, "Cần ít nhất 1 sản phẩm"),
   notes: z.string().optional(),
   /** Per-document column override */

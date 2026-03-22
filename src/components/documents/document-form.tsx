@@ -8,17 +8,30 @@ import {
   createDocumentAction,
   updateDocumentAction,
 } from "@/actions/document.actions";
-import { DocumentTypeSelector } from "./document-type-selector";
 import { DocumentCustomerSection } from "./document-customer-section";
 import { DocumentItemsTable } from "./document-items-table";
 import type { DocumentItem } from "@/lib/validations/document.schema";
 import type { DocumentData } from "@/lib/types/document-data";
 import type { DocumentRow } from "@/services/document.service";
-import type { DocumentTypeRow } from "@/services/document-type.service";
 import type { CompanyRow } from "@/services/company.service";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Plus, Trash2, RotateCcw } from "lucide-react";
 import { autoCalculateWidths, type ColumnDef } from "@/lib/types/column-def";
-import { getExtraFormFields, getTemplateItemColumns } from "@/lib/pdf/template-registry";
+import {
+  getTemplateList,
+  getTemplateEntry,
+  getExtraFormFields,
+  legacyTypeToTemplateId,
+} from "@/lib/pdf/template-registry";
+import { cn } from "@/lib/utils/cn";
 
 interface ProductOption {
   id: string;
@@ -41,24 +54,24 @@ interface CustomerOption {
 interface Props {
   products: ProductOption[];
   customers: CustomerOption[];
-  documentTypes: DocumentTypeRow[];
   companies: CompanyRow[];
   /** If provided, form is in edit mode */
   document?: DocumentRow;
 }
 
-export function DocumentForm({ products, customers, documentTypes, companies, document: doc }: Props) {
+const templateList = getTemplateList();
+
+export function DocumentForm({ products, customers, companies, document: doc }: Props) {
   const router = useRouter();
   const isEdit = !!doc;
   const existingData = doc?.data as DocumentData | undefined;
 
   const [isPending, setIsPending] = useState(false);
-  // Company selection — default to the company on the existing doc, or the first available
   const [companyId, setCompanyId] = useState(
     doc?.companyId ?? companies[0]?.id ?? "",
   );
-  const [typeId, setTypeId] = useState(
-    doc?.typeId ?? documentTypes[0]?.id ?? "",
+  const [templateId, setTemplateId] = useState(
+    doc?.templateId ?? legacyTypeToTemplateId(doc?.type ?? "") ?? templateList[0]?.id ?? "quotation",
   );
   const [customerId, setCustomerId] = useState(doc?.customerId ?? "");
   const [customerName, setCustomerName] = useState(
@@ -76,17 +89,10 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
   const [documentDate, setDocumentDate] = useState(
     existingData?.date ?? new Date().toISOString().slice(0, 10),
   );
-  // Extra template fields (e.g. deliveryAddress, driverName, vehicleId)
-  // On initial load: use existing doc data, or auto-fill from selected company
   const [extraFields, setExtraFields] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = {};
-    if (existingData?.deliveryName) init.deliveryName = existingData.deliveryName;
-    if (existingData?.deliveryAddress) init.deliveryAddress = existingData.deliveryAddress;
-    if (existingData?.driverName) init.driverName = existingData.driverName;
-    if (existingData?.vehicleId) init.vehicleId = existingData.vehicleId;
-    // Auto-fill from default company on new documents
+    const init: Record<string, string> = { ...(existingData?.templateFields ?? {}) };
     if (!isEdit) {
-      const defaultCompany = companies.find((c) => c.id === companies[0]?.id);
+      const defaultCompany = companies[0];
       if (defaultCompany?.driverName && !init.driverName) init.driverName = defaultCompany.driverName;
       if (defaultCompany?.vehicleId && !init.vehicleId) init.vehicleId = defaultCompany.vehicleId;
     }
@@ -100,29 +106,25 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
   );
   const [notes, setNotes] = useState(existingData?.notes ?? "");
 
-  // Resolve columns from selected document type
-  const selectedType = useMemo(
-    () => documentTypes.find((t) => t.id === typeId),
-    [documentTypes, typeId],
+  // Resolve columns from selected template
+  const selectedTemplate = useMemo(
+    () => getTemplateEntry(templateId),
+    [templateId],
   );
   const defaultColumns = useMemo(
-    () => (selectedType?.columns ?? []) as ColumnDef[],
-    [selectedType?.columns],
+    () => selectedTemplate?.columns ?? [],
+    [selectedTemplate],
   );
-  // Per-document column override — starts from type defaults or existing override
   const [columnOverride, setColumnOverride] = useState<ColumnDef[] | null>(
     existingData?.columns ?? null,
   );
-  const templateId = (selectedType as Record<string, unknown> | undefined)?.templateId as string | null | undefined;
-  const templateItemColumns = useMemo(() => getTemplateItemColumns(templateId), [templateId]);
-  const columns = templateItemColumns ?? columnOverride ?? defaultColumns;
-  const showTotal = templateItemColumns ? false : (selectedType?.showTotal ?? true);
+  const columns = columnOverride ?? defaultColumns;
+  const showTotal = selectedTemplate?.showTotal ?? true;
   const templateExtraFields = useMemo(() => getExtraFormFields(templateId), [templateId]);
   const [showColumnEditor, setShowColumnEditor] = useState(false);
 
-  // When type changes, reset column override
-  const handleTypeChange = useCallback((newTypeId: string) => {
-    setTypeId(newTypeId);
+  const handleTemplateChange = useCallback((newTemplateId: string) => {
+    setTemplateId(newTemplateId);
     setColumnOverride(null);
   }, []);
 
@@ -134,7 +136,6 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
     setCustomerAddress(customer.address ?? "");
     setReceiverName(customer.receiverName ?? "");
     setReceiverPhone(customer.receiverPhone ?? "");
-    // Auto-fill delivery info from customer into extra fields
     setExtraFields((prev) => ({
       ...prev,
       ...(customer.deliveryName ? { deliveryName: customer.deliveryName } : {}),
@@ -144,7 +145,6 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
 
   function handleCompanyChange(id: string) {
     setCompanyId(id);
-    // Auto-fill driverName and vehicleId from selected company
     const company = companies.find((c) => c.id === id);
     if (!company) return;
     setExtraFields((prev) => ({
@@ -157,7 +157,7 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
   function buildPayload() {
     return {
       companyId,
-      typeId,
+      templateId,
       date: documentDate || undefined,
       customerId: customerId || undefined,
       customerName,
@@ -170,10 +170,7 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
       })),
       notes,
       ...(columnOverride ? { columns: columnOverride } : {}),
-      ...(extraFields.deliveryName ? { deliveryName: extraFields.deliveryName } : {}),
-      ...(extraFields.deliveryAddress ? { deliveryAddress: extraFields.deliveryAddress } : {}),
-      ...(extraFields.driverName ? { driverName: extraFields.driverName } : {}),
-      ...(extraFields.vehicleId ? { vehicleId: extraFields.vehicleId } : {}),
+      ...(Object.keys(extraFields).length > 0 ? { templateFields: extraFields } : {}),
     };
   }
 
@@ -195,7 +192,7 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Company selector — shown always */}
+      {/* Company selector */}
       {companies.length === 0 ? (
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
           Vui lòng tạo công ty trước khi tạo tài liệu.{" "}
@@ -209,27 +206,54 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
             <label className="mb-1 block text-sm font-medium text-slate-700">
               Công ty
             </label>
-            <select
-              value={companyId}
-              onChange={(e) => handleCompanyChange(e.target.value)}
-              className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            >
-              {companies.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
+            <Select value={companyId} onValueChange={handleCompanyChange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Chọn công ty..." />
+              </SelectTrigger>
+              <SelectContent>
+                {companies.map((c) => (
+                  <SelectItem key={c.id} value={c.id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       )}
 
+      {/* Template selector — only on create */}
       {!isEdit && (
-        <DocumentTypeSelector
-          types={documentTypes}
-          selectedId={typeId}
-          onSelect={handleTypeChange}
-        />
+        <div className="rounded-xl border border-slate-200 bg-white p-6">
+          <label className="mb-3 block text-sm font-medium text-slate-700">
+            Loại tài liệu
+          </label>
+          <div className="flex flex-wrap gap-3">
+            {templateList.map((t) => (
+              <button
+                key={t.id}
+                type="button"
+                onClick={() => handleTemplateChange(t.id)}
+                className={cn(
+                  "flex flex-col items-start rounded-xl border-2 px-4 py-3 text-left transition-all",
+                  templateId === t.id
+                    ? "border-indigo-500 bg-indigo-50 ring-1 ring-indigo-200"
+                    : "border-slate-200 hover:border-slate-300 hover:bg-slate-50",
+                )}
+              >
+                <span className={cn(
+                  "mb-1 inline-block rounded-md px-1.5 py-0.5 text-[11px] font-bold",
+                  t.color.badgeBg,
+                  t.color.badgeText,
+                )}>
+                  {t.shortLabel}
+                </span>
+                <span className="text-sm font-semibold text-slate-900">{t.name}</span>
+                <span className="text-xs text-slate-400">{t.description}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Date input */}
@@ -326,11 +350,10 @@ export function DocumentForm({ products, customers, documentTypes, companies, do
         <p className="mb-2 text-xs text-slate-400">
           Hiển thị cuối tài liệu PDF. VD: điều khoản, thời hạn báo giá...
         </p>
-        <textarea
+        <Textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
-          className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           placeholder="VD: Giá đã bao gồm VAT. Báo giá có hiệu lực 30 ngày."
         />
       </div>
@@ -383,22 +406,26 @@ function InlineColumnEditor({
       <div className="space-y-2">
         {columns.map((col, i) => (
           <div key={col.key} className="flex items-center gap-2">
-            <input
+            <Input
               value={col.label}
               onChange={(e) => updateCol(i, { label: e.target.value })}
               disabled={col.system}
-              className="flex-1 rounded border border-slate-200 bg-white px-2 py-1 text-sm disabled:bg-slate-50 disabled:text-slate-400"
+              className="h-8 flex-1 text-sm"
             />
-            <select
+            <Select
               value={col.type}
-              onChange={(e) => updateCol(i, { type: e.target.value as ColumnDef["type"] })}
+              onValueChange={(v) => updateCol(i, { type: v as ColumnDef["type"] })}
               disabled={col.system}
-              className="rounded border border-slate-200 bg-white px-2 py-1 text-sm disabled:bg-slate-50"
             >
-              <option value="text">Văn bản</option>
-              <option value="number">Số</option>
-              <option value="currency">Tiền tệ</option>
-            </select>
+              <SelectTrigger className="h-8 w-28 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="text">Văn bản</SelectItem>
+                <SelectItem value="number">Số</SelectItem>
+                <SelectItem value="currency">Tiền tệ</SelectItem>
+              </SelectContent>
+            </Select>
             {col.system ? (
               <span className="w-8 text-center text-xs text-slate-300">🔒</span>
             ) : (

@@ -1,11 +1,9 @@
-import { requireUserId } from "@/lib/auth/get-user-id";
 import { requireSession } from "@/lib/auth/get-session";
 import { getDocumentById } from "@/services/document.service";
 import { listCompanies } from "@/services/company.service";
-import { getDocumentTypeById } from "@/services/document-type.service";
+import { getTemplateEntry, legacyTypeToTemplateId } from "@/lib/pdf/template-registry";
 import { notFound } from "next/navigation";
 import { DocumentDetailClient } from "./document-detail-client";
-import { QUOTATION_COLUMNS } from "@/lib/constants/default-column-presets";
 import type { ColumnDef } from "@/lib/types/column-def";
 import type { DocumentData } from "@/lib/types/document-data";
 
@@ -23,32 +21,20 @@ export default async function DocumentDetailPage({
     listCompanies(userId),
   ]);
 
-  // Find company linked to this document
   const company = companies.find((c) => c.id === doc?.companyId) ?? companies[0] ?? null;
 
   if (!doc || !company) notFound();
 
-  // Resolve columns and title from document type
-  let columns: ColumnDef[] = QUOTATION_COLUMNS;
-  let showTotal = true;
-  let title = "BÁO GIÁ";
-  let signatureLabels = ["Bên mua", "Bên bán"];
-  let templateId: string | null = null;
+  // Resolve template — prefer doc.templateId, fallback to legacy type mapping
+  const resolvedTemplateId = doc.templateId ?? legacyTypeToTemplateId(doc.type);
+  const template = getTemplateEntry(resolvedTemplateId);
 
   // Per-document column override
   const docData = doc.data as DocumentData;
-  if (docData?.columns) {
-    columns = docData.columns;
-  } else if (doc.typeId) {
-    const docType = await getDocumentTypeById(doc.typeId, userId);
-    if (docType) {
-      columns = docType.columns as ColumnDef[];
-      showTotal = docType.showTotal;
-      title = docType.label.toUpperCase();
-      signatureLabels = (docType.signatureLabels as string[]) ?? signatureLabels;
-      templateId = (docType as Record<string, unknown>).templateId as string | null;
-    }
-  }
+  const columns: ColumnDef[] = docData?.columns ?? template?.columns ?? [];
+  const showTotal = template?.showTotal ?? true;
+  const title = template?.name?.toUpperCase() ?? "BÁO GIÁ";
+  const signatureLabels = template?.signatureLabels ?? ["Bên mua", "Bên bán"];
 
   return (
     <DocumentDetailClient
@@ -65,7 +51,7 @@ export default async function DocumentDetailPage({
       showTotal={showTotal}
       title={title}
       signatureLabels={signatureLabels}
-      templateId={templateId}
+      templateId={resolvedTemplateId}
     />
   );
 }

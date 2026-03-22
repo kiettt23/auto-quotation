@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Tags, Ruler, FileText } from "lucide-react";
+import { Tags, Ruler } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { SimpleListManager } from "@/components/settings/simple-list-manager";
-import { DocumentTypeColumnEditor } from "@/components/settings/document-type-column-editor";
 import {
   createCategoryAction,
   deleteCategoryAction,
@@ -15,12 +14,10 @@ import {
 } from "@/actions/unit.actions";
 import type { CategoryRow } from "@/services/category.service";
 import type { UnitRow } from "@/services/unit.service";
-import type { DocumentTypeRow } from "@/services/document-type.service";
 
 const tabs = [
   { id: "categories", label: "Danh mục", icon: Tags },
   { id: "units", label: "Đơn vị tính", icon: Ruler },
-  { id: "documentTypes", label: "Mẫu tài liệu", icon: FileText },
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
@@ -28,10 +25,9 @@ type TabId = (typeof tabs)[number]["id"];
 interface Props {
   categories: CategoryRow[];
   units: UnitRow[];
-  documentTypes: DocumentTypeRow[];
 }
 
-export function SettingsPageClient({ categories, units, documentTypes }: Props) {
+export function SettingsPageClient({ categories, units }: Props) {
   const [activeTab, setActiveTab] = useState<TabId>("categories");
 
   return (
@@ -99,10 +95,6 @@ export function SettingsPageClient({ categories, units, documentTypes }: Props) 
                 emptyMessage="Chưa có đơn vị nào."
               />
             </div>
-          )}
-
-          {activeTab === "documentTypes" && (
-            <DocumentTypeColumnEditor documentTypes={documentTypes} />
           )}
         </div>
       </div>

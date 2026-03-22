@@ -2,10 +2,9 @@ import { pgTable, text, timestamp, jsonb, unique } from "drizzle-orm/pg-core";
 import { user } from "./auth";
 import { company } from "./company";
 import { customer } from "./customer";
-import { documentType } from "./document-type";
 
-/** @deprecated Use document_type table instead. Kept for backward compat during migration. */
-export const documentTypeEnum = ["QUOTATION", "WAREHOUSE_EXPORT", "DELIVERY_ORDER"] as const;
+/** @deprecated Kept for backward compat. Use templateId instead. */
+export const documentTypeEnum = ["QUOTATION", "DELIVERY_ORDER"] as const;
 export type DocumentType = (typeof documentTypeEnum)[number];
 
 /** All business documents (quotes, PXK, PGH) stored in one table */
@@ -14,10 +13,10 @@ export const document = pgTable("document", {
   userId: text("user_id").notNull().references(() => user.id),
   companyId: text("company_id").notNull().references(() => company.id),
   customerId: text("customer_id").references(() => customer.id),
-  /** @deprecated Use typeId instead */
+  /** @deprecated Use templateId instead */
   type: text("type", { enum: documentTypeEnum }).notNull(),
-  /** FK to document_type table — nullable during migration */
-  typeId: text("type_id").references(() => documentType.id),
+  /** References template registry ID: "quotation", "delivery-order" */
+  templateId: text("template_id"),
   documentNumber: text("document_number").notNull(),
   /**
    * All form data stored as JSONB:
