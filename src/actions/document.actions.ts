@@ -31,7 +31,7 @@ export async function createDocumentAction(
       return err(parsed.error.issues[0].message);
     }
 
-    const { companyId, typeId, type, customerId, items, ...rest } = parsed.data;
+    const { companyId, templateId, customerId, items, ...rest } = parsed.data;
 
     // Validate that the selected company belongs to the current user
     const userCompanies = await listCompanies(userId);
@@ -42,8 +42,7 @@ export async function createDocumentAction(
 
     const doc = await createDocument(userId, {
       companyId,
-      typeId,
-      type,
+      templateId,
       customerId: customerId || undefined,
       data: { ...rest, items },
     });
@@ -67,9 +66,16 @@ export async function updateDocumentAction(
       return err(parsed.error.issues[0].message);
     }
 
-    const { customerId, items, type: _type, typeId: _typeId, ...rest } = parsed.data;
+    const { companyId, customerId, items, templateId: _templateId, ...rest } = parsed.data;
+
+    // Validate company ownership
+    const userCompanies = await listCompanies(userId);
+    if (!userCompanies.find((c) => c.id === companyId)) {
+      return err("Công ty không hợp lệ.");
+    }
 
     const doc = await updateDocument(documentId, userId, {
+      companyId,
       customerId: customerId || undefined,
       data: { ...rest, items },
     });
@@ -87,7 +93,8 @@ export async function deleteDocumentAction(
 ): Promise<ActionResult<null>> {
   try {
     const userId = await requireUserId();
-    await deleteDocument(documentId, userId);
+    const deleted = await deleteDocument(documentId, userId);
+    if (!deleted) return err("Không tìm thấy tài liệu.");
     revalidateDocuments();
     return ok(null);
   } catch {

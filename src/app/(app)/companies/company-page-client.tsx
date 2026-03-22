@@ -137,6 +137,7 @@ export function CompanyPageClient({ companies }: Props) {
       >
         {detailOpen && (
           <CompanyDetailPanel
+            key={isCreating ? "new" : (selectedCompany?.id ?? "new")}
             company={isCreating ? null : selectedCompany}
             onClose={handleClose}
             onSaved={handleSaved}

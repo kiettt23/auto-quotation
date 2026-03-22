@@ -41,6 +41,7 @@ export function SimpleListManager({
   const router = useRouter();
   const [newName, setNewName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   async function handleAdd() {
     if (!newName.trim()) return;
@@ -57,7 +58,9 @@ export function SimpleListManager({
   }
 
   async function handleDelete(item: ListItem) {
+    setDeletingId(item.id);
     const result = await onDelete(item.id);
+    setDeletingId(null);
     if (result.success) {
       toast.success(`Đã xóa "${item.name}"`);
       router.refresh();
@@ -117,7 +120,7 @@ export function SimpleListManager({
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Hủy</AlertDialogCancel>
-                    <AlertDialogAction variant="destructive" onClick={() => handleDelete(item)}>
+                    <AlertDialogAction variant="destructive" disabled={deletingId === item.id} onClick={() => handleDelete(item)}>
                       Xóa
                     </AlertDialogAction>
                   </AlertDialogFooter>

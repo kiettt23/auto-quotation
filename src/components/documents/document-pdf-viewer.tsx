@@ -1,14 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useRef } from "react";
 import { registerPdfFonts } from "@/lib/pdf/register-fonts";
 import { getTemplateComponent } from "@/lib/pdf/template-registry";
 import { formatDate } from "@/lib/utils/document-helpers";
 import type { DocumentRow } from "@/services/document.service";
 import type { DocumentData } from "@/lib/types/document-data";
 import type { ColumnDef } from "@/lib/types/column-def";
-
-registerPdfFonts();
 
 const PDFViewer = dynamic(
   () => import("@react-pdf/renderer").then((mod) => mod.PDFViewer),
@@ -51,6 +50,11 @@ export function DocumentPdfViewer({
   signatureLabels,
   templateId,
 }: Props) {
+  const fontsRegistered = useRef(false);
+  if (!fontsRegistered.current) {
+    registerPdfFonts();
+    fontsRegistered.current = true;
+  }
   const data = doc.data as DocumentData;
   const TemplateComponent = getTemplateComponent(templateId);
 

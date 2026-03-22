@@ -123,6 +123,7 @@ export function CustomerPageClient({ customers }: Props) {
       >
         {detailOpen && (
           <CustomerDetailPanel
+            key={isCreating ? "new" : (selectedCustomer?.id ?? "new")}
             customer={isCreating ? null : selectedCustomer}
             onClose={handleClose}
             onSaved={handleSaved}

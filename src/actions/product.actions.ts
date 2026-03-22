@@ -54,6 +54,7 @@ export async function updateProductAction(
     }
 
     const product = await productService.updateProduct(userId, productId, parsed.data);
+    if (!product) return err("Không tìm thấy sản phẩm.");
     revalidatePath("/products");
     return ok({ id: product.id });
   } catch {

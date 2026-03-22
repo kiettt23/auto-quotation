@@ -33,10 +33,12 @@ interface Props {
 export function DocumentCustomerSection({
   customers,
   customerId,
+  customerName,
   customerAddress,
   receiverName,
   receiverPhone,
   onCustomerSelect,
+  onCustomerNameChange,
   onCustomerAddressChange,
   onReceiverNameChange,
   onReceiverPhoneChange,
@@ -62,14 +64,21 @@ export function DocumentCustomerSection({
               </SelectContent>
             </Select>
           </Field>
-          <Field label="Địa chỉ giao hàng">
+          <Field label="Tên khách hàng">
             <Input
-              value={customerAddress}
-              onChange={(e) => onCustomerAddressChange(e.target.value)}
-              placeholder="Auto-fill khi chọn KH"
+              value={customerName}
+              onChange={(e) => onCustomerNameChange(e.target.value)}
+              placeholder="Tên khách hàng"
             />
           </Field>
         </div>
+        <Field label="Địa chỉ">
+          <Input
+            value={customerAddress}
+            onChange={(e) => onCustomerAddressChange(e.target.value)}
+            placeholder="Auto-fill khi chọn KH"
+          />
+        </Field>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Người nhận">
             <Input

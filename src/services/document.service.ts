@@ -1,8 +1,8 @@
 import { db } from "@/db";
 import { document, type DocumentType } from "@/db/schema";
-import { documentType } from "@/db/schema/document-type";
 import { eq, and, isNull, desc, sql, like } from "drizzle-orm";
 import { generateId } from "@/lib/utils/generate-id";
+import { getTemplateEntry, templateIdToLegacyType, legacyTypeToTemplateId } from "@/lib/pdf/template-registry";
 
 export type DocumentRow = typeof document.$inferSelect;
 
@@ -42,7 +42,7 @@ export async function getDocumentById(documentId: string, userId: string) {
   return rows[0] ?? null;
 }
 
-/** Generate next document number using shortLabel from document_type, scoped to companyId */
+/** Generate next document number using shortLabel from template, scoped to companyId */
 async function generateDocumentNumber(
   companyId: string,
   shortLabel: string
@@ -51,7 +51,9 @@ async function generateDocumentNumber(
   const pattern = `${shortLabel}-${year}-%`;
 
   const [result] = await db
-    .select({ count: sql<number>`count(*)` })
+    .select({
+      maxNum: sql<string>`max(substring(${document.documentNumber} from '\\d+$'))`,
+    })
     .from(document)
     .where(
       and(
@@ -60,27 +62,8 @@ async function generateDocumentNumber(
       )
     );
 
-  const nextNum = Number(result?.count ?? 0) + 1;
+  const nextNum = (parseInt(result?.maxNum ?? "0", 10) || 0) + 1;
   return `${shortLabel}-${year}-${String(nextNum).padStart(3, "0")}`;
-}
-
-/** Resolve shortLabel from typeId, fallback to old type enum */
-async function resolveShortLabel(userId: string, typeId?: string, type?: DocumentType): Promise<string> {
-  if (typeId) {
-    const rows = await db
-      .select({ shortLabel: documentType.shortLabel })
-      .from(documentType)
-      .where(and(eq(documentType.id, typeId), eq(documentType.userId, userId)))
-      .limit(1);
-    if (rows[0]) return rows[0].shortLabel;
-  }
-  // Fallback for old documents without typeId
-  const prefixMap: Record<string, string> = {
-    QUOTATION: "BG",
-    WAREHOUSE_EXPORT: "PXK",
-    DELIVERY_ORDER: "PGH",
-  };
-  return prefixMap[type ?? "QUOTATION"] ?? "DOC";
 }
 
 /** Create a new document */
@@ -88,30 +71,16 @@ export async function createDocument(
   userId: string,
   data: {
     companyId: string;
-    typeId?: string;
-    type?: DocumentType;
+    templateId: string;
     customerId?: string;
     data: Record<string, unknown>;
   }
 ) {
   const id = generateId();
-  const shortLabel = await resolveShortLabel(userId, data.typeId, data.type);
+  const template = getTemplateEntry(data.templateId);
+  const shortLabel = template?.shortLabel ?? "DOC";
   const documentNumber = await generateDocumentNumber(data.companyId, shortLabel);
-
-  // Determine old type field for backward compat
-  let legacyType: DocumentType = "QUOTATION";
-  if (data.type) {
-    legacyType = data.type;
-  } else if (data.typeId) {
-    const rows = await db
-      .select({ key: documentType.key })
-      .from(documentType)
-      .where(eq(documentType.id, data.typeId))
-      .limit(1);
-    const key = rows[0]?.key;
-    if (key === "WAREHOUSE_EXPORT" || key === "DELIVERY_ORDER") legacyType = key;
-    else legacyType = "QUOTATION";
-  }
+  const legacyType = templateIdToLegacyType(data.templateId) as DocumentType;
 
   const [row] = await db
     .insert(document)
@@ -121,7 +90,7 @@ export async function createDocument(
       companyId: data.companyId,
       customerId: data.customerId,
       type: legacyType,
-      typeId: data.typeId,
+      templateId: data.templateId,
       documentNumber,
       data: data.data,
     })
@@ -135,6 +104,7 @@ export async function updateDocument(
   documentId: string,
   userId: string,
   data: {
+    companyId?: string;
     customerId?: string;
     data?: Record<string, unknown>;
   }
@@ -169,8 +139,7 @@ export async function duplicateDocument(
 
   return createDocument(userId, {
     companyId: original.companyId,
-    typeId: original.typeId ?? undefined,
-    type: original.type as DocumentType,
+    templateId: original.templateId ?? legacyTypeToTemplateId(original.type),
     customerId: original.customerId ?? undefined,
     data: original.data as Record<string, unknown>,
   });

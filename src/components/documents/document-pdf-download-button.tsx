@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { pdf } from "@react-pdf/renderer";
 import { registerPdfFonts } from "@/lib/pdf/register-fonts";
 import { Button } from "@/components/ui/button";
 import { getTemplateComponent } from "@/lib/pdf/template-registry";
-
-registerPdfFonts();
 import { Download } from "lucide-react";
 import { formatDate } from "@/lib/utils/document-helpers";
 import type { DocumentRow } from "@/services/document.service";
@@ -40,9 +38,14 @@ export function DocumentPdfDownloadButton({
   templateId,
 }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const fontsRegistered = useRef(false);
   const TemplateComponent = getTemplateComponent(templateId);
 
   async function handleDownload() {
+    if (!fontsRegistered.current) {
+      registerPdfFonts();
+      fontsRegistered.current = true;
+    }
     setIsGenerating(true);
     try {
       const data = doc.data as DocumentData;

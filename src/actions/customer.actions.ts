@@ -52,6 +52,7 @@ export async function updateCustomerAction(
     }
 
     const customer = await customerService.updateCustomer(userId, customerId, parsed.data);
+    if (!customer) return err("Không tìm thấy khách hàng.");
     revalidatePath("/customers");
     return ok({ id: customer.id });
   } catch {

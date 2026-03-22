@@ -143,6 +143,7 @@ export function ProductPageClient({ products, categories, units }: Props) {
       >
         {detailOpen && (
           <ProductDetailPanel
+            key={isCreating ? "new" : (selectedProduct?.id ?? "new")}
             product={isCreating ? null : selectedProduct}
             categories={categories}
             units={units}
