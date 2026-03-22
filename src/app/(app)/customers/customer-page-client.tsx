@@ -1,8 +1,8 @@
 "use client";
 import { LabeledField } from "@/components/shared/labeled-field";
-import { KeyValueEditor } from "@/components/shared/key-value-editor";
+import { KeyValueEditor, type KeyValueEditorRef } from "@/components/shared/key-value-editor";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Plus, Users, X, Save, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -160,9 +160,8 @@ function CustomerDetailPanel({
   const [deliveryAddress, setDeliveryAddress] = useState(customer?.deliveryAddress ?? "");
   const [receiverName, setReceiverName] = useState(customer?.receiverName ?? "");
   const [receiverPhone, setReceiverPhone] = useState(customer?.receiverPhone ?? "");
-  const [customData, setCustomData] = useState<Record<string, string | number>>(
-    (customer?.customData as Record<string, string | number>) ?? {},
-  );
+  const customDataRef = useRef<KeyValueEditorRef>(null);
+  const [customDataDirty, setCustomDataDirty] = useState(false);
 
   const isDirty =
     isNew ||
@@ -175,7 +174,7 @@ function CustomerDetailPanel({
     deliveryAddress !== (customer?.deliveryAddress ?? "") ||
     receiverName !== (customer?.receiverName ?? "") ||
     receiverPhone !== (customer?.receiverPhone ?? "") ||
-    JSON.stringify(customData) !== JSON.stringify((customer?.customData as Record<string, string | number>) ?? {});
+    customDataDirty;
 
   async function handleSave() {
     if (!name.trim()) { toast.error("Tên không được để trống"); return; }
@@ -190,6 +189,7 @@ function CustomerDetailPanel({
     formData.set("deliveryAddress", deliveryAddress);
     formData.set("receiverName", receiverName);
     formData.set("receiverPhone", receiverPhone);
+    const customData = customDataRef.current?.getData() ?? {};
     if (Object.keys(customData).length > 0) {
       formData.set("customData", JSON.stringify(customData));
     }
@@ -290,7 +290,11 @@ function CustomerDetailPanel({
 
         <fieldset>
           <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Thông tin bổ sung</legend>
-          <KeyValueEditor value={customData} onChange={setCustomData} />
+          <KeyValueEditor
+            ref={customDataRef}
+            defaultValue={(customer?.customData as Record<string, string | number>) ?? {}}
+            onDirtyChange={setCustomDataDirty}
+          />
         </fieldset>
       </div>
     </div>
