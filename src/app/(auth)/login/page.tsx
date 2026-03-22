@@ -6,7 +6,8 @@ import Link from "next/link";
 import { signIn } from "@/lib/auth/auth-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
+import { LabeledField } from "@/components/shared/labeled-field";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -32,54 +33,50 @@ export default function LoginPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-slate-900">Đăng nhập</h1>
-        <p className="text-sm text-slate-500">
-          Nhập email và mật khẩu để tiếp tục
-        </p>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <div className="mb-1">
+        <h2 className="text-lg font-semibold text-slate-900">Đăng nhập</h2>
+        <p className="text-xs text-slate-400">Nhập email và mật khẩu để tiếp tục</p>
       </div>
 
       {error && (
-        <p className="text-sm text-red-500">{error}</p>
+        <div className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+          {error}
+        </div>
       )}
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="email">Email</Label>
+      <LabeledField label="Email">
         <Input
-          id="email"
           type="email"
           placeholder="name@company.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          className="h-9 text-sm"
         />
-      </div>
+      </LabeledField>
 
-      <div className="flex flex-col gap-1.5">
-        <Label htmlFor="password">Mật khẩu</Label>
+      <LabeledField label="Mật khẩu">
         <Input
-          id="password"
           type="password"
           placeholder="••••••••"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          className="h-9 text-sm"
         />
-      </div>
+      </LabeledField>
 
-      <Button type="submit" disabled={loading} className="w-full">
+      <Button type="submit" disabled={loading} className="mt-1 h-9 w-full gap-1.5 rounded-lg text-sm">
+        {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
         {loading ? "Đang đăng nhập..." : "Đăng nhập"}
       </Button>
 
-      <div className="flex items-center gap-3">
-        <div className="h-px flex-1 bg-slate-200" />
-        <span className="text-xs text-slate-400">hoặc</span>
-        <div className="h-px flex-1 bg-slate-200" />
-      </div>
-
-      <p className="text-center text-sm text-indigo-500">
-        <Link href="/register">Chưa có tài khoản? Đăng ký</Link>
+      <p className="text-center text-xs text-slate-400">
+        Chưa có tài khoản?{" "}
+        <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-700">
+          Đăng ký
+        </Link>
       </p>
     </form>
   );
