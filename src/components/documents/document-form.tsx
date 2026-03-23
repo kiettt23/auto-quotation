@@ -29,7 +29,6 @@ import {
   getTemplateList,
   getTemplateEntry,
   getExtraFormFields,
-  legacyTypeToTemplateId,
 } from "@/lib/pdf/template-registry";
 import { cn } from "@/lib/utils/cn";
 
@@ -73,7 +72,7 @@ export function DocumentForm({ products, customers, companies, document: doc }: 
     doc?.companyId ?? companies[0]?.id ?? "",
   );
   const [templateId, setTemplateId] = useState(
-    doc?.templateId ?? legacyTypeToTemplateId(doc?.type ?? "") ?? templateList[0]?.id ?? "quotation",
+    doc?.templateId ?? templateList[0]?.id ?? "quotation",
   );
   const [customerId, setCustomerId] = useState(doc?.customerId ?? "");
   const [customerName, setCustomerName] = useState(

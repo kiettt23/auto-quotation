@@ -238,7 +238,6 @@ async function seed() {
       userId: USER_ID,
       companyId: COMPANY_A,
       customerId: CUST_MINH,
-      type: "QUOTATION",
       templateId: "quotation",
       documentNumber: "BG-2026-001",
       data: {
@@ -262,7 +261,6 @@ async function seed() {
       userId: USER_ID,
       companyId: COMPANY_A,
       customerId: CUST_HOANG,
-      type: "QUOTATION",
       templateId: "quotation",
       documentNumber: "BG-2026-002",
       data: {
@@ -284,7 +282,6 @@ async function seed() {
       userId: USER_ID,
       companyId: COMPANY_B,
       customerId: CUST_VINA,
-      type: "DELIVERY_ORDER",
       templateId: "delivery-order",
       documentNumber: "PGH-2026-001",
       data: {
@@ -312,7 +309,6 @@ async function seed() {
       userId: USER_ID,
       companyId: COMPANY_B,
       customerId: CUST_MINH,
-      type: "DELIVERY_ORDER",
       templateId: "delivery-order",
       documentNumber: "PGH-2026-002",
       data: {

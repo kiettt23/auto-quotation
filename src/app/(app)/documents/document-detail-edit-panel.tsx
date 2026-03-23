@@ -25,7 +25,7 @@ import {
   duplicateDocumentAction,
 } from "@/actions/document.actions";
 import { formatCurrency, mapCustomDataToColumnKeys } from "@/lib/utils/document-helpers";
-import { getExtraFormFields, getTemplateEntry, legacyTypeToTemplateId } from "@/lib/pdf/template-registry";
+import { getExtraFormFields, getTemplateEntry } from "@/lib/pdf/template-registry";
 import type { DocumentRow } from "@/services/document.service";
 import type { DocumentData, DocumentDataItem } from "@/lib/types/document-data";
 import type { ProductWithRelations } from "@/services/product.service";
@@ -56,7 +56,7 @@ export function DocumentDetailEditPanel({
   const existingData = doc.data as DocumentData;
 
   // Resolve template for extra fields
-  const resolvedTemplateId = doc.templateId ?? legacyTypeToTemplateId(doc.type);
+  const resolvedTemplateId = doc.templateId;
   const template = useMemo(
     () => getTemplateEntry(resolvedTemplateId),
     [resolvedTemplateId],
@@ -268,7 +268,7 @@ export function DocumentDetailEditPanel({
           {isPending ? "Lưu..." : isDirty ? "Lưu" : "Đã lưu"}
         </Button>
         <Button asChild size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs">
-          <Link href={`/documents/${doc.id}`}>
+          <Link href={`/documents/${doc.id}`} target="_blank">
             <Printer className="h-3 w-3" />
             In
           </Link>
@@ -282,7 +282,7 @@ export function DocumentDetailEditPanel({
           <Copy className="h-3 w-3" />
           Sao
         </Button>
-        <DeleteConfirmDialog name={template?.name ?? doc.type} onConfirm={handleDelete} />
+        <DeleteConfirmDialog name={template?.name ?? "Tài liệu"} onConfirm={handleDelete} />
         <button
           onClick={onClose}
           className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"

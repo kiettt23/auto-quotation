@@ -1,7 +1,7 @@
 import { requireSession } from "@/lib/auth/get-session";
 import { getDocumentById } from "@/services/document.service";
 import { listCompanies } from "@/services/company.service";
-import { getTemplateEntry, legacyTypeToTemplateId } from "@/lib/pdf/template-registry";
+import { getTemplateEntry } from "@/lib/pdf/template-registry";
 import { notFound } from "next/navigation";
 import { DocumentDetailClient } from "./document-detail-client";
 import type { ColumnDef } from "@/lib/types/column-def";
@@ -25,11 +25,7 @@ export default async function DocumentDetailPage({
 
   if (!doc || !company) notFound();
 
-  // Resolve template — prefer doc.templateId, fallback to legacy type mapping
-  const resolvedTemplateId = doc.templateId ?? legacyTypeToTemplateId(doc.type);
-  const template = getTemplateEntry(resolvedTemplateId);
-
-  // Per-document column override
+  const template = getTemplateEntry(doc.templateId);
   const docData = doc.data as DocumentData;
   const columns: ColumnDef[] = docData?.columns ?? template?.columns ?? [];
   const showTotal = template?.showTotal ?? true;
@@ -51,7 +47,7 @@ export default async function DocumentDetailPage({
       showTotal={showTotal}
       title={title}
       signatureLabels={signatureLabels}
-      templateId={resolvedTemplateId}
+      templateId={doc.templateId}
     />
   );
 }

@@ -15,7 +15,7 @@ import {
   formatCurrency,
   formatDate,
 } from "@/lib/utils/document-helpers";
-import { getTemplateEntry, getTemplateList, legacyTypeToTemplateId } from "@/lib/pdf/template-registry";
+import { getTemplateEntry, getTemplateList } from "@/lib/pdf/template-registry";
 import { cn } from "@/lib/utils/cn";
 import { DocumentDetailEditPanel } from "./document-detail-edit-panel";
 import type { DocumentRow } from "@/services/document.service";
@@ -33,7 +33,7 @@ const tabs = [
 ];
 
 function resolveTemplateId(doc: DocumentRow): string {
-  return doc.templateId ?? legacyTypeToTemplateId(doc.type);
+  return doc.templateId;
 }
 
 export function DocumentListClient({
@@ -214,7 +214,7 @@ export function DocumentListClient({
                               template?.color.badgeBg ?? "bg-slate-100",
                               template?.color.badgeText ?? "text-slate-500",
                             )}>
-                              {template?.name ?? doc.type}
+                              {template?.name ?? "Tài liệu"}
                             </span>
                           </div>
                           <p className="mt-0.5 truncate text-xs text-slate-400">

@@ -1,8 +1,8 @@
 import { db } from "@/db";
-import { document, type DocumentType } from "@/db/schema";
+import { document } from "@/db/schema";
 import { eq, and, isNull, desc, sql, like } from "drizzle-orm";
 import { generateId } from "@/lib/utils/generate-id";
-import { getTemplateEntry, templateIdToLegacyType, legacyTypeToTemplateId } from "@/lib/pdf/template-registry";
+import { getTemplateEntry } from "@/lib/pdf/template-registry";
 
 export type DocumentRow = typeof document.$inferSelect;
 
@@ -80,8 +80,6 @@ export async function createDocument(
   const template = getTemplateEntry(data.templateId);
   const shortLabel = template?.shortLabel ?? "DOC";
   const documentNumber = await generateDocumentNumber(data.companyId, shortLabel);
-  const legacyType = templateIdToLegacyType(data.templateId) as DocumentType;
-
   const [row] = await db
     .insert(document)
     .values({
@@ -89,7 +87,6 @@ export async function createDocument(
       userId,
       companyId: data.companyId,
       customerId: data.customerId,
-      type: legacyType,
       templateId: data.templateId,
       documentNumber,
       data: data.data,
@@ -139,7 +136,7 @@ export async function duplicateDocument(
 
   return createDocument(userId, {
     companyId: original.companyId,
-    templateId: original.templateId ?? legacyTypeToTemplateId(original.type),
+    templateId: original.templateId,
     customerId: original.customerId ?? undefined,
     data: original.data as Record<string, unknown>,
   });
