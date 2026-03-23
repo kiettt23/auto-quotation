@@ -121,7 +121,7 @@ export function DocumentListClient({
   }
 
   return (
-    <div className="flex h-[calc(100vh-48px)] gap-0 overflow-hidden px-10 py-6">
+    <div className="flex h-[calc(100vh-48px)] gap-0 px-10 py-6">
       {/* Master — document list */}
       <div
         className={cn(
@@ -282,7 +282,7 @@ export function DocumentListClient({
         className={cn(
           "overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]",
           panelOpen
-            ? "ml-6 min-w-0 flex-2 opacity-100"
+            ? "ml-6 flex-2 opacity-100"
             : "ml-0 w-0 flex-0 opacity-0",
         )}
       >

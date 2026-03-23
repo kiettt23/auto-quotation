@@ -9,7 +9,7 @@ export function LabeledField({
   className?: string;
 }) {
   return (
-    <div className={`min-w-0 ${className ?? ""}`}>
+    <div className={className}>
       <span className="mb-0.5 block text-[11px] font-medium text-slate-400">
         {label}
       </span>

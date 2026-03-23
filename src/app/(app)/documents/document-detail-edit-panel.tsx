@@ -261,7 +261,7 @@ export function DocumentDetailEditPanel({
   }
 
   return (
-    <div className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
       {/* Header — all actions */}
       <div className="flex items-center gap-1.5 px-3 py-1.5">
         <Button
@@ -312,7 +312,7 @@ export function DocumentDetailEditPanel({
       </div>
 
       {/* Editable content */}
-      <div className="min-w-0 flex-1 overflow-y-auto px-4 py-3" onChangeCapture={markDirty}>
+      <div className="flex-1 overflow-y-auto px-4 py-3" onChangeCapture={markDirty}>
         {/* Template selector — only on create */}
         {isCreate && (
           <fieldset className="mb-3">
