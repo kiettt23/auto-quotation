@@ -63,6 +63,22 @@ export async function getProductById(userId: string, productId: string) {
   return rows[0] ?? null;
 }
 
+/** Duplicate a product */
+export async function duplicateProduct(userId: string, productId: string) {
+  const original = await getProductById(userId, productId);
+  if (!original) return null;
+
+  return createProduct(userId, {
+    name: `${original.name} (bản sao)`,
+    categoryId: original.categoryId ?? undefined,
+    unitId: original.unitId ?? undefined,
+    unitPrice: original.unitPrice,
+    specification: original.specification ?? undefined,
+    description: original.description ?? undefined,
+    customData: (original.customData as Record<string, string | number>) ?? undefined,
+  });
+}
+
 /** Create a new product */
 export async function createProduct(
   userId: string,

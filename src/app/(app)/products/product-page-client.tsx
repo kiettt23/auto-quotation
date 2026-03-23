@@ -4,7 +4,7 @@ import { KeyValueEditor, type KeyValueEditorRef } from "@/components/shared/key-
 import { getAllCustomColumnKeys } from "@/lib/pdf/template-registry";
 
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import { Plus, Package, X, Save, Loader2, ChevronRight } from "lucide-react";
+import { Plus, Package, X, Save, Loader2, ChevronRight, Copy, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import {
   createProductAction,
   updateProductAction,
   deleteProductAction,
+  duplicateProductAction,
 } from "@/actions/product.actions";
 import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -81,7 +82,7 @@ export function ProductPageClient({ products, categories, units }: Props) {
 
   function handleSelect(id: string) {
     setIsCreating(false);
-    setSelectedId(id);
+    setSelectedId((prev) => (prev === id ? null : id));
   }
 
   function handleAdd() {
@@ -92,6 +93,22 @@ export function ProductPageClient({ products, categories, units }: Props) {
   function handleClose() {
     setSelectedId(null);
     setIsCreating(false);
+  }
+
+  async function handleRowDuplicate(e: React.MouseEvent, id: string) {
+    e.stopPropagation();
+    const result = await duplicateProductAction(id);
+    if (result.success) { toast.success("Đã sao chép"); router.refresh(); }
+    else toast.error(result.error);
+  }
+
+  async function handleRowDelete(id: string) {
+    const result = await deleteProductAction(id);
+    if (result.success) {
+      toast.success("Đã xóa");
+      if (selectedId === id) setSelectedId(null);
+      router.refresh();
+    } else toast.error(result.error);
   }
 
   function handleSaved() { router.refresh(); }
@@ -157,10 +174,13 @@ export function ProductPageClient({ products, categories, units }: Props) {
           ) : (
             <div className="space-y-1">
               {filtered.map((p) => (
-                <button
+                <div
                   key={p.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelect(p.id)}
-                  className={`group flex w-full cursor-pointer items-center gap-4 rounded-xl px-3 py-2.5 text-left transition-all ${
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleSelect(p.id); }}
+                  className={`group relative flex w-full cursor-pointer items-center gap-4 rounded-xl px-3 py-2.5 text-left transition-all ${
                     selectedId === p.id
                       ? "bg-indigo-50 ring-1 ring-indigo-200"
                       : "hover:bg-slate-50"
@@ -175,13 +195,41 @@ export function ProductPageClient({ products, categories, units }: Props) {
                       {[p.categoryName, p.unitName, p.specification].filter(Boolean).join(" · ") || "—"}
                     </p>
                   </div>
-                  <span className="shrink-0 text-[13px] font-semibold text-slate-700">
-                    {formatCurrency(p.unitPrice)}
-                  </span>
+                  <div className="relative shrink-0">
+                    <div className="w-20 text-right transition-opacity group-hover:opacity-0">
+                      <p className="text-[13px] font-semibold text-slate-700">
+                        {formatCurrency(p.unitPrice)}
+                      </p>
+                    </div>
+                    <div className="absolute top-1/2 right-0 flex -translate-y-1/2 items-center gap-1 whitespace-nowrap opacity-0 transition-opacity group-hover:opacity-100">
+                      <button
+                        onClick={(e) => handleRowDuplicate(e, p.id)}
+                        className="flex cursor-pointer items-center gap-1 rounded-lg border border-transparent px-2 py-1 text-[11px] font-medium text-slate-400 transition-colors hover:border-slate-200 hover:bg-white hover:text-indigo-600 hover:shadow-sm"
+                        title="Sao chép sản phẩm này"
+                      >
+                        <Copy className="h-3 w-3" />
+                        {!detailOpen && <span>Sao chép</span>}
+                      </button>
+                      <DeleteConfirmDialog
+                        name={p.name}
+                        onConfirm={() => handleRowDelete(p.id)}
+                        trigger={
+                          <button
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex cursor-pointer items-center gap-1 rounded-lg border border-transparent px-2 py-1 text-[11px] font-medium text-slate-400 transition-colors hover:border-red-200 hover:bg-white hover:text-red-500 hover:shadow-sm"
+                            title="Xóa sản phẩm này"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            {!detailOpen && <span>Xóa</span>}
+                          </button>
+                        }
+                      />
+                    </div>
+                  </div>
                   <ChevronRight className={`h-4 w-4 shrink-0 transition-all duration-200 ${
                     selectedId === p.id ? "text-indigo-400" : "text-slate-300 group-hover:text-slate-400"
                   }`} />
-                </button>
+                </div>
               ))}
             </div>
           )}

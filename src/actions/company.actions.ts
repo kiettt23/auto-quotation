@@ -11,6 +11,7 @@ import {
   createCompany,
   updateCompany,
   deleteCompany,
+  duplicateCompany,
 } from "@/services/company.service";
 import { ok, err, type ActionResult } from "@/lib/utils/action-result";
 import { revalidatePath } from "next/cache";
@@ -80,6 +81,21 @@ export async function updateCompanyAction(
     return ok({ companyId });
   } catch {
     return err("Đã xảy ra lỗi. Vui lòng thử lại.");
+  }
+}
+
+export async function duplicateCompanyAction(
+  companyId: string
+): Promise<ActionResult<{ companyId: string }>> {
+  try {
+    const userId = await requireUserId();
+    const company = await duplicateCompany(userId, companyId);
+    if (!company) return err("Không tìm thấy công ty gốc.");
+    revalidatePath("/companies");
+    revalidatePath("/settings");
+    return ok({ companyId: company.id });
+  } catch {
+    return err("Không thể sao chép công ty.");
   }
 }
 

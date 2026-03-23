@@ -66,6 +66,20 @@ export async function updateProductAction(
   }
 }
 
+export async function duplicateProductAction(
+  productId: string
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const userId = await requireUserId();
+    const product = await productService.duplicateProduct(userId, productId);
+    if (!product) return err("Không tìm thấy sản phẩm gốc.");
+    revalidatePath("/products");
+    return ok({ id: product.id });
+  } catch {
+    return err("Không thể sao chép sản phẩm.");
+  }
+}
+
 export async function deleteProductAction(
   productId: string
 ): Promise<ActionResult> {

@@ -3,7 +3,7 @@ import { LabeledField } from "@/components/shared/labeled-field";
 import { KeyValueEditor, type KeyValueEditorRef } from "@/components/shared/key-value-editor";
 
 import { useState, useRef } from "react";
-import { Plus, Users, X, Save, Loader2, ChevronRight } from "lucide-react";
+import { Plus, Users, X, Save, Loader2, ChevronRight, Copy, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import {
   createCustomerAction,
   updateCustomerAction,
   deleteCustomerAction,
+  duplicateCustomerAction,
 } from "@/actions/customer.actions";
 import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
 import type { CustomerRow } from "@/services/customer.service";
@@ -33,7 +34,7 @@ export function CustomerPageClient({ customers }: Props) {
 
   function handleSelect(id: string) {
     setIsCreating(false);
-    setSelectedId(id);
+    setSelectedId((prev) => (prev === id ? null : id));
   }
 
   function handleAdd() {
@@ -44,6 +45,22 @@ export function CustomerPageClient({ customers }: Props) {
   function handleClose() {
     setSelectedId(null);
     setIsCreating(false);
+  }
+
+  async function handleRowDuplicate(e: React.MouseEvent, id: string) {
+    e.stopPropagation();
+    const result = await duplicateCustomerAction(id);
+    if (result.success) { toast.success("Đã sao chép"); router.refresh(); }
+    else toast.error(result.error);
+  }
+
+  async function handleRowDelete(id: string) {
+    const result = await deleteCustomerAction(id);
+    if (result.success) {
+      toast.success("Đã xóa");
+      if (selectedId === id) setSelectedId(null);
+      router.refresh();
+    } else toast.error(result.error);
   }
 
   function handleSaved() { router.refresh(); }
@@ -92,10 +109,13 @@ export function CustomerPageClient({ customers }: Props) {
           ) : (
             <div className="space-y-1">
               {customers.map((c) => (
-                <button
+                <div
                   key={c.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => handleSelect(c.id)}
-                  className={`group flex w-full cursor-pointer items-center gap-4 rounded-xl px-3 py-2.5 text-left transition-all ${
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleSelect(c.id); }}
+                  className={`group relative flex w-full cursor-pointer items-center gap-4 rounded-xl px-3 py-2.5 text-left transition-all ${
                     selectedId === c.id
                       ? "bg-indigo-50 ring-1 ring-indigo-200"
                       : "hover:bg-slate-50"
@@ -108,10 +128,37 @@ export function CustomerPageClient({ customers }: Props) {
                     <p className="truncate text-[13px] font-semibold text-slate-900">{c.name}</p>
                     <p className="truncate text-xs text-slate-400">{c.address ?? c.phone ?? "—"}</p>
                   </div>
+                  <div className="relative shrink-0">
+                    <div className="w-0 transition-opacity group-hover:opacity-0" />
+                    <div className="absolute top-1/2 right-0 flex -translate-y-1/2 items-center gap-1 whitespace-nowrap opacity-0 transition-opacity group-hover:opacity-100">
+                      <button
+                        onClick={(e) => handleRowDuplicate(e, c.id)}
+                        className="flex cursor-pointer items-center gap-1 rounded-lg border border-transparent px-2 py-1 text-[11px] font-medium text-slate-400 transition-colors hover:border-slate-200 hover:bg-white hover:text-indigo-600 hover:shadow-sm"
+                        title="Sao chép khách hàng này"
+                      >
+                        <Copy className="h-3 w-3" />
+                        {!detailOpen && <span>Sao chép</span>}
+                      </button>
+                      <DeleteConfirmDialog
+                        name={c.name}
+                        onConfirm={() => handleRowDelete(c.id)}
+                        trigger={
+                          <button
+                            onClick={(e) => e.stopPropagation()}
+                            className="flex cursor-pointer items-center gap-1 rounded-lg border border-transparent px-2 py-1 text-[11px] font-medium text-slate-400 transition-colors hover:border-red-200 hover:bg-white hover:text-red-500 hover:shadow-sm"
+                            title="Xóa khách hàng này"
+                          >
+                            <Trash2 className="h-3 w-3" />
+                            {!detailOpen && <span>Xóa</span>}
+                          </button>
+                        }
+                      />
+                    </div>
+                  </div>
                   <ChevronRight className={`h-4 w-4 shrink-0 transition-all duration-200 ${
                     selectedId === c.id ? "text-indigo-400" : "text-slate-300 group-hover:text-slate-400"
                   }`} />
-                </button>
+                </div>
               ))}
             </div>
           )}

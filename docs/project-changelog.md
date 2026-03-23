@@ -1,5 +1,32 @@
 # Project Changelog
 
+## [Unreleased] — 2026-03-23 (Row Actions & UI Polish)
+
+### Added
+- Row-level hover overlay actions (Sao chép, Xóa) on product, customer, company list pages — same pattern as document list
+- Row-level hover overlay actions (Xem trước, Tải PDF, Sao chép, Xóa) on document list
+- `duplicateProduct`, `duplicateCustomer`, `duplicateCompany` service functions + server actions
+- `DocumentPdfDownloadButton` `size="row"|"panel"` variants for inline/header usage
+- `DeleteConfirmDialog` `trigger` prop for custom trigger elements
+- Template-driven editable fields in document item cards (all PDF columns reflected as inputs)
+- Invoice VAT total calculation in jesang-delivery-template PDF
+
+### Changed
+- Document/product/customer/company list rows use `<div role="button">` instead of `<button>` to avoid nested button hydration errors
+- Row `handleSelect` toggles open/close on all list pages (was open-only on product/customer/company)
+- Item total UI changed to indigo pill style (visually distinct from inputs)
+- Panel header: removed Xóa and Sao chép buttons (available on row), added Tải PDF button
+- Renamed "In" to "Xem trước" with Eye icon in panel header
+- `cursor-pointer` added to `SelectTrigger` globally
+- Labels on row actions shown when no panel open, icon-only when panel open
+
+### Removed
+- Print button from PDF preview page (browser print already works)
+- Duplicate button from PDF preview page
+- Sao chép and Xóa buttons from document panel header (moved to row)
+
+---
+
 ## [Unreleased] — 2026-03-23 (Schema Cleanup & Infra Simplification)
 
 ### Added

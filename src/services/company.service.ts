@@ -31,6 +31,25 @@ export async function getCompanyById(companyId: string, userId: string) {
   return rows[0] ?? null;
 }
 
+/** Duplicate a company */
+export async function duplicateCompany(userId: string, companyId: string) {
+  const original = await getCompanyById(companyId, userId);
+  if (!original) return null;
+
+  return createCompany(userId, {
+    name: `${original.name} (bản sao)`,
+    address: original.address ?? undefined,
+    phone: original.phone ?? undefined,
+    taxCode: original.taxCode ?? undefined,
+    email: original.email ?? undefined,
+    bankName: original.bankName ?? undefined,
+    bankAccount: original.bankAccount ?? undefined,
+    driverName: original.driverName ?? undefined,
+    vehicleId: original.vehicleId ?? undefined,
+    logoUrl: original.logoUrl ?? undefined,
+  });
+}
+
 /** Create a new company for a user */
 export async function createCompany(
   userId: string,

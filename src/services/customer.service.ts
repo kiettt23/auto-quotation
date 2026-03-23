@@ -38,6 +38,24 @@ export async function getCustomerById(userId: string, customerId: string) {
   return rows[0] ?? null;
 }
 
+/** Duplicate a customer */
+export async function duplicateCustomer(userId: string, customerId: string) {
+  const original = await getCustomerById(userId, customerId);
+  if (!original) return null;
+
+  return createCustomer(userId, {
+    name: `${original.name} (bản sao)`,
+    address: original.address ?? undefined,
+    phone: original.phone ?? undefined,
+    email: original.email ?? undefined,
+    taxCode: original.taxCode ?? undefined,
+    deliveryName: original.deliveryName ?? undefined,
+    deliveryAddress: original.deliveryAddress ?? undefined,
+    receiverName: original.receiverName ?? undefined,
+    receiverPhone: original.receiverPhone ?? undefined,
+  });
+}
+
 /** Create a new customer */
 export async function createCustomer(
   userId: string,

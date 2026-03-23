@@ -227,10 +227,12 @@ export function DocumentListClient({
                     const docCompany = companies.find((c) => c.id === doc.companyId);
 
                     return (
-                      <button
+                      <div
                         key={doc.id}
-                        type="button"
+                        role="button"
+                        tabIndex={0}
                         onClick={() => handleSelect(doc.id)}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") handleSelect(doc.id); }}
                         className={cn(
                           "group relative flex w-full cursor-pointer items-center gap-4 rounded-xl px-3 py-2.5 text-left transition-all",
                           isSelected
@@ -344,7 +346,7 @@ export function DocumentListClient({
                               : "text-slate-300 group-hover:text-slate-400",
                           )}
                         />
-                      </button>
+                      </div>
                     );
                   })}
                 </div>

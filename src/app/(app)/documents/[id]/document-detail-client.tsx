@@ -36,7 +36,7 @@ export function DocumentDetailClient({
   return (
     <div className="flex flex-col gap-6 p-6 lg:p-10">
       {/* Top bar */}
-      <div className="flex items-center justify-between">
+      <div className="relative flex items-center justify-between">
         <Link
           href="/documents"
           className="flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700"
@@ -45,7 +45,7 @@ export function DocumentDetailClient({
           Quay lại danh sách
         </Link>
 
-        <span className="text-lg font-semibold text-slate-900">
+        <span className="absolute inset-x-0 text-center text-lg font-semibold text-slate-900 pointer-events-none">
           {doc.documentNumber}
         </span>
 

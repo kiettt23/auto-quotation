@@ -62,6 +62,20 @@ export async function updateCustomerAction(
   }
 }
 
+export async function duplicateCustomerAction(
+  customerId: string
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const userId = await requireUserId();
+    const customer = await customerService.duplicateCustomer(userId, customerId);
+    if (!customer) return err("Không tìm thấy khách hàng gốc.");
+    revalidatePath("/customers");
+    return ok({ id: customer.id });
+  } catch {
+    return err("Không thể sao chép khách hàng.");
+  }
+}
+
 export async function deleteCustomerAction(
   customerId: string
 ): Promise<ActionResult> {
