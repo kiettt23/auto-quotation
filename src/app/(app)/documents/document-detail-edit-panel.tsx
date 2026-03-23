@@ -3,8 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { X, Plus, Trash2, Save, Eye, Copy, Loader2 } from "lucide-react";
-import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
+import { X, Plus, Trash2, Save, Eye, Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,8 +21,6 @@ import { cn } from "@/lib/utils/cn";
 import {
   createDocumentAction,
   updateDocumentAction,
-  deleteDocumentAction,
-  duplicateDocumentAction,
 } from "@/actions/document.actions";
 import {
   formatCurrency,
@@ -40,6 +37,7 @@ import type { ProductWithRelations } from "@/services/product.service";
 import type { CustomerRow } from "@/services/customer.service";
 import type { CompanyRow } from "@/services/company.service";
 import { LabeledField } from "@/components/shared/labeled-field";
+import { DocumentPdfDownloadButton } from "@/components/documents/document-pdf-download-button";
 
 const templateList = getTemplateList();
 
@@ -50,7 +48,6 @@ interface Props {
   companies: CompanyRow[];
   onClose: () => void;
   onSaved: () => void;
-  onDeleted?: (id: string) => void;
 }
 
 export function DocumentDetailEditPanel({
@@ -60,7 +57,6 @@ export function DocumentDetailEditPanel({
   companies,
   onClose,
   onSaved,
-  onDeleted,
 }: Props) {
   const router = useRouter();
   const isCreate = !doc;
@@ -302,28 +298,6 @@ export function DocumentDetailEditPanel({
     }
   }
 
-  async function handleDelete() {
-    if (!doc) return;
-    const result = await deleteDocumentAction(doc.id);
-    if (result.success) {
-      toast.success("Đã xóa");
-      onDeleted?.(doc.id);
-    } else {
-      toast.error(result.error);
-    }
-  }
-
-  async function handleDuplicate() {
-    if (!doc) return;
-    const result = await duplicateDocumentAction(doc.id);
-    if (result.success) {
-      toast.success("Đã nhân bản");
-      router.refresh();
-    } else {
-      toast.error(result.error);
-    }
-  }
-
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
       {/* Header — all actions */}
@@ -354,30 +328,36 @@ export function DocumentDetailEditPanel({
               size="sm"
               variant="outline"
               className="h-7 gap-1 px-2 text-xs"
+              title="Mở trang xem trước PDF"
             >
               <Link href={`/documents/${doc.id}`} target="_blank">
                 <Eye className="h-3 w-3" />
-                Xem
+                Xem trước
               </Link>
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 gap-1 px-2 text-xs"
-              onClick={handleDuplicate}
-            >
-              <Copy className="h-3 w-3" />
-              Sao
-            </Button>
-            <DeleteConfirmDialog
-              name={template?.name ?? "Tài liệu"}
-              onConfirm={handleDelete}
+            <DocumentPdfDownloadButton
+              document={doc}
+              company={{
+                name: selectedCompany?.name ?? "",
+                address: selectedCompany?.address,
+                phone: selectedCompany?.phone,
+                taxCode: selectedCompany?.taxCode,
+                logoUrl: selectedCompany?.logoUrl,
+                headerLayout: selectedCompany?.headerLayout,
+              }}
+              columns={template?.columns ?? []}
+              showTotal={template?.showTotal ?? false}
+              title={template?.name ?? "Tài liệu"}
+              signatureLabels={template?.signatureLabels ?? []}
+              templateId={templateId}
+              size="panel"
             />
           </>
         )}
         <button
           onClick={onClose}
-          className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+          className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+          title="Đóng"
         >
           <X className="h-3.5 w-3.5" />
         </button>

@@ -2,11 +2,16 @@
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Plus,
   FileText,
   ChevronRight,
+  Eye,
+  Copy,
+  Trash2,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -16,6 +21,9 @@ import {
 } from "@/lib/utils/document-helpers";
 import { getTemplateEntry, getTemplateList } from "@/lib/pdf/template-registry";
 import { cn } from "@/lib/utils/cn";
+import { duplicateDocumentAction, deleteDocumentAction } from "@/actions/document.actions";
+import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
+import { DocumentPdfDownloadButton } from "@/components/documents/document-pdf-download-button";
 import { DocumentDetailEditPanel } from "./document-detail-edit-panel";
 import type { DocumentRow } from "@/services/document.service";
 import type { DocumentData } from "@/lib/types/document-data";
@@ -110,9 +118,27 @@ export function DocumentListClient({
     setIsCreating(false);
   }
 
-  function handleDeleted(id: string) {
-    if (selectedId === id) setSelectedId(null);
-    router.refresh();
+
+  async function handleRowDuplicate(e: React.MouseEvent, id: string) {
+    e.stopPropagation();
+    const result = await duplicateDocumentAction(id);
+    if (result.success) {
+      toast.success("Đã sao chép");
+      router.refresh();
+    } else {
+      toast.error(result.error);
+    }
+  }
+
+  async function handleRowDelete(id: string) {
+    const result = await deleteDocumentAction(id);
+    if (result.success) {
+      toast.success("Đã xóa");
+      if (selectedId === id) setSelectedId(null);
+      router.refresh();
+    } else {
+      toast.error(result.error);
+    }
   }
 
   function handleSaved() {
@@ -198,6 +224,7 @@ export function DocumentListClient({
                       ? calculateTotal(data.items)
                       : 0;
                     const isSelected = doc.id === selectedId;
+                    const docCompany = companies.find((c) => c.id === doc.companyId);
 
                     return (
                       <button
@@ -205,7 +232,7 @@ export function DocumentListClient({
                         type="button"
                         onClick={() => handleSelect(doc.id)}
                         className={cn(
-                          "group flex w-full cursor-pointer items-center gap-4 rounded-xl px-3 py-2.5 text-left transition-all",
+                          "group relative flex w-full cursor-pointer items-center gap-4 rounded-xl px-3 py-2.5 text-left transition-all",
                           isSelected
                             ? "bg-indigo-50 ring-1 ring-indigo-200"
                             : "hover:bg-slate-50",
@@ -240,14 +267,72 @@ export function DocumentListClient({
                           </p>
                         </div>
 
-                        {/* Amount + date */}
-                        <div className="shrink-0 text-right">
-                          <p className="text-[13px] font-semibold text-slate-700">
-                            {total > 0 ? formatCurrency(total) : "—"}
-                          </p>
-                          <p className="mt-0.5 text-[11px] text-slate-400">
-                            {formatDate(doc.createdAt)}
-                          </p>
+                        {/* Amount + date + overlay actions */}
+                        <div className="relative shrink-0">
+                          {/* Amount — hidden on hover */}
+                          <div className="w-24 text-right transition-opacity group-hover:opacity-0">
+                            <p className="text-[13px] font-semibold text-slate-700">
+                              {total > 0 ? formatCurrency(total) : "—"}
+                            </p>
+                            <p className="mt-0.5 text-[11px] text-slate-400">
+                              {formatDate(doc.createdAt)}
+                            </p>
+                          </div>
+                          {/* Actions — overlay, shown on hover, right-aligned expanding left */}
+                          <div className="absolute top-1/2 right-0 flex -translate-y-1/2 items-center gap-1 whitespace-nowrap opacity-0 transition-opacity group-hover:opacity-100">
+                            <Link
+                              href={`/documents/${doc.id}`}
+                              target="_blank"
+                              onClick={(e) => e.stopPropagation()}
+                              className="flex items-center gap-1 rounded-lg border border-transparent px-2 py-1 text-[11px] font-medium text-slate-400 transition-colors hover:border-slate-200 hover:bg-white hover:text-indigo-600 hover:shadow-sm"
+                              title="Mở trang xem trước PDF"
+                            >
+                              <Eye className="h-3 w-3" />
+                              {!panelOpen && <span>Xem trước</span>}
+                            </Link>
+                            <div onClick={(e) => e.stopPropagation()}>
+                              <DocumentPdfDownloadButton
+                                document={doc}
+                                company={{
+                                  name: docCompany?.name ?? "",
+                                  address: docCompany?.address,
+                                  phone: docCompany?.phone,
+                                  taxCode: docCompany?.taxCode,
+                                  logoUrl: docCompany?.logoUrl,
+                                  headerLayout: docCompany?.headerLayout,
+                                }}
+                                columns={template?.columns ?? []}
+                                showTotal={template?.showTotal ?? false}
+                                title={template?.name ?? "Tài liệu"}
+                                signatureLabels={template?.signatureLabels ?? []}
+                                templateId={tid}
+                                size="row"
+                                showLabel={!panelOpen}
+                              />
+                            </div>
+                            <button
+                              onClick={(e) => handleRowDuplicate(e, doc.id)}
+                              className="flex cursor-pointer items-center gap-1 rounded-lg border border-transparent px-2 py-1 text-[11px] font-medium text-slate-400 transition-colors hover:border-slate-200 hover:bg-white hover:text-indigo-600 hover:shadow-sm"
+                              title="Sao chép tài liệu này"
+                            >
+                              <Copy className="h-3 w-3" />
+                              {!panelOpen && <span>Sao chép</span>}
+                            </button>
+                            <DeleteConfirmDialog
+                              name={template?.name ?? "Tài liệu"}
+                              onConfirm={() => handleRowDelete(doc.id)}
+                              trigger={
+                                <button
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="flex cursor-pointer items-center gap-1 rounded-lg border border-transparent px-2 py-1 text-[11px] font-medium text-slate-400 transition-colors hover:border-red-200 hover:bg-white hover:text-red-500 hover:shadow-sm"
+                                  title="Xóa tài liệu này"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                  {!panelOpen && <span>Xóa</span>}
+                                </button>
+                              }
+                            />
+                          </div>
                         </div>
 
                         {/* Arrow hint */}
@@ -305,7 +390,6 @@ export function DocumentListClient({
             companies={companies}
             onClose={handleClose}
             onSaved={handleSaved}
-            onDeleted={handleDeleted}
           />
         )}
       </div>

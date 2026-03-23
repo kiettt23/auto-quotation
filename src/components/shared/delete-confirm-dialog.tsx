@@ -18,9 +18,11 @@ import { Trash2 } from "lucide-react";
 type Props = {
   name: string;
   onConfirm: () => Promise<void>;
+  /** Custom trigger element — defaults to a red "Xóa" button */
+  trigger?: React.ReactNode;
 };
 
-export function DeleteConfirmDialog({ name, onConfirm }: Props) {
+export function DeleteConfirmDialog({ name, onConfirm, trigger }: Props) {
   const [open, setOpen] = useState(false);
 
   async function handleConfirm() {
@@ -31,13 +33,16 @@ export function DeleteConfirmDialog({ name, onConfirm }: Props) {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 gap-1 px-2 text-xs text-red-500 hover:bg-red-50 hover:text-red-600"
-        >
-          <Trash2 className="h-3 w-3" /> Xóa
-        </Button>
+        {trigger ?? (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-7 gap-1 px-2 text-xs text-red-500 hover:bg-red-50 hover:text-red-600"
+            title="Xóa"
+          >
+            <Trash2 className="h-3 w-3" /> Xóa
+          </Button>
+        )}
       </AlertDialogTrigger>
       <AlertDialogContent size="sm">
         <AlertDialogHeader>
