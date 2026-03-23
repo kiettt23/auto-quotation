@@ -188,12 +188,19 @@ export function JesangDeliveryTemplate({
   /* Calculate totals from customFields */
   let totalBox = 0;
   let totalWeight = 0;
+  const invoiceValues: string[] = [];
   for (const item of items) {
     totalBox += Number(item.customFields?.["boxQty"] ?? 0);
-    totalWeight += Number(
-      item.customFields?.["netWeight"] ?? 0,
-    );
+    totalWeight += Number(item.customFields?.["netWeight"] ?? 0);
+    const inv = String(item.customFields?.["invoiceVat"] ?? "").trim();
+    if (inv) invoiceValues.push(inv);
   }
+  /* Sum invoiceVat if all values are numeric, otherwise leave blank */
+  const allNumeric = invoiceValues.length > 0 && invoiceValues.every((v) => !isNaN(Number(v)));
+  const totalInvoice = allNumeric ? invoiceValues.reduce((s, v) => s + Number(v), 0) : 0;
+  const invoiceSummary = totalInvoice > 0
+    ? (Number.isInteger(totalInvoice) ? String(totalInvoice) : totalInvoice.toFixed(2))
+    : "";
 
   return (
     <Document>
@@ -417,7 +424,9 @@ export function JesangDeliveryTemplate({
                 },
               ]}
             >
-              <Text />
+              <Text style={{ fontWeight: "bold", textAlign: "center" }}>
+                {invoiceSummary}
+              </Text>
             </View>
           </View>
         </View>

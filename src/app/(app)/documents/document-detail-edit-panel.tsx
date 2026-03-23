@@ -3,7 +3,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { X, Plus, Trash2, Save, Printer, Copy, Loader2 } from "lucide-react";
+import { X, Plus, Trash2, Save, Eye, Copy, Loader2 } from "lucide-react";
 import { DeleteConfirmDialog } from "@/components/shared/delete-confirm-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -25,8 +25,15 @@ import {
   deleteDocumentAction,
   duplicateDocumentAction,
 } from "@/actions/document.actions";
-import { formatCurrency, mapCustomDataToColumnKeys } from "@/lib/utils/document-helpers";
-import { getExtraFormFields, getTemplateEntry, getTemplateList } from "@/lib/pdf/template-registry";
+import {
+  formatCurrency,
+  mapCustomDataToColumnKeys,
+} from "@/lib/utils/document-helpers";
+import {
+  getExtraFormFields,
+  getTemplateEntry,
+  getTemplateList,
+} from "@/lib/pdf/template-registry";
 import type { DocumentRow } from "@/services/document.service";
 import type { DocumentData, DocumentDataItem } from "@/lib/types/document-data";
 import type { ProductWithRelations } from "@/services/product.service";
@@ -63,10 +70,7 @@ export function DocumentDetailEditPanel({
   const [templateId, setTemplateId] = useState(
     doc?.templateId ?? templateList[0]?.id ?? "quotation",
   );
-  const template = useMemo(
-    () => getTemplateEntry(templateId),
-    [templateId],
-  );
+  const template = useMemo(() => getTemplateEntry(templateId), [templateId]);
   const templateExtraFields = useMemo(
     () => getExtraFormFields(templateId),
     [templateId],
@@ -74,7 +78,9 @@ export function DocumentDetailEditPanel({
 
   const [isPending, setIsPending] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
-  const [companyId, setCompanyId] = useState(doc?.companyId ?? companies[0]?.id ?? "");
+  const [companyId, setCompanyId] = useState(
+    doc?.companyId ?? companies[0]?.id ?? "",
+  );
   const [customerId, setCustomerId] = useState(doc?.customerId ?? "");
   const [customerName, setCustomerName] = useState(
     existingData?.customerName ?? "",
@@ -92,11 +98,15 @@ export function DocumentDetailEditPanel({
     existingData?.date ?? new Date().toISOString().slice(0, 10),
   );
   const [extraFields, setExtraFields] = useState<Record<string, string>>(() => {
-    const init: Record<string, string> = { ...(existingData?.templateFields ?? {}) };
+    const init: Record<string, string> = {
+      ...(existingData?.templateFields ?? {}),
+    };
     if (isCreate) {
       const defaultCompany = companies[0];
-      if (defaultCompany?.driverName && !init.driverName) init.driverName = defaultCompany.driverName;
-      if (defaultCompany?.vehicleId && !init.vehicleId) init.vehicleId = defaultCompany.vehicleId;
+      if (defaultCompany?.driverName && !init.driverName)
+        init.driverName = defaultCompany.driverName;
+      if (defaultCompany?.vehicleId && !init.vehicleId)
+        init.vehicleId = defaultCompany.vehicleId;
     }
     return init;
   });
@@ -130,6 +140,44 @@ export function DocumentDetailEditPanel({
     [items],
   );
 
+  // Columns that need editable inputs in item cards
+  // Skip: stt (auto), productName (selector), quantity/unitPrice (dedicated), amount (computed)
+  const SKIP_ITEM_KEYS = new Set([
+    "stt",
+    "productName",
+    "quantity",
+    "unitPrice",
+    "amount",
+  ]);
+  const editableColumns = useMemo(
+    () => (template?.columns ?? []).filter((c) => !SKIP_ITEM_KEYS.has(c.key)),
+    [template],
+  );
+
+  // Standard fields that map directly to DocumentDataItem properties
+  const STANDARD_ITEM_KEYS = new Set(["specification", "unit", "note"]);
+
+  function getItemColumnValue(
+    item: DocumentDataItem,
+    key: string,
+  ): string | number {
+    if (key === "specification") return item.specification ?? "";
+    if (key === "unit") return item.unit ?? "";
+    if (key === "note") return item.note ?? "";
+    return item.customFields?.[key] ?? "";
+  }
+
+  function updateItemColumn(index: number, key: string, value: string) {
+    if (STANDARD_ITEM_KEYS.has(key)) {
+      updateItem(index, { [key]: value });
+    } else {
+      const item = items[index];
+      updateItem(index, {
+        customFields: { ...item.customFields, [key]: value },
+      });
+    }
+  }
+
   function handleCustomerSelect(id: string) {
     const c = customers.find((c) => c.id === id);
     if (!c) return;
@@ -143,9 +191,11 @@ export function DocumentDetailEditPanel({
       ...prev,
       ...(c.deliveryName ? { deliveryName: c.deliveryName } : {}),
       ...(c.deliveryAddress ? { deliveryAddress: c.deliveryAddress } : {}),
-      ...(c.customData ? Object.fromEntries(
-        Object.entries(c.customData).map(([k, v]) => [k, String(v)])
-      ) : {}),
+      ...(c.customData
+        ? Object.fromEntries(
+            Object.entries(c.customData).map(([k, v]) => [k, String(v)]),
+          )
+        : {}),
     }));
   }
 
@@ -158,9 +208,11 @@ export function DocumentDetailEditPanel({
       ...prev,
       ...(company.driverName ? { driverName: company.driverName } : {}),
       ...(company.vehicleId ? { vehicleId: company.vehicleId } : {}),
-      ...(company.customData ? Object.fromEntries(
-        Object.entries(company.customData).map(([k, v]) => [k, String(v)])
-      ) : {}),
+      ...(company.customData
+        ? Object.fromEntries(
+            Object.entries(company.customData).map(([k, v]) => [k, String(v)]),
+          )
+        : {}),
     }));
   }
 
@@ -175,7 +227,17 @@ export function DocumentDetailEditPanel({
       unitPrice: Number(p.unitPrice) || 0,
       quantity: items[index].quantity ?? 1,
       amount: (items[index].quantity ?? 1) * (Number(p.unitPrice) || 0),
-      ...(p.customData ? { customFields: { ...items[index].customFields, ...mapCustomDataToColumnKeys(p.customData, template?.columns ?? []) } } : {}),
+      ...(p.customData
+        ? {
+            customFields: {
+              ...items[index].customFields,
+              ...mapCustomDataToColumnKeys(
+                p.customData,
+                template?.columns ?? [],
+              ),
+            },
+          }
+        : {}),
     });
   }
 
@@ -221,7 +283,9 @@ export function DocumentDetailEditPanel({
         amount: (it.quantity ?? 0) * (it.unitPrice ?? 0),
       })),
       notes,
-      ...(Object.keys(extraFields).length > 0 ? { templateFields: extraFields } : {}),
+      ...(Object.keys(extraFields).length > 0
+        ? { templateFields: extraFields }
+        : {}),
     };
 
     const result = isCreate
@@ -268,10 +332,10 @@ export function DocumentDetailEditPanel({
           onClick={handleSave}
           disabled={isPending || (!isCreate && !isDirty)}
           size="sm"
-          variant={(isCreate || isDirty) ? "default" : "outline"}
+          variant={isCreate || isDirty ? "default" : "outline"}
           className={cn(
             "h-7 min-w-0 flex-1 gap-1 rounded-lg text-xs transition-all",
-            (isCreate || isDirty)
+            isCreate || isDirty
               ? "bg-indigo-600 text-white hover:bg-indigo-700"
               : "text-slate-400",
           )}
@@ -285,10 +349,15 @@ export function DocumentDetailEditPanel({
         </Button>
         {!isCreate && (
           <>
-            <Button asChild size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs">
+            <Button
+              asChild
+              size="sm"
+              variant="outline"
+              className="h-7 gap-1 px-2 text-xs"
+            >
               <Link href={`/documents/${doc.id}`} target="_blank">
-                <Printer className="h-3 w-3" />
-                In
+                <Eye className="h-3 w-3" />
+                Xem
               </Link>
             </Button>
             <Button
@@ -300,7 +369,10 @@ export function DocumentDetailEditPanel({
               <Copy className="h-3 w-3" />
               Sao
             </Button>
-            <DeleteConfirmDialog name={template?.name ?? "Tài liệu"} onConfirm={handleDelete} />
+            <DeleteConfirmDialog
+              name={template?.name ?? "Tài liệu"}
+              onConfirm={handleDelete}
+            />
           </>
         )}
         <button
@@ -312,7 +384,10 @@ export function DocumentDetailEditPanel({
       </div>
 
       {/* Editable content */}
-      <div className="flex-1 overflow-y-auto px-4 py-3" onChangeCapture={markDirty}>
+      <div
+        className="flex-1 overflow-y-auto px-4 py-3"
+        onChangeCapture={markDirty}
+      >
         {/* Template selector — only on create */}
         {isCreate && (
           <fieldset className="mb-3">
@@ -324,7 +399,10 @@ export function DocumentDetailEditPanel({
                 <button
                   key={t.id}
                   type="button"
-                  onClick={() => { setTemplateId(t.id); markDirty(); }}
+                  onClick={() => {
+                    setTemplateId(t.id);
+                    markDirty();
+                  }}
                   className={cn(
                     "flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all",
                     templateId === t.id
@@ -332,11 +410,13 @@ export function DocumentDetailEditPanel({
                       : "bg-slate-50 text-slate-500 hover:bg-slate-100",
                   )}
                 >
-                  <span className={cn(
-                    "inline-block rounded px-1 py-0.5 text-[10px] font-bold",
-                    t.color.badgeBg,
-                    t.color.badgeText,
-                  )}>
+                  <span
+                    className={cn(
+                      "inline-block rounded px-1 py-0.5 text-[10px] font-bold",
+                      t.color.badgeBg,
+                      t.color.badgeText,
+                    )}
+                  >
                     {t.shortLabel}
                   </span>
                   {t.name}
@@ -561,16 +641,34 @@ export function DocumentDetailEditPanel({
                     </button>
                   )}
                 </div>
-                {(item.specification || item.unit) && (
-                  <p className="mt-0.5 text-[11px] text-slate-400">
-                    {[item.specification, item.unit]
-                      .filter(Boolean)
-                      .join(" · ")}
-                  </p>
+
+                {/* Template-driven editable fields (all columns shown in PDF) */}
+                {editableColumns.length > 0 && (
+                  <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+                    {editableColumns.map((col) => {
+                      const val = getItemColumnValue(item, col.key);
+                      return (
+                        <LabeledField key={col.key} label={col.label}>
+                          <Input
+                            type={
+                              col.type === "number" || col.type === "currency"
+                                ? "number"
+                                : "text"
+                            }
+                            value={val ?? ""}
+                            onChange={(e) =>
+                              updateItemColumn(i, col.key, e.target.value)
+                            }
+                            className="h-7 text-xs"
+                          />
+                        </LabeledField>
+                      );
+                    })}
+                  </div>
                 )}
-                {/* SL × Đơn giá */}
+                {/* Số lượng × Đơn giá */}
                 <div className="mt-1.5 flex items-center gap-1.5">
-                  <LabeledField label="SL" className="w-14">
+                  <LabeledField label="Số lượng" className="w-14">
                     <Input
                       type="number"
                       min={0}
@@ -595,35 +693,14 @@ export function DocumentDetailEditPanel({
                       className="h-7 text-xs"
                     />
                   </LabeledField>
-                  <div className="mt-3.5 shrink-0 text-right">
-                    <span className="text-xs font-semibold text-slate-700">
+                  <div className="mt-3.5 shrink-0 rounded-md bg-indigo-50/80 px-2 py-0.5 text-right">
+                    <span className="text-xs font-bold text-indigo-600">
                       {formatCurrency(
                         (item.quantity ?? 0) * (item.unitPrice ?? 0),
                       )}
                     </span>
                   </div>
                 </div>
-                {/* Custom fields (auto-filled from product, editable per item) */}
-                {item.customFields && Object.keys(item.customFields).length > 0 && (
-                  <div className="mt-1.5 grid grid-cols-3 gap-1.5">
-                    {Object.entries(item.customFields).map(([key, val]) => {
-                      const col = template?.columns.find((c) => c.key === key);
-                      return (
-                        <LabeledField key={key} label={col?.label ?? key}>
-                          <Input
-                            value={val ?? ""}
-                            onChange={(e) =>
-                              updateItem(i, {
-                                customFields: { ...item.customFields, [key]: e.target.value },
-                              })
-                            }
-                            className="h-7 text-xs"
-                          />
-                        </LabeledField>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
             ))}
             {/* Add item — dashed card */}
@@ -659,7 +736,6 @@ export function DocumentDetailEditPanel({
           />
         </LabeledField>
       </div>
-
     </div>
   );
 }

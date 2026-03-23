@@ -27,9 +27,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className={`${plusJakartaSans.className} ${poppins.variable} antialiased`}>
+      <body
+        className={`${plusJakartaSans.className} ${poppins.variable} antialiased`}
+      >
         {children}
-        <Toaster position="top-center" richColors />
+        <Toaster position="bottom-left" richColors />
       </body>
     </html>
   );
