@@ -286,7 +286,7 @@ function CustomerDetailPanel({
       <div className="flex-1 overflow-y-auto px-4 py-3">
         {/* Thông tin */}
         <fieldset className="mb-3">
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Thông tin</legend>
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">Thông tin</legend>
           <div className="space-y-1.5">
             <div className="flex gap-2">
               <LabeledField label={<>Tên khách hàng <span className="text-red-500">*</span></>} className="min-w-0 flex-1">
@@ -314,7 +314,7 @@ function CustomerDetailPanel({
 
         {/* Giao hàng */}
         <fieldset>
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Giao hàng mặc định</legend>
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">Giao hàng mặc định</legend>
           <div className="space-y-1.5">
             <div className="flex gap-2">
               <LabeledField label="Nơi giao" className="min-w-0 flex-1">
@@ -338,7 +338,7 @@ function CustomerDetailPanel({
         <Separator className="my-3" />
 
         <fieldset>
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Thông tin bổ sung</legend>
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">Thông tin bổ sung</legend>
           <KeyValueEditor
             ref={customDataRef}
             defaultValue={(customer?.customData as Record<string, string | number>) ?? {}}

@@ -320,7 +320,7 @@ function CompanyDetailPanel({
       <div className="flex-1 overflow-y-auto px-4 py-3">
         {/* Group 1: Thông tin */}
         <fieldset className="mb-3">
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">
             Thông tin
           </legend>
           <div className="space-y-1.5">
@@ -372,7 +372,7 @@ function CompanyDetailPanel({
 
         {/* Group 2: Ngân hàng */}
         <fieldset className="mb-3">
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">
             Ngân hàng
           </legend>
           <div className="flex gap-2">
@@ -397,7 +397,7 @@ function CompanyDetailPanel({
 
         {/* Group 3: Vận chuyển */}
         <fieldset className="mb-3">
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">
             Vận chuyển mặc định
           </legend>
           <div className="flex gap-2">
@@ -422,7 +422,7 @@ function CompanyDetailPanel({
 
         {/* Group 4: Logo */}
         <fieldset>
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">
             Logo
           </legend>
           <LabeledField label="URL Logo">
@@ -439,7 +439,7 @@ function CompanyDetailPanel({
 
         {/* Group 5: Custom Data */}
         <fieldset>
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">
             Thông tin bổ sung
           </legend>
           <KeyValueEditor

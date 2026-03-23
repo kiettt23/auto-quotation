@@ -353,7 +353,7 @@ function ProductDetailPanel({
 
       <div className="flex-1 overflow-y-auto px-4 py-3">
         <fieldset>
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Thông tin sản phẩm</legend>
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">Thông tin sản phẩm</legend>
           <div className="space-y-1.5">
             <LabeledField label={<>Tên sản phẩm <span className="text-red-500">*</span></>}>
               <Input value={name} onChange={(e) => setName(e.target.value)} className="h-8 text-xs" />
@@ -406,7 +406,7 @@ function ProductDetailPanel({
         </fieldset>
 
         <fieldset className="mt-4">
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Thông tin bổ sung</legend>
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">Thông tin bổ sung</legend>
           <KeyValueEditor
             ref={customDataRef}
             defaultValue={(product?.customData as Record<string, string | number>) ?? {}}

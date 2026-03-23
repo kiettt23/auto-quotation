@@ -344,6 +344,8 @@ export function DocumentDetailEditPanel({
                 taxCode: selectedCompany?.taxCode,
                 logoUrl: selectedCompany?.logoUrl,
                 headerLayout: selectedCompany?.headerLayout,
+                driverName: selectedCompany?.driverName,
+                vehicleId: selectedCompany?.vehicleId,
               }}
               columns={template?.columns ?? []}
               showTotal={template?.showTotal ?? false}
@@ -371,7 +373,7 @@ export function DocumentDetailEditPanel({
         {/* Template selector — only on create */}
         {isCreate && (
           <fieldset className="mb-3">
-            <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <legend className="mb-2 text-[13px] font-semibold text-slate-700">
               Loại tài liệu
             </legend>
             <div className="flex flex-wrap gap-1.5">
@@ -410,7 +412,7 @@ export function DocumentDetailEditPanel({
 
         {/* Group 1 — Công ty */}
         <fieldset className="mb-3">
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">
             Công ty
           </legend>
           <div className="space-y-1.5">
@@ -444,6 +446,38 @@ export function DocumentDetailEditPanel({
                 className="h-8 bg-slate-50 text-xs text-slate-500"
               />
             </LabeledField>
+            {(hasExtraField("driverName") || hasExtraField("vehicleId")) && (
+              <div className="flex gap-2">
+                {hasExtraField("driverName") && (
+                  <LabeledField label="Tài xế" className="min-w-0 flex-1">
+                    <Input
+                      value={extraFields.driverName ?? ""}
+                      onChange={(e) =>
+                        setExtraFields((prev) => ({
+                          ...prev,
+                          driverName: e.target.value,
+                        }))
+                      }
+                      className="h-8 text-xs"
+                    />
+                  </LabeledField>
+                )}
+                {hasExtraField("vehicleId") && (
+                  <LabeledField label="Số xe" className="w-28">
+                    <Input
+                      value={extraFields.vehicleId ?? ""}
+                      onChange={(e) =>
+                        setExtraFields((prev) => ({
+                          ...prev,
+                          vehicleId: e.target.value,
+                        }))
+                      }
+                      className="h-8 text-xs"
+                    />
+                  </LabeledField>
+                )}
+              </div>
+            )}
           </div>
         </fieldset>
 
@@ -451,7 +485,7 @@ export function DocumentDetailEditPanel({
 
         {/* Group 2 — Khách hàng */}
         <fieldset className="mb-3">
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">
             Khách hàng
           </legend>
           <div className="space-y-1.5">
@@ -485,38 +519,6 @@ export function DocumentDetailEditPanel({
                 className="h-8 text-xs"
               />
             </LabeledField>
-            {(hasExtraField("driverName") || hasExtraField("vehicleId")) && (
-              <div className="flex gap-2">
-                {hasExtraField("driverName") && (
-                  <LabeledField label="Tài xế" className="min-w-0 flex-1">
-                    <Input
-                      value={extraFields.driverName ?? ""}
-                      onChange={(e) =>
-                        setExtraFields((prev) => ({
-                          ...prev,
-                          driverName: e.target.value,
-                        }))
-                      }
-                      className="h-8 text-xs"
-                    />
-                  </LabeledField>
-                )}
-                {hasExtraField("vehicleId") && (
-                  <LabeledField label="Số xe" className="w-24">
-                    <Input
-                      value={extraFields.vehicleId ?? ""}
-                      onChange={(e) =>
-                        setExtraFields((prev) => ({
-                          ...prev,
-                          vehicleId: e.target.value,
-                        }))
-                      }
-                      className="h-8 text-xs"
-                    />
-                  </LabeledField>
-                )}
-              </div>
-            )}
           </div>
         </fieldset>
 
@@ -526,7 +528,7 @@ export function DocumentDetailEditPanel({
 
             {/* Group 3 — Nơi giao */}
             <fieldset className="mb-3">
-              <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              <legend className="mb-2 text-[13px] font-semibold text-slate-700">
                 Nơi giao
               </legend>
               <div className="space-y-1.5">
@@ -584,7 +586,7 @@ export function DocumentDetailEditPanel({
         {/* Items */}
         <div>
           <div className="mb-2">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+            <span className="text-[13px] font-semibold text-slate-700">
               Sản phẩm ({items.length})
             </span>
           </div>
@@ -707,14 +709,15 @@ export function DocumentDetailEditPanel({
         <Separator className="my-3" />
 
         {/* Notes */}
-        <LabeledField label="Ghi chú">
+        <fieldset>
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">Ghi chú</legend>
           <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             className="text-xs"
           />
-        </LabeledField>
+        </fieldset>
       </div>
     </div>
   );

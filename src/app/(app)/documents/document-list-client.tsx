@@ -277,7 +277,7 @@ export function DocumentListClient({
                               {total > 0 ? formatCurrency(total) : "—"}
                             </p>
                             <p className="mt-0.5 text-[11px] text-slate-400">
-                              {formatDate(doc.createdAt)}
+                              {data?.date ? data.date.split("-").reverse().join("/") : formatDate(doc.createdAt)}
                             </p>
                           </div>
                           {/* Actions — overlay, shown on hover, right-aligned expanding left */}
@@ -302,6 +302,8 @@ export function DocumentListClient({
                                   taxCode: docCompany?.taxCode,
                                   logoUrl: docCompany?.logoUrl,
                                   headerLayout: docCompany?.headerLayout,
+                                  driverName: docCompany?.driverName,
+                                  vehicleId: docCompany?.vehicleId,
                                 }}
                                 columns={template?.columns ?? []}
                                 showTotal={template?.showTotal ?? false}

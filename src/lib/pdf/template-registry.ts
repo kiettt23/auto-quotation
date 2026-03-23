@@ -90,6 +90,30 @@ const registry: TemplateEntry[] = [
       return require("./templates/jesang-delivery-template").JesangDeliveryTemplate;
     },
   },
+  {
+    id: "warehouse-export",
+    name: "Phiếu xuất kho",
+    description: "Layout chứng từ đơn giản, bảng viền, tổng số lượng kgs",
+    shortLabel: "PXK",
+    columns: [
+      { key: "stt", label: "STT", type: "number", width: "8%", align: "center", system: true },
+      { key: "productName", label: "Tên Hàng", type: "text", width: "28%", system: true },
+      { key: "unit", label: "ĐVT", type: "text", width: "10%", align: "center" },
+      { key: "specification", label: "Quy cách", type: "text", width: "16%" },
+      { key: "quantity", label: "Tổng cộng (kg)", type: "number", width: "20%", align: "right" },
+      { key: "note", label: "Ghi Chú", type: "text", width: "18%" },
+    ],
+    showTotal: true,
+    signatureLabels: ["Thủ kho", "Tài xế", "Người nhận hàng"],
+    color: { badgeBg: "bg-amber-100", badgeText: "text-amber-700", dotColor: "bg-amber-500" },
+    extraFormFields: [
+      { key: "vehicleId", label: "Số xe", placeholder: "50E-12345" },
+    ],
+    get component() {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      return require("./templates/warehouse-export-template").WarehouseExportTemplate;
+    },
+  },
 ];
 
 /** Get all available templates (without component for serialization) */

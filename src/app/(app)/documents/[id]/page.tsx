@@ -42,6 +42,8 @@ export default async function DocumentDetailPage({
         taxCode: company.taxCode,
         logoUrl: company.logoUrl,
         headerLayout: company.headerLayout,
+        driverName: company.driverName,
+        vehicleId: company.vehicleId,
       }}
       columns={columns}
       showTotal={showTotal}

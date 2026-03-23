@@ -13,6 +13,8 @@ export interface PdfTemplateProps {
     taxCode?: string | null;
     logoUrl?: string | null;
     headerLayout?: string | null;
+    driverName?: string | null;
+    vehicleId?: string | null;
   };
   data: DocumentData;
   columns: ColumnDef[];

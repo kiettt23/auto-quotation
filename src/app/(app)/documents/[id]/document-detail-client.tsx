@@ -14,6 +14,8 @@ interface CompanyInfo {
   taxCode?: string | null;
   logoUrl?: string | null;
   headerLayout?: string | null;
+  driverName?: string | null;
+  vehicleId?: string | null;
 }
 
 export function DocumentDetailClient({
