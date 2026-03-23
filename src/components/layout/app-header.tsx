@@ -84,7 +84,7 @@ export function AppHeader({ userName, userEmail }: AppHeaderProps) {
               ready
                 ? "transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]"
                 : "",
-              activeIndex < 0 ? "opacity-0" : "opacity-100",
+              (!ready || activeIndex < 0) ? "opacity-0" : "opacity-100",
             )}
             style={{ left: indicator.left, width: indicator.width }}
           />

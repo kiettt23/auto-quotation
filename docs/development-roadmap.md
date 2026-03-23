@@ -56,7 +56,19 @@
 
 ---
 
-## Phase 6 — Next Priorities (PLANNED)
+## Phase 6 — Schema Cleanup & Infra Simplification (COMPLETE — 2026-03-23)
+
+- [x] Remove `document.type` and `document.status` legacy columns
+- [x] Make `document.templateId` NOT NULL
+- [x] Remove `legacyTypeToTemplateId()`, `templateIdToLegacyType()`, `documentTypeEnum`, `DocumentType`
+- [x] Single branch (`main`), single DB, single `.env` file
+- [x] `KeyValueEditor` combobox key selection via `keyOptions` prop
+- [x] Document form redirect and duplicate behavior fixes
+- [x] README.md and `docs/template-creation-guide.md` created
+
+---
+
+## Phase 7 — Next Priorities (PLANNED)
 
 - [ ] Template-specific autofill documentation/onboarding hint in UI
 - [ ] Duplicate document action from list view

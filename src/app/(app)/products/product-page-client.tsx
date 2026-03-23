@@ -3,7 +3,7 @@ import { LabeledField } from "@/components/shared/labeled-field";
 import { KeyValueEditor, type KeyValueEditorRef } from "@/components/shared/key-value-editor";
 import { getAllCustomColumnKeys } from "@/lib/pdf/template-registry";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { Plus, Package, X, Save, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -38,15 +38,40 @@ type Props = {
 
 export function ProductPageClient({ products, categories, units }: Props) {
   const router = useRouter();
-  const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [activeTab, setActiveTab] = useState("all");
+
+  const tabs = useMemo(() => [
+    { label: "Tất cả", value: "all" },
+    ...categories.map((c) => ({ label: c.name, value: c.id })),
+  ], [categories]);
 
   const filtered = useMemo(() => {
-    if (!search) return products;
-    const q = search.toLowerCase();
-    return products.filter((p) => p.name.toLowerCase().includes(q));
-  }, [products, search]);
+    if (activeTab === "all") return products;
+    return products.filter((p) => p.categoryId === activeTab);
+  }, [products, activeTab]);
+
+  /* Sliding indicator */
+  const filterContainerRef = useRef<HTMLDivElement>(null);
+  const filterTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+  const [filterIndicator, setFilterIndicator] = useState({ left: 0, width: 0 });
+  const [filterReady, setFilterReady] = useState(false);
+  const activeTabIndex = tabs.findIndex((t) => t.value === activeTab);
+
+  const updateFilterIndicator = useCallback(() => {
+    const container = filterContainerRef.current;
+    const tab = filterTabRefs.current[activeTabIndex];
+    if (!container || !tab) return;
+    const cRect = container.getBoundingClientRect();
+    const tRect = tab.getBoundingClientRect();
+    setFilterIndicator({ left: tRect.left - cRect.left, width: tRect.width });
+    if (!filterReady) setFilterReady(true);
+  }, [activeTabIndex, filterReady]);
+
+  useEffect(() => {
+    updateFilterIndicator();
+  }, [updateFilterIndicator]);
 
   const selectedProduct = selectedId
     ? products.find((p) => p.id === selectedId) ?? null
@@ -81,15 +106,32 @@ export function ProductPageClient({ products, categories, units }: Props) {
         }`}
       >
         <div className="flex items-center gap-3 px-4 py-3">
-          <Input
-            placeholder="Tìm sản phẩm..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="h-8 flex-1 rounded-xl border-slate-200 bg-slate-50 pl-3 text-xs"
-          />
+          <div
+            ref={filterContainerRef}
+            className="relative flex items-center gap-1 rounded-xl bg-slate-100/80 p-1"
+          >
+            <div
+              className={`pointer-events-none absolute rounded-lg bg-white shadow-sm ${
+                filterReady ? "transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]" : ""
+              } ${filterReady ? "opacity-100" : "opacity-0"}`}
+              style={{ left: filterIndicator.left, width: filterIndicator.width, top: 4, bottom: 4 }}
+            />
+            {tabs.map((tab, i) => (
+              <button
+                key={tab.value}
+                ref={(el) => { filterTabRefs.current[i] = el; }}
+                onClick={() => setActiveTab(tab.value)}
+                className={`relative z-10 cursor-pointer rounded-lg px-3 py-1.5 text-xs font-medium transition-colors duration-200 ${
+                  activeTab === tab.value ? "text-slate-900" : "text-slate-500 hover:text-slate-700"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
           <button
             onClick={handleAdd}
-            className="flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-400 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600"
+            className="ml-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-slate-200 text-slate-400 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600"
           >
             <Plus className="h-3.5 w-3.5" />
           </button>
@@ -99,12 +141,18 @@ export function ProductPageClient({ products, categories, units }: Props) {
 
         <div className="flex-1 overflow-y-auto px-3 py-2">
           {filtered.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16">
-              <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50">
+            <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50">
                 <Package className="h-7 w-7 text-indigo-500" />
               </div>
-              <p className="text-sm font-medium text-slate-900">Chưa có sản phẩm</p>
-              <p className="mt-1 text-xs text-slate-400">Nhấn + để thêm sản phẩm đầu tiên</p>
+              <div className="text-center">
+                <p className="font-semibold text-slate-900">Chưa có sản phẩm nào</p>
+                <p className="mt-1 text-sm text-slate-400">Thêm sản phẩm để bắt đầu tạo tài liệu</p>
+              </div>
+              <Button onClick={handleAdd} className="rounded-xl bg-indigo-600 hover:bg-indigo-700">
+                <Plus className="mr-1.5 h-4 w-4" />
+                Thêm sản phẩm
+              </Button>
             </div>
           ) : (
             <div className="space-y-1">

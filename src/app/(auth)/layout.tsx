@@ -19,9 +19,6 @@ export default async function AuthLayout({
           <h1 className="font-poppins text-2xl font-bold tracking-tight text-slate-900">
             autoquotation
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
-            Tạo báo giá & phiếu giao hàng chuyên nghiệp
-          </p>
         </div>
 
         {/* Card */}

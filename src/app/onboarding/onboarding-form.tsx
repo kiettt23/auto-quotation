@@ -83,6 +83,14 @@ export function OnboardingForm() {
         <Button type="submit" disabled={loading} className="w-full">
           {loading ? "Đang thiết lập..." : "Bắt đầu sử dụng"}
         </Button>
+
+        <button
+          type="button"
+          onClick={() => router.push("/")}
+          className="w-full text-center text-xs text-slate-400 transition-colors hover:text-slate-600"
+        >
+          Bỏ qua, thiết lập sau
+        </button>
       </div>
     </form>
   );

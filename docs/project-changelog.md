@@ -1,6 +1,33 @@
 # Project Changelog
 
-## [Unreleased] — 2026-03-23
+## [Unreleased] — 2026-03-23 (Schema Cleanup & Infra Simplification)
+
+### Added
+- `README.md` — project overview and setup instructions
+- `docs/template-creation-guide.md` — full pattern for adding new templates (registry, columns, customData autofill, combobox keys, label-to-key mapping)
+- `KeyValueEditor`: `keyOptions` prop — passes template column keys to combobox for structured key selection
+
+### Changed
+- `document.templateId` is now NOT NULL — all documents must reference a template
+- `KeyValueEditor` combobox key selection sourced from template columns via `keyOptions` prop
+- Document form redirect on create goes to `/documents` (not `/documents/[id]`)
+- Duplicate document action refreshes page instead of redirecting
+- Print button opens PDF in new browser tab
+
+### Removed
+- `document.type` column (enum: QUOTATION, DELIVERY_ORDER) — legacy field dropped
+- `document.status` column — dropped
+- `legacyTypeToTemplateId()` and `templateIdToLegacyType()` functions from `template-registry.ts`
+- `documentTypeEnum` and `DocumentType` type
+
+### Infrastructure
+- Single branch: `main` (staging branch deleted)
+- Single DB: `ep-polished-scene` (prod only)
+- Single env file: `.env` (`.env.local` no longer used)
+
+---
+
+## [Unreleased] — 2026-03-23 (customData Combobox)
 
 ### Added
 - `mapCustomDataToColumnKeys()` in `src/lib/utils/document-helpers.ts` — maps product customData keys (Vietnamese labels e.g. "Số Lô") to column keys (camelCase e.g. `lotNo`) via case-insensitive label matching; applied in `document-items-table.tsx` and `document-detail-edit-panel.tsx`

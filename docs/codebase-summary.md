@@ -85,7 +85,7 @@ src/
 │       ├── product.ts             # +customData JSONB
 │       ├── category.ts
 │       ├── unit.ts
-│       ├── document.ts            # Has templateId + legacy type enum
+│       ├── document.ts            # templateId NOT NULL, no type/status columns
 │       └── index.ts
 ├── lib/
 │   ├── auth/                      # Auth helpers
@@ -148,8 +148,7 @@ These files were removed during the merge-doctype-into-template refactor:
 **To add a new template:**
 1. Add entry to `registry` array with: id, name, shortLabel, columns, showTotal, signatureLabels, color, extraFormFields
 2. Point `component` to existing PDF template or create new one in `src/lib/pdf/templates/`
-3. Add legacy type mapping if needed
-4. That's it — UI auto-discovers templates from registry
+3. That's it — UI auto-discovers templates from registry
 
 **Current templates:** `quotation` (BG), `delivery-order` (PGH)
 
@@ -194,7 +193,7 @@ createDocument(userId, { companyId, templateId, data: { ...rest, items } })
   ↓
 generateDocumentNumber(companyId, shortLabel) → "BG-2026-001"
   ↓
-db.insert(document) with userId, companyId, templateId, type (legacy), data (JSONB)
+db.insert(document) with userId, companyId, templateId, data (JSONB)
   ↓
 revalidatePath → UI refreshes
 ```

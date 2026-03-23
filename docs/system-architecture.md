@@ -28,7 +28,7 @@ autoquotation is a Next.js 16 + PostgreSQL web app for managing business documen
 | `product` | 1 user → N products | `userId`, `name`, `unitPrice`, `specification`, `categoryId`, `unitId`, `customData` (JSONB) |
 | `category` | 1 user → N categories | `userId`, `name` |
 | `unit` | 1 user → N units | `userId`, `name` |
-| `document` | N docs → 1 company | `userId`, `companyId`, `customerId`, `templateId`, `type` (legacy), `documentNumber`, `data` (JSONB) |
+| `document` | N docs → 1 company | `userId`, `companyId`, `customerId`, `templateId` (NOT NULL), `documentNumber`, `data` (JSONB) |
 
 ### Document JSONB `data` Structure
 
@@ -64,7 +64,6 @@ interface DocumentData {
    - `component` — React PDF component (lazy-loaded)
 2. If layout differs from existing: create PDF component in `src/lib/pdf/templates/`
 3. If layout matches existing: reuse `DefaultTemplate` component
-4. Update legacy type maps if needed (`legacyTypeToTemplateId`, `templateIdToLegacyType`)
 
 ### Current Templates
 
@@ -151,7 +150,7 @@ Only has Categories and Units tabs. No "Document Types" tab (removed — templat
 - `company.customData` → merged into `data.templateFields` when company is selected
 - `product.customData` → merged into item's `customFields` when product is selected in items table
 
-**UI:** `KeyValueEditor` component (`src/components/shared/key-value-editor.tsx`) — uncontrolled, ref-based. Parent reads via `ref.getData()`. Rendered in entity detail panels (companies, customers, products).
+**UI:** `KeyValueEditor` component (`src/components/shared/key-value-editor.tsx`) — uncontrolled, ref-based. Parent reads via `ref.getData()`. Rendered in entity detail panels (companies, customers, products). Key input uses shadcn Popover combobox sourced from `getAllCustomColumnKeys()` via `keyOptions` prop.
 
 ### Per-Document Column Override
 
@@ -165,6 +164,3 @@ Template-specific form fields (e.g. delivery address, driver name) are:
 3. Stored in `data.templateFields` (nested Record, not flat)
 4. Read by PDF templates from `data.templateFields`
 
-### Legacy Type Compatibility
-
-`document.type` column (enum: QUOTATION, DELIVERY_ORDER) kept for backward compat. New documents use `templateId`. Mapping functions exist in template-registry.ts.

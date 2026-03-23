@@ -44,7 +44,7 @@ export function SettingsPageClient({ categories, units }: Props) {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-medium transition-colors ${
+                className={`flex w-full cursor-pointer items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-[13px] font-medium transition-colors ${
                   activeTab === tab.id
                     ? "bg-indigo-50 text-indigo-600 ring-1 ring-indigo-200"
                     : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"

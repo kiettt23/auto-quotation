@@ -15,6 +15,18 @@ import {
 import { ok, err, type ActionResult } from "@/lib/utils/action-result";
 import { revalidatePath } from "next/cache";
 
+/** Extract non-empty string fields from FormData, parse customData JSON */
+function parseFormData(formData: FormData): Record<string, unknown> {
+  const raw: Record<string, unknown> = {};
+  for (const [key, value] of formData.entries()) {
+    if (typeof value === "string" && value !== "") raw[key] = value;
+  }
+  const customDataRaw = formData.get("customData") as string | null;
+  if (customDataRaw) raw.customData = JSON.parse(customDataRaw);
+  else delete raw.customData;
+  return raw;
+}
+
 export async function setupCompanyAction(
   formData: FormData
 ): Promise<ActionResult<{ companyId: string }>> {
@@ -22,24 +34,8 @@ export async function setupCompanyAction(
     const session = await requireSession();
     const userId = session.user.id;
 
-    const customDataRaw = formData.get("customData") as string | null;
-    const parsed = createCompanySchema.safeParse({
-      name: formData.get("name"),
-      address: formData.get("address"),
-      phone: formData.get("phone"),
-      taxCode: formData.get("taxCode"),
-      email: formData.get("email"),
-      bankName: formData.get("bankName"),
-      bankAccount: formData.get("bankAccount"),
-      driverName: formData.get("driverName"),
-      vehicleId: formData.get("vehicleId"),
-      logoUrl: formData.get("logoUrl"),
-      customData: customDataRaw ? JSON.parse(customDataRaw) : undefined,
-    });
-
-    if (!parsed.success) {
-      return err(parsed.error.issues[0].message);
-    }
+    const parsed = createCompanySchema.safeParse(parseFormData(formData));
+    if (!parsed.success) return err(parsed.error.issues[0].message);
 
     const company = await createCompany(userId, parsed.data);
     return ok({ companyId: company.id });
@@ -54,24 +50,8 @@ export async function createCompanyAction(
   try {
     const userId = await requireUserId();
 
-    const customDataRaw = formData.get("customData") as string | null;
-    const parsed = createCompanySchema.safeParse({
-      name: formData.get("name"),
-      address: formData.get("address"),
-      phone: formData.get("phone"),
-      taxCode: formData.get("taxCode"),
-      email: formData.get("email"),
-      bankName: formData.get("bankName"),
-      bankAccount: formData.get("bankAccount"),
-      driverName: formData.get("driverName"),
-      vehicleId: formData.get("vehicleId"),
-      logoUrl: formData.get("logoUrl"),
-      customData: customDataRaw ? JSON.parse(customDataRaw) : undefined,
-    });
-
-    if (!parsed.success) {
-      return err(parsed.error.issues[0].message);
-    }
+    const parsed = createCompanySchema.safeParse(parseFormData(formData));
+    if (!parsed.success) return err(parsed.error.issues[0].message);
 
     const company = await createCompany(userId, parsed.data);
     revalidatePath("/companies");
@@ -89,25 +69,10 @@ export async function updateCompanyAction(
   try {
     const userId = await requireUserId();
 
-    const customDataRaw = formData.get("customData") as string | null;
-    const parsed = updateCompanySchema.safeParse({
-      name: formData.get("name"),
-      address: formData.get("address"),
-      phone: formData.get("phone"),
-      taxCode: formData.get("taxCode"),
-      email: formData.get("email"),
-      bankName: formData.get("bankName"),
-      bankAccount: formData.get("bankAccount"),
-      headerLayout: formData.get("headerLayout") || undefined,
-      driverName: formData.get("driverName"),
-      vehicleId: formData.get("vehicleId"),
-      logoUrl: formData.get("logoUrl"),
-      customData: customDataRaw ? JSON.parse(customDataRaw) : undefined,
-    });
-
-    if (!parsed.success) {
-      return err(parsed.error.issues[0].message);
-    }
+    const raw = parseFormData(formData);
+    if (!raw.headerLayout) raw.headerLayout = undefined;
+    const parsed = updateCompanySchema.safeParse(raw);
+    if (!parsed.success) return err(parsed.error.issues[0].message);
 
     await updateCompany(companyId, userId, parsed.data);
     revalidatePath("/companies");
