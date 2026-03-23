@@ -344,7 +344,7 @@ export function JesangDeliveryTemplate({
               <View style={[s.td, { width: COL.item }]}>
                 <Text>{item.productName}</Text>
               </View>
-              <View style={[s.td, { width: COL.lot }]}>
+              <View style={[s.td, { width: COL.lot, textAlign: "center" }]}>
                 <Text>{String(item.customFields?.["lotNo"] ?? "")}</Text>
               </View>
               <View style={[s.td, { width: COL.box, textAlign: "center" }]}>
@@ -352,14 +352,14 @@ export function JesangDeliveryTemplate({
                   {String(item.customFields?.["boxQty"] ?? "")}
                 </Text>
               </View>
-              <View style={[s.td, { width: COL.weight, textAlign: "right" }]}>
+              <View style={[s.td, { width: COL.weight, textAlign: "center" }]}>
                 <Text>
                   {String(
                     item.customFields?.["netWeight"] ?? "",
                   )}
                 </Text>
               </View>
-              <View style={[s.td, { width: COL.invoice, borderRightWidth: 0 }]}>
+              <View style={[s.td, { width: COL.invoice, textAlign: "center", borderRightWidth: 0 }]}>
                 <Text>{String(item.customFields?.["invoiceVat"] ?? "")}</Text>
               </View>
             </View>
@@ -400,7 +400,7 @@ export function JesangDeliveryTemplate({
             <View
               style={[
                 s.td,
-                { width: COL.weight, textAlign: "right", borderBottomWidth: 0 },
+                { width: COL.weight, textAlign: "center", borderBottomWidth: 0 },
               ]}
             >
               <Text style={{ fontWeight: "bold" }}>

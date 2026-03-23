@@ -4,7 +4,7 @@ import { KeyValueEditor, type KeyValueEditorRef } from "@/components/shared/key-
 import { getAllCustomColumnKeys } from "@/lib/pdf/template-registry";
 
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
-import { Plus, Package, X, Save, Loader2 } from "lucide-react";
+import { Plus, Package, X, Save, Loader2, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -160,7 +160,7 @@ export function ProductPageClient({ products, categories, units }: Props) {
                 <button
                   key={p.id}
                   onClick={() => handleSelect(p.id)}
-                  className={`flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left transition-colors ${
+                  className={`group flex w-full cursor-pointer items-center gap-4 rounded-xl px-3 py-2.5 text-left transition-all ${
                     selectedId === p.id
                       ? "bg-indigo-50 ring-1 ring-indigo-200"
                       : "hover:bg-slate-50"
@@ -178,6 +178,9 @@ export function ProductPageClient({ products, categories, units }: Props) {
                   <span className="shrink-0 text-[13px] font-semibold text-slate-700">
                     {formatCurrency(p.unitPrice)}
                   </span>
+                  <ChevronRight className={`h-4 w-4 shrink-0 transition-all duration-200 ${
+                    selectedId === p.id ? "text-indigo-400" : "text-slate-300 group-hover:text-slate-400"
+                  }`} />
                 </button>
               ))}
             </div>
@@ -304,7 +307,7 @@ function ProductDetailPanel({
         <fieldset>
           <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Thông tin sản phẩm</legend>
           <div className="space-y-1.5">
-            <LabeledField label="Tên sản phẩm *">
+            <LabeledField label={<>Tên sản phẩm <span className="text-red-500">*</span></>}>
               <Input value={name} onChange={(e) => setName(e.target.value)} className="h-8 text-xs" />
             </LabeledField>
             <div className="flex gap-2">

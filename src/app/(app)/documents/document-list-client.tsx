@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Plus,
@@ -51,6 +50,7 @@ export function DocumentListClient({
   const [activeTab, setActiveTab] = useState("all");
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   // Filter tab sliding indicator
   const filterContainerRef = useRef<HTMLDivElement>(null);
@@ -93,18 +93,40 @@ export function DocumentListClient({
     ? (documents.find((d) => d.id === selectedId) ?? null)
     : null;
 
+  const panelOpen = isCreating || !!selectedDoc;
+
+  function handleAdd() {
+    setSelectedId(null);
+    setIsCreating(true);
+  }
+
+  function handleSelect(id: string) {
+    setIsCreating(false);
+    setSelectedId((prev) => (prev === id ? null : id));
+  }
+
+  function handleClose() {
+    setSelectedId(null);
+    setIsCreating(false);
+  }
+
   function handleDeleted(id: string) {
     if (selectedId === id) setSelectedId(null);
     router.refresh();
   }
 
+  function handleSaved() {
+    setIsCreating(false);
+    router.refresh();
+  }
+
   return (
-    <div className="flex h-[calc(100vh-48px)] gap-0 px-10 py-6">
+    <div className="flex h-[calc(100vh-48px)] gap-0 overflow-hidden px-10 py-6">
       {/* Master — document list */}
       <div
         className={cn(
           "flex min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]",
-          selectedDoc ? "flex-3" : "flex-1",
+          panelOpen ? "flex-3" : "flex-1",
         )}
       >
         {/* Toolbar — single row */}
@@ -146,19 +168,19 @@ export function DocumentListClient({
               </button>
             ))}
           </div>
-          <Link
-            href="/documents/new"
-            className="ml-1 flex h-7 w-7 items-center justify-center rounded-lg border border-slate-200 text-slate-400 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600"
+          <button
+            onClick={handleAdd}
+            className="ml-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg border border-slate-200 text-slate-400 transition-colors hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600"
           >
             <Plus className="h-3.5 w-3.5" />
-          </Link>
+          </button>
         </div>
 
         <Separator />
 
         {/* List */}
         {documents.length === 0 ? (
-          <EmptyState />
+          <EmptyState onAdd={handleAdd} />
         ) : (
           <>
             <div className="flex-1 overflow-y-auto px-3 py-2">
@@ -181,11 +203,7 @@ export function DocumentListClient({
                       <button
                         key={doc.id}
                         type="button"
-                        onClick={() =>
-                          setSelectedId((prev) =>
-                            prev === doc.id ? null : doc.id,
-                          )
-                        }
+                        onClick={() => handleSelect(doc.id)}
                         className={cn(
                           "group flex w-full cursor-pointer items-center gap-4 rounded-xl px-3 py-2.5 text-left transition-all",
                           isSelected
@@ -263,20 +281,30 @@ export function DocumentListClient({
       <div
         className={cn(
           "overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)]",
-          selectedDoc
-            ? "ml-6 flex-2 opacity-100"
+          panelOpen
+            ? "ml-6 min-w-0 flex-2 opacity-100"
             : "ml-0 w-0 flex-0 opacity-0",
         )}
       >
-        {selectedDoc && (
+        {isCreating && (
+          <DocumentDetailEditPanel
+            key="create"
+            products={products}
+            customers={customers}
+            companies={companies}
+            onClose={handleClose}
+            onSaved={handleSaved}
+          />
+        )}
+        {selectedDoc && !isCreating && (
           <DocumentDetailEditPanel
             key={selectedDoc.id}
             doc={selectedDoc}
             products={products}
             customers={customers}
             companies={companies}
-            onClose={() => setSelectedId(null)}
-            onSaved={() => router.refresh()}
+            onClose={handleClose}
+            onSaved={handleSaved}
             onDeleted={handleDeleted}
           />
         )}
@@ -326,7 +354,7 @@ function Pagination({
   );
 }
 
-function EmptyState() {
+function EmptyState({ onAdd }: { onAdd: () => void }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 py-16">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50">
@@ -339,13 +367,11 @@ function EmptyState() {
         </p>
       </div>
       <Button
-        asChild
+        onClick={onAdd}
         className="rounded-xl bg-indigo-600 hover:bg-indigo-700"
       >
-        <Link href="/documents/new">
-          <Plus className="mr-1.5 h-4 w-4" />
-          Tạo tài liệu
-        </Link>
+        <Plus className="mr-1.5 h-4 w-4" />
+        Tạo tài liệu
       </Button>
     </div>
   );

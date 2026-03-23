@@ -20,12 +20,13 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/cn";
 import {
+  createDocumentAction,
   updateDocumentAction,
   deleteDocumentAction,
   duplicateDocumentAction,
 } from "@/actions/document.actions";
 import { formatCurrency, mapCustomDataToColumnKeys } from "@/lib/utils/document-helpers";
-import { getExtraFormFields, getTemplateEntry } from "@/lib/pdf/template-registry";
+import { getExtraFormFields, getTemplateEntry, getTemplateList } from "@/lib/pdf/template-registry";
 import type { DocumentRow } from "@/services/document.service";
 import type { DocumentData, DocumentDataItem } from "@/lib/types/document-data";
 import type { ProductWithRelations } from "@/services/product.service";
@@ -33,14 +34,16 @@ import type { CustomerRow } from "@/services/customer.service";
 import type { CompanyRow } from "@/services/company.service";
 import { LabeledField } from "@/components/shared/labeled-field";
 
+const templateList = getTemplateList();
+
 interface Props {
-  doc: DocumentRow;
+  doc?: DocumentRow;
   products: ProductWithRelations[];
   customers: CustomerRow[];
   companies: CompanyRow[];
   onClose: () => void;
   onSaved: () => void;
-  onDeleted: (id: string) => void;
+  onDeleted?: (id: string) => void;
 }
 
 export function DocumentDetailEditPanel({
@@ -53,23 +56,26 @@ export function DocumentDetailEditPanel({
   onDeleted,
 }: Props) {
   const router = useRouter();
-  const existingData = doc.data as DocumentData;
+  const isCreate = !doc;
+  const existingData = doc?.data as DocumentData | undefined;
 
-  // Resolve template for extra fields
-  const resolvedTemplateId = doc.templateId;
+  // Template state — editable on create, fixed on edit
+  const [templateId, setTemplateId] = useState(
+    doc?.templateId ?? templateList[0]?.id ?? "quotation",
+  );
   const template = useMemo(
-    () => getTemplateEntry(resolvedTemplateId),
-    [resolvedTemplateId],
+    () => getTemplateEntry(templateId),
+    [templateId],
   );
   const templateExtraFields = useMemo(
-    () => getExtraFormFields(resolvedTemplateId),
-    [resolvedTemplateId],
+    () => getExtraFormFields(templateId),
+    [templateId],
   );
 
   const [isPending, setIsPending] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
-  const [companyId, setCompanyId] = useState(doc.companyId ?? "");
-  const [customerId, setCustomerId] = useState(doc.customerId ?? "");
+  const [companyId, setCompanyId] = useState(doc?.companyId ?? companies[0]?.id ?? "");
+  const [customerId, setCustomerId] = useState(doc?.customerId ?? "");
   const [customerName, setCustomerName] = useState(
     existingData?.customerName ?? "",
   );
@@ -86,7 +92,13 @@ export function DocumentDetailEditPanel({
     existingData?.date ?? new Date().toISOString().slice(0, 10),
   );
   const [extraFields, setExtraFields] = useState<Record<string, string>>(() => {
-    return { ...(existingData?.templateFields ?? {}) };
+    const init: Record<string, string> = { ...(existingData?.templateFields ?? {}) };
+    if (isCreate) {
+      const defaultCompany = companies[0];
+      if (defaultCompany?.driverName && !init.driverName) init.driverName = defaultCompany.driverName;
+      if (defaultCompany?.vehicleId && !init.vehicleId) init.vehicleId = defaultCompany.vehicleId;
+    }
+    return init;
   });
   const [notes, setNotes] = useState(existingData?.notes ?? "");
   const [items, setItems] = useState<DocumentDataItem[]>(
@@ -197,7 +209,7 @@ export function DocumentDetailEditPanel({
     setIsPending(true);
     const payload = {
       companyId,
-      templateId: resolvedTemplateId,
+      templateId,
       date: documentDate || undefined,
       customerId: customerId || undefined,
       customerName,
@@ -212,11 +224,13 @@ export function DocumentDetailEditPanel({
       ...(Object.keys(extraFields).length > 0 ? { templateFields: extraFields } : {}),
     };
 
-    const result = await updateDocumentAction(doc.id, payload);
+    const result = isCreate
+      ? await createDocumentAction(payload)
+      : await updateDocumentAction(doc.id, payload);
     setIsPending(false);
 
     if (result.success) {
-      toast.success("Đã lưu");
+      toast.success(isCreate ? "Đã tạo" : "Đã lưu");
       setIsDirty(false);
       onSaved();
     } else {
@@ -225,16 +239,18 @@ export function DocumentDetailEditPanel({
   }
 
   async function handleDelete() {
+    if (!doc) return;
     const result = await deleteDocumentAction(doc.id);
     if (result.success) {
       toast.success("Đã xóa");
-      onDeleted(doc.id);
+      onDeleted?.(doc.id);
     } else {
       toast.error(result.error);
     }
   }
 
   async function handleDuplicate() {
+    if (!doc) return;
     const result = await duplicateDocumentAction(doc.id);
     if (result.success) {
       toast.success("Đã nhân bản");
@@ -245,17 +261,17 @@ export function DocumentDetailEditPanel({
   }
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
+    <div className="flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
       {/* Header — all actions */}
       <div className="flex items-center gap-1.5 px-3 py-1.5">
         <Button
           onClick={handleSave}
-          disabled={isPending || !isDirty}
+          disabled={isPending || (!isCreate && !isDirty)}
           size="sm"
-          variant={isDirty ? "default" : "outline"}
+          variant={(isCreate || isDirty) ? "default" : "outline"}
           className={cn(
             "h-7 min-w-0 flex-1 gap-1 rounded-lg text-xs transition-all",
-            isDirty
+            (isCreate || isDirty)
               ? "bg-indigo-600 text-white hover:bg-indigo-700"
               : "text-slate-400",
           )}
@@ -265,24 +281,28 @@ export function DocumentDetailEditPanel({
           ) : (
             <Save className="h-3 w-3" />
           )}
-          {isPending ? "Lưu..." : isDirty ? "Lưu" : "Đã lưu"}
+          {isPending ? "Lưu..." : isCreate ? "Tạo" : isDirty ? "Lưu" : "Đã lưu"}
         </Button>
-        <Button asChild size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs">
-          <Link href={`/documents/${doc.id}`} target="_blank">
-            <Printer className="h-3 w-3" />
-            In
-          </Link>
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          className="h-7 gap-1 px-2 text-xs"
-          onClick={handleDuplicate}
-        >
-          <Copy className="h-3 w-3" />
-          Sao
-        </Button>
-        <DeleteConfirmDialog name={template?.name ?? "Tài liệu"} onConfirm={handleDelete} />
+        {!isCreate && (
+          <>
+            <Button asChild size="sm" variant="outline" className="h-7 gap-1 px-2 text-xs">
+              <Link href={`/documents/${doc.id}`} target="_blank">
+                <Printer className="h-3 w-3" />
+                In
+              </Link>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 gap-1 px-2 text-xs"
+              onClick={handleDuplicate}
+            >
+              <Copy className="h-3 w-3" />
+              Sao
+            </Button>
+            <DeleteConfirmDialog name={template?.name ?? "Tài liệu"} onConfirm={handleDelete} />
+          </>
+        )}
         <button
           onClick={onClose}
           className="rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
@@ -292,7 +312,42 @@ export function DocumentDetailEditPanel({
       </div>
 
       {/* Editable content */}
-      <div className="flex-1 overflow-y-auto px-4 py-3" onChangeCapture={markDirty}>
+      <div className="min-w-0 flex-1 overflow-y-auto px-4 py-3" onChangeCapture={markDirty}>
+        {/* Template selector — only on create */}
+        {isCreate && (
+          <fieldset className="mb-3">
+            <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+              Loại tài liệu
+            </legend>
+            <div className="flex flex-wrap gap-1.5">
+              {templateList.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => { setTemplateId(t.id); markDirty(); }}
+                  className={cn(
+                    "flex cursor-pointer items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all",
+                    templateId === t.id
+                      ? "bg-indigo-50 text-indigo-700 ring-1 ring-indigo-200"
+                      : "bg-slate-50 text-slate-500 hover:bg-slate-100",
+                  )}
+                >
+                  <span className={cn(
+                    "inline-block rounded px-1 py-0.5 text-[10px] font-bold",
+                    t.color.badgeBg,
+                    t.color.badgeText,
+                  )}>
+                    {t.shortLabel}
+                  </span>
+                  {t.name}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        )}
+
+        {isCreate && <Separator className="my-3" />}
+
         {/* Group 1 — Công ty */}
         <fieldset className="mb-3">
           <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
@@ -314,7 +369,7 @@ export function DocumentDetailEditPanel({
                   </SelectContent>
                 </Select>
               </LabeledField>
-              <LabeledField label="Mã số thuế" className="w-32 shrink-0">
+              <LabeledField label="Mã số thuế" className="w-28">
                 <Input
                   value={selectedCompany?.taxCode ?? ""}
                   readOnly
@@ -355,7 +410,7 @@ export function DocumentDetailEditPanel({
                   </SelectContent>
                 </Select>
               </LabeledField>
-              <LabeledField label="Ngày chứng từ" className="w-36 shrink-0">
+              <LabeledField label="Ngày chứng từ" className="w-32">
                 <DatePicker
                   value={documentDate}
                   onChange={setDocumentDate}
@@ -387,7 +442,7 @@ export function DocumentDetailEditPanel({
                   </LabeledField>
                 )}
                 {hasExtraField("vehicleId") && (
-                  <LabeledField label="Số xe" className="w-28 shrink-0">
+                  <LabeledField label="Số xe" className="w-24">
                     <Input
                       value={extraFields.vehicleId ?? ""}
                       onChange={(e) =>
@@ -451,7 +506,7 @@ export function DocumentDetailEditPanel({
                       className="h-8 text-xs"
                     />
                   </LabeledField>
-                  <LabeledField label="SĐT" className="w-28 shrink-0">
+                  <LabeledField label="SĐT" className="w-24">
                     <Input
                       value={receiverPhone}
                       onChange={(e) => setReceiverPhone(e.target.value)}
@@ -513,8 +568,9 @@ export function DocumentDetailEditPanel({
                       .join(" · ")}
                   </p>
                 )}
+                {/* SL × Đơn giá */}
                 <div className="mt-1.5 flex items-center gap-1.5">
-                  <LabeledField label="SL" className="w-16">
+                  <LabeledField label="SL" className="w-14">
                     <Input
                       type="number"
                       min={0}
@@ -547,6 +603,27 @@ export function DocumentDetailEditPanel({
                     </span>
                   </div>
                 </div>
+                {/* Custom fields (auto-filled from product, editable per item) */}
+                {item.customFields && Object.keys(item.customFields).length > 0 && (
+                  <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+                    {Object.entries(item.customFields).map(([key, val]) => {
+                      const col = template?.columns.find((c) => c.key === key);
+                      return (
+                        <LabeledField key={key} label={col?.label ?? key}>
+                          <Input
+                            value={val ?? ""}
+                            onChange={(e) =>
+                              updateItem(i, {
+                                customFields: { ...item.customFields, [key]: e.target.value },
+                              })
+                            }
+                            className="h-7 text-xs"
+                          />
+                        </LabeledField>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             ))}
             {/* Add item — dashed card */}

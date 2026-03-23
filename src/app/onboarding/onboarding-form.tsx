@@ -51,7 +51,7 @@ export function OnboardingForm() {
         {error && <p className="text-sm text-red-500">{error}</p>}
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="name">Tên công ty *</Label>
+          <Label htmlFor="name">Tên công ty <span className="text-red-500">*</span></Label>
           <Input
             id="name"
             name="name"

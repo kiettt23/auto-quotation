@@ -3,7 +3,7 @@ import { LabeledField } from "@/components/shared/labeled-field";
 import { KeyValueEditor, type KeyValueEditorRef } from "@/components/shared/key-value-editor";
 
 import { useState, useRef } from "react";
-import { Plus, Users, X, Save, Loader2 } from "lucide-react";
+import { Plus, Users, X, Save, Loader2, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -95,7 +95,7 @@ export function CustomerPageClient({ customers }: Props) {
                 <button
                   key={c.id}
                   onClick={() => handleSelect(c.id)}
-                  className={`flex w-full items-center gap-4 rounded-xl px-3 py-2.5 text-left transition-colors ${
+                  className={`group flex w-full cursor-pointer items-center gap-4 rounded-xl px-3 py-2.5 text-left transition-all ${
                     selectedId === c.id
                       ? "bg-indigo-50 ring-1 ring-indigo-200"
                       : "hover:bg-slate-50"
@@ -108,6 +108,9 @@ export function CustomerPageClient({ customers }: Props) {
                     <p className="truncate text-[13px] font-semibold text-slate-900">{c.name}</p>
                     <p className="truncate text-xs text-slate-400">{c.address ?? c.phone ?? "—"}</p>
                   </div>
+                  <ChevronRight className={`h-4 w-4 shrink-0 transition-all duration-200 ${
+                    selectedId === c.id ? "text-indigo-400" : "text-slate-300 group-hover:text-slate-400"
+                  }`} />
                 </button>
               ))}
             </div>
@@ -239,7 +242,7 @@ function CustomerDetailPanel({
           <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400">Thông tin</legend>
           <div className="space-y-1.5">
             <div className="flex gap-2">
-              <LabeledField label="Tên khách hàng *" className="min-w-0 flex-1">
+              <LabeledField label={<>Tên khách hàng <span className="text-red-500">*</span></>} className="min-w-0 flex-1">
                 <Input value={name} onChange={(e) => setName(e.target.value)} className="h-8 text-xs" />
               </LabeledField>
               <LabeledField label="Mã số thuế" className="w-32 shrink-0">
