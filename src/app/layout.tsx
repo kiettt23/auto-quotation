@@ -1,17 +1,23 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Plus_Jakarta_Sans, Poppins } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin", "vietnamese"],
-  variable: "--font-inter",
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const poppins = Poppins({
+  subsets: ["latin", "latin-ext"],
+  weight: ["500", "600", "700"],
+  variable: "--font-poppins",
 });
 
 export const metadata: Metadata = {
-  title: "Auto Quotation - Tạo báo giá nhanh",
-  description: "Ứng dụng tạo và quản lý báo giá cho ngành viễn thông",
+  title: "autoquotation",
+  description:
+    "Tạo báo giá, phiếu xuất kho, phiếu giao hàng nhanh chóng và chuyên nghiệp.",
 };
 
 export default function RootLayout({
@@ -21,11 +27,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="vi">
-      <body className={`${inter.variable} font-sans antialiased`}>
-        <TooltipProvider>
-          {children}
-          <Toaster richColors position="top-right" />
-        </TooltipProvider>
+      <body className={`${plusJakartaSans.className} ${poppins.variable} antialiased`}>
+        {children}
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

@@ -2,9 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "@/auth/client";
+import Link from "next/link";
+import { signIn } from "@/lib/auth/auth-client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Loader2 } from "lucide-react";
+import { LabeledField } from "@/components/shared/labeled-field";
 
-// Login page — email/password sign-in via Better Auth
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -16,66 +20,64 @@ export default function LoginPage() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    try {
-      const result = await signIn.email({ email, password });
-      if (result.error) {
-        setError(result.error.message ?? "Đăng nhập thất bại");
-      } else {
-        router.push("/");
-        router.refresh();
-      }
-    } catch {
-      setError("Đã xảy ra lỗi không mong muốn");
-    } finally {
+
+    const result = await signIn.email({ email, password });
+
+    if (result.error) {
+      setError(result.error.message ?? "Đăng nhập thất bại");
       setLoading(false);
+      return;
     }
+
+    router.push("/");
   }
 
   return (
-    <div className="rounded-xl border bg-card p-8 shadow-sm">
-      <h1 className="mb-6 text-2xl font-bold text-foreground">Đăng nhập</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="mb-1 block text-sm font-medium text-muted-foreground">
-            Email
-          </label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-md border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="you@example.com"
-          />
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <div className="mb-1">
+        <h2 className="text-lg font-semibold text-slate-900">Đăng nhập</h2>
+        <p className="text-xs text-slate-400">Nhập email và mật khẩu để tiếp tục</p>
+      </div>
+
+      {error && (
+        <div className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
+          {error}
         </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium text-muted-foreground">
-            Mật khẩu
-          </label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-md border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="••••••••"
-          />
-        </div>
-        {error && <p className="text-sm text-destructive">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
-        >
-          {loading ? "Đang đăng nhập..." : "Đăng nhập"}
-        </button>
-      </form>
-      <p className="mt-4 text-center text-sm text-muted-foreground">
+      )}
+
+      <LabeledField label="Email">
+        <Input
+          type="email"
+          placeholder="name@company.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="h-9 text-sm"
+        />
+      </LabeledField>
+
+      <LabeledField label="Mật khẩu">
+        <Input
+          type="password"
+          placeholder="••••••••"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          className="h-9 text-sm"
+        />
+      </LabeledField>
+
+      <Button type="submit" disabled={loading} className="mt-1 h-9 w-full gap-1.5 rounded-lg text-sm">
+        {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+        {loading ? "Đang đăng nhập..." : "Đăng nhập"}
+      </Button>
+
+      <p className="text-center text-xs text-slate-400">
         Chưa có tài khoản?{" "}
-        <a href="/register" className="text-primary hover:underline">
+        <Link href="/register" className="font-medium text-indigo-600 hover:text-indigo-700">
           Đăng ký
-        </a>
+        </Link>
       </p>
-    </div>
+    </form>
   );
 }

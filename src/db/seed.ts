@@ -1,261 +1,338 @@
 /**
- * Comprehensive demo seeder — realistic Vietnamese business data.
- * Run with: pnpm db:seed
+ * Seed script — populates staging DB with test data for all features.
+ *
+ * Usage: pnpm db:seed
+ *
+ * Creates:
+ * - 1 user (test@test.com / Test@1234)
+ * - 2 companies (with driver/vehicle info for delivery docs)
+ * - 3 categories
+ * - 4 units
+ * - 6 products (across categories/units)
+ * - 3 customers (with delivery defaults)
+ * - 4 documents (2 quotations + 2 delivery orders, across companies)
  */
-import { db } from "./index";
-import {
-  tenants, tenantMembers, categories, units, products,
-  pricingTiers, volumeDiscounts, customers,
-  documentTemplates, documents, tenantInvites,
-} from "./schema";
-import { auth } from "../auth";
-import {
-  DEFAULT_GREETING, DEFAULT_TERMS, DEFAULT_PRIMARY_COLOR, DEFAULT_QUOTE_PREFIX,
-} from "../lib/constants";
-// Note: DEFAULT_QUOTE_PREFIX kept for tenant quotePrefix column (migration compatibility)
+import { config } from "dotenv";
+config({ path: ".env.local", override: true });
+config({ path: ".env" });
 
-async function getOrCreateUser(name: string, email: string, password: string) {
-  try {
-    const { user } = await auth.api.signUpEmail({ body: { name, email, password } });
-    return user;
-  } catch {
-    // User already exists — fetch by email
-    const existing = await db.query.users.findFirst({
-      where: (u, { eq }) => eq(u.email, email),
-    });
-    if (!existing) throw new Error(`Cannot find or create user: ${email}`);
-    return existing;
-  }
-}
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
+import { hashPassword } from "better-auth/crypto";
+import * as schema from "./schema";
+
+const sql = neon(process.env.DATABASE_URL!);
+const db = drizzle(sql, { schema });
+
+// --- IDs (deterministic for easy reference) ---
+const USER_ID = "seed-user-001";
+const ACCOUNT_ID = "seed-account-001";
+
+const COMPANY_A = "seed-company-fpt";
+const COMPANY_B = "seed-company-jesang";
+
+const CAT_TELECOM = "seed-cat-telecom";
+const CAT_CABLE = "seed-cat-cable";
+const CAT_SERVICE = "seed-cat-service";
+
+const UNIT_CAI = "seed-unit-cai";
+const UNIT_MET = "seed-unit-met";
+const UNIT_BO = "seed-unit-bo";
+const UNIT_GOI = "seed-unit-goi";
+
+const PROD_ROUTER = "seed-prod-router";
+const PROD_ONT = "seed-prod-ont";
+const PROD_CAP_QUANG = "seed-prod-cap-quang";
+const PROD_CAP_LAN = "seed-prod-cap-lan";
+const PROD_LAP_DAT = "seed-prod-lap-dat";
+const PROD_BAO_TRI = "seed-prod-bao-tri";
+
+const CUST_VINA = "seed-cust-vina";
+const CUST_MINH = "seed-cust-minh";
+const CUST_HOANG = "seed-cust-hoang";
+
+const DOC_BG1 = "seed-doc-bg1";
+const DOC_BG2 = "seed-doc-bg2";
+const DOC_PGH1 = "seed-doc-pgh1";
+const DOC_PGH2 = "seed-doc-pgh2";
 
 async function seed() {
-  console.log("🌱 Seeding database…\n");
+  console.log("Seeding database...");
+  const dbUrl = process.env.DATABASE_URL!;
+  console.log(`Target: ${dbUrl.includes("pooler") ? dbUrl.split("@")[1]?.split("/")[0] : "unknown"}`);
 
-  // ── 1. Users (4 roles) ───────────────────────────────────
-  const owner = await getOrCreateUser("Nguyễn Văn Owner", "owner@demo.com", "password123");
-  const adminUser = await getOrCreateUser("Phạm Thị Admin", "admin@demo.com", "password123");
-  const memberUser = await getOrCreateUser("Trần Thị Member", "member@demo.com", "password123");
-  const viewerUser = await getOrCreateUser("Lê Văn Viewer", "viewer@demo.com", "password123");
-  console.log("✅ Created/found 4 users");
+  // --- 1. User + Account (better-auth compatible) ---
+  const hashedPw = await hashPassword("Test@1234");
 
-  // ── 2. Tenant ─────────────────────────────────────────────
-  const existingTenant = await db.query.tenants.findFirst({
-    where: (t, { eq }) => eq(t.slug, "demo"),
-  });
-  if (existingTenant) {
-    console.log("⏭️  Tenant already exists, skipping seed.");
-    return;
-  }
+  await db.insert(schema.user).values({
+    id: USER_ID,
+    name: "Test User",
+    email: "test@test.com",
+    emailVerified: true,
+  }).onConflictDoNothing();
 
-  const [tenant] = await db.insert(tenants).values({
-    name: "Công ty TNHH Giải Pháp Số",
-    slug: "demo",
-    companyName: "Công ty TNHH Giải Pháp Số",
-    address: "Tầng 12, Toà nhà Viettel, 285 Cách Mạng Tháng 8, Quận 10, TP.HCM",
-    phone: "028 3833 9999", email: "info@giaiphapso.vn",
-    taxCode: "0312345678", website: "https://giaiphapso.vn",
-    bankName: "Vietcombank - CN Sài Gòn", bankAccount: "0071001234567",
-    bankOwner: "CONG TY TNHH GIAI PHAP SO",
-    primaryColor: DEFAULT_PRIMARY_COLOR, greetingText: DEFAULT_GREETING,
-    defaultTerms: DEFAULT_TERMS, quotePrefix: DEFAULT_QUOTE_PREFIX,
-    showAmountInWords: true, showBankInfo: true, showSignatureBlocks: true,
-    onboardingComplete: true, quoteNextNumber: 4,
-  }).returning();
-  console.log("✅ Created tenant:", tenant.name);
+  await db.insert(schema.account).values({
+    id: ACCOUNT_ID,
+    accountId: USER_ID,
+    providerId: "credential",
+    userId: USER_ID,
+    password: hashedPw,
+  }).onConflictDoNothing();
 
-  // ── 3. Tenant members ────────────────────────────────────
-  await db.insert(tenantMembers).values([
-    { tenantId: tenant.id, userId: owner.id, role: "OWNER" },
-    { tenantId: tenant.id, userId: adminUser.id, role: "ADMIN" },
-    { tenantId: tenant.id, userId: memberUser.id, role: "MEMBER" },
-    { tenantId: tenant.id, userId: viewerUser.id, role: "VIEWER" },
-  ]);
+  console.log("  User: test@test.com / Test@1234");
 
-  // ── 4. Categories ─────────────────────────────────────────
-  const [catIT, catFurniture, catPrinting, catNetwork] = await db.insert(categories).values([
-    { tenantId: tenant.id, name: "Thiết bị CNTT", sortOrder: 0 },
-    { tenantId: tenant.id, name: "Nội thất văn phòng", sortOrder: 1 },
-    { tenantId: tenant.id, name: "Thiết bị in ấn", sortOrder: 2 },
-    { tenantId: tenant.id, name: "Thiết bị mạng", sortOrder: 3 },
-  ]).returning();
-
-  // ── 5. Units ──────────────────────────────────────────────
-  const [uCai, uBo, uChiec, uHop, uMet] = await db.insert(units).values([
-    { tenantId: tenant.id, name: "Cái" },
-    { tenantId: tenant.id, name: "Bộ" },
-    { tenantId: tenant.id, name: "Chiếc" },
-    { tenantId: tenant.id, name: "Hộp" },
-    { tenantId: tenant.id, name: "Mét" },
-  ]).returning();
-
-  // ── 6. Products (10, mixed pricing) ───────────────────────
-  const allProducts = await db.insert(products).values([
-    { tenantId: tenant.id, code: "LAPTOP-001", name: "Laptop Dell Latitude 5540",
-      description: "Intel Core i7-1365U, 16GB RAM, 512GB SSD, 15.6\" FHD",
-      categoryId: catIT.id, unitId: uCai.id, basePrice: "28500000", pricingType: "FIXED" as const },
-    { tenantId: tenant.id, code: "LAPTOP-002", name: "MacBook Air M3 2024",
-      description: "Apple M3, 8GB RAM, 256GB SSD, 13.6\" Liquid Retina",
-      categoryId: catIT.id, unitId: uCai.id, basePrice: "32990000", pricingType: "FIXED" as const },
-    { tenantId: tenant.id, code: "MON-001", name: "Màn hình Dell P2422H 24\"",
-      description: "IPS FHD, USB-C, xoay nghiêng",
-      categoryId: catIT.id, unitId: uCai.id, basePrice: "5890000", pricingType: "TIERED" as const },
-    { tenantId: tenant.id, code: "DESK-001", name: "Bàn làm việc chữ L",
-      description: "Gỗ MDF phủ melamine, chân sắt, 140x120cm",
-      categoryId: catFurniture.id, unitId: uBo.id, basePrice: "4200000", pricingType: "FIXED" as const },
-    { tenantId: tenant.id, code: "CHAIR-001", name: "Ghế công thái học Sihoo M57",
-      description: "Tựa lưng lưới, tựa đầu điều chỉnh, tay gập",
-      categoryId: catFurniture.id, unitId: uChiec.id, basePrice: "4990000", pricingType: "FIXED" as const },
-    { tenantId: tenant.id, code: "CHAIR-002", name: "Ghế chân quỳ lưới",
-      description: "Lưng lưới, đệm ngồi, cố định",
-      categoryId: catFurniture.id, unitId: uChiec.id, basePrice: "890000", pricingType: "FIXED" as const },
-    { tenantId: tenant.id, code: "PRINT-001", name: "Máy in HP LaserJet Pro M404dn",
-      description: "In 2 mặt tự động, in mạng, 40 trang/phút",
-      categoryId: catPrinting.id, unitId: uCai.id, basePrice: "8900000", pricingType: "FIXED" as const },
-    { tenantId: tenant.id, code: "TONER-001", name: "Hộp mực HP 58A (CF258A)",
-      description: "Mực in chính hãng, ~3000 trang",
-      categoryId: catPrinting.id, unitId: uHop.id, basePrice: "1850000", pricingType: "TIERED" as const },
-    { tenantId: tenant.id, code: "SW-001", name: "Switch TP-Link TL-SG1024D",
-      description: "24 cổng Gigabit, không quản lý, rack-mount",
-      categoryId: catNetwork.id, unitId: uCai.id, basePrice: "2190000", pricingType: "FIXED" as const },
-    { tenantId: tenant.id, code: "CAB-001", name: "Cáp mạng CAT6 Commscope",
-      description: "Cáp đồng nguyên chất, vỏ PVC",
-      categoryId: catNetwork.id, unitId: uMet.id, basePrice: "8500", pricingType: "TIERED" as const },
-  ]).returning();
-  console.log("✅ Created 10 products");
-
-  const p = (code: string) => allProducts.find((x) => x.code === code)!;
-
-  // Pricing tiers for TIERED products
-  await db.insert(pricingTiers).values([
-    { productId: p("MON-001").id, minQuantity: "1", maxQuantity: "4", price: "5890000" },
-    { productId: p("MON-001").id, minQuantity: "5", maxQuantity: "19", price: "5590000" },
-    { productId: p("MON-001").id, minQuantity: "20", maxQuantity: null, price: "5290000" },
-    { productId: p("TONER-001").id, minQuantity: "1", maxQuantity: "9", price: "1850000" },
-    { productId: p("TONER-001").id, minQuantity: "10", maxQuantity: null, price: "1650000" },
-    { productId: p("CAB-001").id, minQuantity: "1", maxQuantity: "99", price: "8500" },
-    { productId: p("CAB-001").id, minQuantity: "100", maxQuantity: "999", price: "7500" },
-    { productId: p("CAB-001").id, minQuantity: "1000", maxQuantity: null, price: "6800" },
-  ]);
-
-  await db.insert(volumeDiscounts).values([
-    { productId: p("MON-001").id, minQuantity: "10", discountPercent: "3" },
-    { productId: p("MON-001").id, minQuantity: "50", discountPercent: "5" },
-    { productId: p("TONER-001").id, minQuantity: "20", discountPercent: "5" },
-  ]);
-  console.log("✅ Pricing tiers + volume discounts");
-
-  // ── 7. Customers (5) ──────────────────────────────────────
-  await db.insert(customers).values([
-    { tenantId: tenant.id, name: "Nguyễn Văn Hùng", company: "Công ty CP ABC",
-      phone: "0912 345 678", email: "hung.nv@abc.com.vn",
-      address: "56 Nguyễn Huệ, Quận 1, TP.HCM", notes: "Khách VIP, ưu tiên giao nhanh" },
-    { tenantId: tenant.id, name: "Trần Minh Tú", company: "TNHH XYZ Trading",
-      phone: "0987 654 321", email: "tu.tm@xyztrading.vn",
-      address: "123 Lê Lợi, Hải Châu, Đà Nẵng" },
-    { tenantId: tenant.id, name: "Phạm Thị Hoa", company: "Công ty TNHH Sao Việt",
-      phone: "0909 111 222", email: "hoa.pt@saoviet.tech",
-      address: "789 Hoàng Văn Thụ, Tân Bình, TP.HCM" },
-    { tenantId: tenant.id, name: "Lê Quang Minh", company: "Trường THPT Nguyễn Du",
-      phone: "0903 444 555", email: "minh.lq@nguyendu.edu.vn",
-      address: "45 Đinh Tiên Hoàng, Quận 1, TP.HCM", notes: "Đơn vị công lập, cần xuất VAT" },
-    { tenantId: tenant.id, name: "Đặng Thanh Long", company: "Khách sạn Sunrise",
-      phone: "0918 777 888", email: "long.dt@sunrisehotel.vn",
-      address: "200 Trần Phú, Nha Trang" },
-  ]).returning();
-  console.log("✅ Created 5 customers");
-
-  // ── 8. Document Templates ─────────────────────────────────
-  const [tmplPXK, tmplBBNT] = await db.insert(documentTemplates).values([
+  // --- 2. Companies ---
+  await db.insert(schema.company).values([
     {
-      tenantId: tenant.id,
-      name: "Phiếu xuất kho",
-      description: "Mẫu phiếu xuất kho cơ bản",
-      fileType: "excel" as const,
-      fileBase64: "",
-      sheetName: "Sheet1",
-      placeholders: [
-        { cellRef: "B3", label: "Số phiếu", type: "text" },
-        { cellRef: "B4", label: "Ngày xuất", type: "date" },
-        { cellRef: "B5", label: "Người nhận", type: "text" },
-      ],
-      tableRegion: { startRow: 8, columns: [
-        { letter: "A", label: "STT" },
-        { letter: "B", label: "Tên hàng" },
-        { letter: "C", label: "Số lượng" },
-        { letter: "D", label: "Đơn giá" },
-      ] },
-      docPrefix: "PXK-{YYYY}-",
-      docNextNumber: 1,
+      id: COMPANY_A,
+      userId: USER_ID,
+      name: "Công Ty TNHH Viễn Thông FPT",
+      address: "Lô L29B-31B-33B, Đường Tân Thuận, KCX Tân Thuận, Q.7, TP.HCM",
+      phone: "1900 6600",
+      taxCode: "0101778163",
+      email: "hotro@fpt.vn",
+      bankName: "Ngân hàng TMCP Ngoại Thương Việt Nam (Vietcombank)",
+      bankAccount: "0071001234567",
+      headerLayout: "left",
     },
     {
-      tenantId: tenant.id,
-      name: "Biên bản nghiệm thu",
-      description: "Mẫu biên bản nghiệm thu công trình",
-      fileType: "excel" as const,
-      fileBase64: "",
-      sheetName: "Sheet1",
-      placeholders: [
-        { cellRef: "B2", label: "Số biên bản", type: "text" },
-        { cellRef: "B3", label: "Ngày", type: "date" },
-        { cellRef: "B4", label: "Công trình", type: "text" },
-        { cellRef: "B5", label: "Chủ đầu tư", type: "text" },
-      ],
-      tableRegion: null,
-      docPrefix: "BBNT-{YYYY}-",
-      docNextNumber: 1,
+      id: COMPANY_B,
+      userId: USER_ID,
+      name: "Công Ty TNHH Jesang Vina",
+      address: "Lô C, Đường N11, KCN Minh Hưng III, Chơn Thành, Bình Phước",
+      phone: "0271 356 7890",
+      taxCode: "3801234567",
+      email: "info@jesangvina.com",
+      driverName: "Trần Văn Bình",
+      vehicleId: "93H-12345",
+      headerLayout: "center",
+      customData: { warehouseCode: "WH-03", contactPerson: "Nguyễn Văn Hùng" },
     },
-  ]).returning();
-  console.log("✅ Created 2 document templates");
+  ]).onConflictDoNothing();
 
-  // ── 10. Document Entries ──────────────────────────────────
-  await db.insert(documents).values([
+  console.log("  Companies: 2 (FPT Telecom, Jesang Vina)");
+
+  // --- 3. Categories ---
+  await db.insert(schema.category).values([
+    { id: CAT_TELECOM, userId: USER_ID, name: "Thiết bị viễn thông" },
+    { id: CAT_CABLE, userId: USER_ID, name: "Cáp & phụ kiện" },
+    { id: CAT_SERVICE, userId: USER_ID, name: "Dịch vụ" },
+  ]).onConflictDoNothing();
+
+  console.log("  Categories: 3");
+
+  // --- 4. Units ---
+  await db.insert(schema.unit).values([
+    { id: UNIT_CAI, userId: USER_ID, name: "Cái" },
+    { id: UNIT_MET, userId: USER_ID, name: "Mét" },
+    { id: UNIT_BO, userId: USER_ID, name: "Bộ" },
+    { id: UNIT_GOI, userId: USER_ID, name: "Gói" },
+  ]).onConflictDoNothing();
+
+  console.log("  Units: 4");
+
+  // --- 5. Products ---
+  await db.insert(schema.product).values([
     {
-      templateId: tmplPXK.id,
-      docNumber: "PXK-2026-001",
-      fieldData: { B3: "PXK-2026-001", B4: "14/03/2026", B5: "Nguyễn Văn Hùng" },
-      tableRows: [
-        { A: "1", B: "Laptop Dell Latitude 5540", C: "2", D: "28500000" },
-        { A: "2", B: "Màn hình Dell P2422H", C: "4", D: "5890000" },
-      ],
+      id: PROD_ROUTER,
+      userId: USER_ID,
+      name: "Router WiFi 6 AX3000",
+      categoryId: CAT_TELECOM,
+      unitId: UNIT_CAI,
+      unitPrice: 1250000,
+      specification: "WiFi 6, 2.4GHz/5GHz, 4 anten",
+      customData: { warranty: "24 tháng", origin: "Việt Nam" },
     },
     {
-      templateId: tmplPXK.id,
-      docNumber: "PXK-2026-002",
-      fieldData: { B3: "PXK-2026-002", B4: "14/03/2026", B5: "Trần Minh Tú" },
-      tableRows: [
-        { A: "1", B: "Switch TP-Link TL-SG1024D", C: "5", D: "2190000" },
-      ],
+      id: PROD_ONT,
+      userId: USER_ID,
+      name: "ONT GPON HG8145X6",
+      categoryId: CAT_TELECOM,
+      unitId: UNIT_CAI,
+      unitPrice: 850000,
+      specification: "1G GPON, WiFi 6, 4 LAN",
     },
     {
-      templateId: tmplBBNT.id,
-      docNumber: "BBNT-2026-001",
-      fieldData: {
-        B2: "BBNT-2026-001",
-        B3: "14/03/2026",
-        B4: "Văn phòng Giải Pháp Số - Tầng 12",
-        B5: "Công ty TNHH Giải Pháp Số",
+      id: PROD_CAP_QUANG,
+      userId: USER_ID,
+      name: "Cáp quang indoor FTTH",
+      categoryId: CAT_CABLE,
+      unitId: UNIT_MET,
+      unitPrice: 5500,
+      specification: "1 core, SM, G.657A2",
+    },
+    {
+      id: PROD_CAP_LAN,
+      userId: USER_ID,
+      name: "Cáp mạng Cat6 UTP",
+      categoryId: CAT_CABLE,
+      unitId: UNIT_MET,
+      unitPrice: 8000,
+      specification: "Cat6, UTP, 23AWG",
+    },
+    {
+      id: PROD_LAP_DAT,
+      userId: USER_ID,
+      name: "Lắp đặt Internet cáp quang",
+      categoryId: CAT_SERVICE,
+      unitId: UNIT_GOI,
+      unitPrice: 350000,
+      specification: "Bao gồm kéo cáp + đấu nối + test",
+    },
+    {
+      id: PROD_BAO_TRI,
+      userId: USER_ID,
+      name: "Bảo trì thiết bị mạng",
+      categoryId: CAT_SERVICE,
+      unitId: UNIT_GOI,
+      unitPrice: 200000,
+      specification: "Kiểm tra, vệ sinh, cập nhật firmware",
+    },
+  ]).onConflictDoNothing();
+
+  console.log("  Products: 6");
+
+  // --- 6. Customers ---
+  await db.insert(schema.customer).values([
+    {
+      id: CUST_VINA,
+      userId: USER_ID,
+      name: "Công Ty TNHH Kyong Gi Vina",
+      address: "KCN Minh Hưng III, Chơn Thành, Bình Phước",
+      phone: "0271 356 1234",
+      taxCode: "3801567890",
+      deliveryName: "Kho hàng Kyong Gi Vina",
+      deliveryAddress: "Lô A5, Đường N3, KCN Minh Hưng III, Chơn Thành, Bình Phước",
+      receiverName: "Nguyễn Thị Mai",
+      receiverPhone: "0901234567",
+      customData: { department: "Phòng vật tư", purchaseOrderPrefix: "PO-KG" },
+    },
+    {
+      id: CUST_MINH,
+      userId: USER_ID,
+      name: "Cửa hàng Minh Phát",
+      address: "123 Nguyễn Trãi, Q.1, TP.HCM",
+      phone: "028 3925 1234",
+      receiverName: "Trần Minh Phát",
+      receiverPhone: "0912345678",
+    },
+    {
+      id: CUST_HOANG,
+      userId: USER_ID,
+      name: "Văn phòng Hoàng Gia",
+      address: "456 Lê Lợi, Q.3, TP.HCM",
+      phone: "028 3821 5678",
+      email: "info@hoanggia.vn",
+      receiverName: "Lê Hoàng",
+      receiverPhone: "0923456789",
+    },
+  ]).onConflictDoNothing();
+
+  console.log("  Customers: 3");
+
+  // --- 7. Documents ---
+  // Quotation 1 — FPT company, Minh Phát customer
+  await db.insert(schema.document).values([
+    {
+      id: DOC_BG1,
+      userId: USER_ID,
+      companyId: COMPANY_A,
+      customerId: CUST_MINH,
+      templateId: "quotation",
+      documentNumber: "BG-2026-001",
+      data: {
+        customerName: "Cửa hàng Minh Phát",
+        customerAddress: "123 Nguyễn Trãi, Q.1, TP.HCM",
+        receiverName: "Trần Minh Phát",
+        receiverPhone: "0912345678",
+        date: "2026-03-20",
+        notes: "Giá trên chưa bao gồm VAT 10%. Báo giá có hiệu lực 30 ngày.",
+        items: [
+          { productId: PROD_ROUTER, productName: "Router WiFi 6 AX3000", specification: "WiFi 6, 2.4GHz/5GHz, 4 anten", unit: "Cái", quantity: 10, unitPrice: 1250000, amount: 12500000 },
+          { productId: PROD_ONT, productName: "ONT GPON HG8145X6", specification: "1G GPON, WiFi 6, 4 LAN", unit: "Cái", quantity: 10, unitPrice: 850000, amount: 8500000 },
+          { productId: PROD_CAP_QUANG, productName: "Cáp quang indoor FTTH", specification: "1 core, SM, G.657A2", unit: "Mét", quantity: 500, unitPrice: 5500, amount: 2750000 },
+          { productId: PROD_LAP_DAT, productName: "Lắp đặt Internet cáp quang", specification: "Kéo cáp + đấu nối + test", unit: "Gói", quantity: 10, unitPrice: 350000, amount: 3500000 },
+        ],
       },
-      tableRows: [],
     },
-  ]);
-  console.log("✅ Created 3 document entries");
+    // Quotation 2 — FPT company, Hoàng Gia customer (small quote)
+    {
+      id: DOC_BG2,
+      userId: USER_ID,
+      companyId: COMPANY_A,
+      customerId: CUST_HOANG,
+      templateId: "quotation",
+      documentNumber: "BG-2026-002",
+      data: {
+        customerName: "Văn phòng Hoàng Gia",
+        customerAddress: "456 Lê Lợi, Q.3, TP.HCM",
+        receiverName: "Lê Hoàng",
+        receiverPhone: "0923456789",
+        date: "2026-03-21",
+        notes: "Bảo hành 12 tháng.",
+        items: [
+          { productId: PROD_CAP_LAN, productName: "Cáp mạng Cat6 UTP", specification: "Cat6, UTP, 23AWG", unit: "Mét", quantity: 200, unitPrice: 8000, amount: 1600000 },
+          { productId: PROD_BAO_TRI, productName: "Bảo trì thiết bị mạng", specification: "Kiểm tra, vệ sinh, cập nhật firmware", unit: "Gói", quantity: 2, unitPrice: 200000, amount: 400000 },
+        ],
+      },
+    },
+    // Delivery Order 1 — Jesang company, Kyong Gi customer (with templateFields)
+    {
+      id: DOC_PGH1,
+      userId: USER_ID,
+      companyId: COMPANY_B,
+      customerId: CUST_VINA,
+      templateId: "delivery-order",
+      documentNumber: "PGH-2026-001",
+      data: {
+        customerName: "Công Ty TNHH Kyong Gi Vina",
+        customerAddress: "KCN Minh Hưng III, Chơn Thành, Bình Phước",
+        receiverName: "Nguyễn Thị Mai",
+        receiverPhone: "0901234567",
+        date: "2026-03-22",
+        templateFields: {
+          deliveryName: "Kho hàng Kyong Gi Vina",
+          deliveryAddress: "Lô A5, Đường N3, KCN Minh Hưng III, Chơn Thành, Bình Phước",
+          driverName: "Trần Văn Bình",
+          vehicleId: "93H-12345",
+        },
+        items: [
+          { productName: "Thép cuộn HRC SS400", customFields: { contractNo: "HĐ-2026-088", lotNo: "L2026-001", boxQty: "12", netWeight: "25400", invoiceVat: "0012345" } },
+          { productName: "Thép tấm SPHC 2.0mm", customFields: { contractNo: "HĐ-2026-088", lotNo: "L2026-002", boxQty: "8", netWeight: "18200", invoiceVat: "0012346" } },
+          { productName: "Inox 304 cuộn 1.2mm", customFields: { contractNo: "HĐ-2026-092", lotNo: "L2026-003", boxQty: "5", netWeight: "9800", invoiceVat: "0012500" } },
+        ],
+      },
+    },
+    // Delivery Order 2 — Jesang company, Minh Phát customer
+    {
+      id: DOC_PGH2,
+      userId: USER_ID,
+      companyId: COMPANY_B,
+      customerId: CUST_MINH,
+      templateId: "delivery-order",
+      documentNumber: "PGH-2026-002",
+      data: {
+        customerName: "Cửa hàng Minh Phát",
+        customerAddress: "123 Nguyễn Trãi, Q.1, TP.HCM",
+        receiverName: "Trần Minh Phát",
+        receiverPhone: "0912345678",
+        date: "2026-03-22",
+        templateFields: {
+          deliveryName: "Cửa hàng Minh Phát - Chi nhánh Q.1",
+          deliveryAddress: "123 Nguyễn Trãi, Phường Bến Thành, Q.1, TP.HCM",
+          driverName: "Trần Văn Bình",
+          vehicleId: "93H-12345",
+        },
+        items: [
+          { productName: "Ống thép mạ kẽm D27", customFields: { contractNo: "HĐ-2026-100", lotNo: "L2026-010", boxQty: "20", netWeight: "3200", invoiceVat: "0013001" } },
+        ],
+      },
+    },
+  ]).onConflictDoNothing();
 
-  // ── 11. Tenant Invites ────────────────────────────────────
-  await db.insert(tenantInvites).values({
-    tenantId: tenant.id,
-    email: "invited@demo.com",
-    role: "MEMBER" as const,
-    token: "demo-invite-token-123",
-    expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-  });
-  console.log("✅ Created 1 pending invite");
-
-  console.log("\n🎉 Seed complete!");
-  console.log("   4 users | 1 tenant | 4 categories | 5 units | 10 products | 5 customers");
-  console.log("   2 doc templates | 3 doc entries | 1 invite");
-  console.log("   Login (password: password123):");
-  console.log("   • owner@demo.com  (OWNER)  • admin@demo.com  (ADMIN)");
-  console.log("   • member@demo.com (MEMBER) • viewer@demo.com (VIEWER)");
+  console.log("  Documents: 4 (2 quotations + 2 delivery orders)");
+  console.log("\nSeed complete!");
+  console.log("Login: test@test.com / Test@1234");
 }
 
 seed().catch((err) => {

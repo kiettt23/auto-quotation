@@ -1,50 +1,34 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { cn } from "@/lib/utils/cn";
+import { useActivePath } from "@/hooks/use-active-path";
 import { navItems } from "./nav-items";
-import { hasPermission } from "@/lib/rbac";
+import type { NavItem } from "./nav-items";
 
-interface MobileBottomNavProps {
-  role?: string;
-}
-
-export function MobileBottomNav({ role = "VIEWER" }: MobileBottomNavProps) {
-  const pathname = usePathname();
-
-  // Filter to bottom-nav items the current role can see
-  const bottomItems = navItems.filter(
-    (item) =>
-      item.showInBottomNav &&
-      (!item.minRole || hasPermission(role, item.minRole))
-  );
-
-  function isActive(href: string) {
-    if (href === "/") return pathname === "/";
-    return pathname.startsWith(href);
-  }
+function MobileNavLink({ href, label, icon: Icon }: NavItem) {
+  const isActive = useActivePath(href);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-16 items-center justify-around border-t bg-background md:hidden">
-      {bottomItems.map((item) => {
-        const active = isActive(item.href);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            className={cn(
-              "flex flex-col items-center gap-1 px-3 py-2 text-xs transition-colors",
-              active
-                ? "text-primary font-medium"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <item.icon className="size-5" />
-            <span>{item.label}</span>
-          </Link>
-        );
-      })}
+    <Link
+      href={href}
+      className={cn(
+        "flex flex-1 flex-col items-center gap-0.5 py-2 transition-colors",
+        isActive ? "text-indigo-600" : "text-slate-400"
+      )}
+    >
+      <Icon className="h-5 w-5" />
+      <span className="text-[11px]">{label}</span>
+    </Link>
+  );
+}
+
+export function MobileBottomNav() {
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 flex border-t border-slate-200 bg-white lg:hidden">
+      {navItems.slice(0, 5).map((item) => (
+        <MobileNavLink key={item.href} {...item} />
+      ))}
     </nav>
   );
 }
