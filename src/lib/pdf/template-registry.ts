@@ -126,20 +126,19 @@ export function getTemplateColumns(templateId?: string | null): ColumnDef[] {
   return registry.find((t) => t.id === templateId)?.columns ?? registry[0].columns;
 }
 
-/** Map legacy type enum to template ID */
-export function legacyTypeToTemplateId(type: string): string {
-  const map: Record<string, string> = {
-    QUOTATION: "quotation",
-    DELIVERY_ORDER: "delivery-order",
-  };
-  return map[type] ?? "quotation";
-}
+/** Built-in item fields handled by core autofill — exclude from customData dropdown */
+const BUILTIN_KEYS = new Set(["stt", "productName", "specification", "unit", "quantity", "unitPrice", "amount", "note"]);
 
-/** Map template ID to legacy type enum */
-export function templateIdToLegacyType(templateId: string): string {
-  const map: Record<string, string> = {
-    quotation: "QUOTATION",
-    "delivery-order": "DELIVERY_ORDER",
-  };
-  return map[templateId] ?? "QUOTATION";
+/** Get all unique custom column keys across all templates (for product customData dropdown) */
+export function getAllCustomColumnKeys(): { key: string; label: string }[] {
+  const seen = new Set<string>();
+  const result: { key: string; label: string }[] = [];
+  for (const t of registry) {
+    for (const col of t.columns) {
+      if (col.system || BUILTIN_KEYS.has(col.key) || seen.has(col.key)) continue;
+      seen.add(col.key);
+      result.push({ key: col.key, label: col.label });
+    }
+  }
+  return result;
 }

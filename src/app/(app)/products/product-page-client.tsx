@@ -1,6 +1,7 @@
 "use client";
 import { LabeledField } from "@/components/shared/labeled-field";
 import { KeyValueEditor, type KeyValueEditorRef } from "@/components/shared/key-value-editor";
+import { getAllCustomColumnKeys } from "@/lib/pdf/template-registry";
 
 import { useState, useMemo, useRef } from "react";
 import { Plus, Package, X, Save, Loader2 } from "lucide-react";
@@ -311,6 +312,7 @@ function ProductDetailPanel({
             ref={customDataRef}
             defaultValue={(product?.customData as Record<string, string | number>) ?? {}}
             onDirtyChange={setCustomDataDirty}
+            keyOptions={getAllCustomColumnKeys()}
           />
         </fieldset>
       </div>

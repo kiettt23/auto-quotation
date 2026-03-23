@@ -194,7 +194,7 @@ export function DocumentForm({ products, customers, companies, document: doc }: 
 
     if (result.success) {
       toast.success(isEdit ? "Đã cập nhật tài liệu" : "Đã tạo tài liệu");
-      router.push(`/documents/${result.data.id}`);
+      router.push("/documents");
     } else {
       toast.error(result.error);
     }

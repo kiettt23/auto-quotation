@@ -10,7 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
-import { formatCurrency } from "@/lib/utils/document-helpers";
+import { formatCurrency, mapCustomDataToColumnKeys } from "@/lib/utils/document-helpers";
 import type { DocumentItem } from "@/lib/validations/document.schema";
 import type { ColumnDef } from "@/lib/types/column-def";
 
@@ -86,8 +86,8 @@ export function DocumentItemsTable({ items, products, columns, showTotal, onItem
         unit: product.unitName ?? "",
         unitPrice: product.unitPrice,
         amount: (item.quantity ?? 1) * product.unitPrice,
-        // Merge product.customData into item.customFields
-        ...(product.customData ? { customFields: { ...item.customFields, ...product.customData } } : {}),
+        // Merge product.customData into item.customFields (map labels → column keys)
+        ...(product.customData ? { customFields: { ...item.customFields, ...mapCustomDataToColumnKeys(product.customData, columns) } } : {}),
       };
       return patched;
     });

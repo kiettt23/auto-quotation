@@ -23,9 +23,9 @@ autoquotation is a Next.js 16 + PostgreSQL web app for managing business documen
 | `account` | Auth accounts | Managed by better-auth |
 | `session` | Auth sessions | Managed by better-auth |
 | `verification` | Auth verification | Managed by better-auth |
-| `company` | 1 user → N companies | `userId`, `name`, `address`, `phone`, `taxCode`, `logoUrl`, `headerLayout`, `driverName`, `vehicleId` |
-| `customer` | 1 user → N customers | `userId`, `name`, `address`, `deliveryAddress`, `deliveryName`, `receiverName`, `receiverPhone` |
-| `product` | 1 user → N products | `userId`, `name`, `unitPrice`, `specification`, `categoryId`, `unitId` |
+| `company` | 1 user → N companies | `userId`, `name`, `address`, `phone`, `taxCode`, `logoUrl`, `headerLayout`, `driverName`, `vehicleId`, `customData` (JSONB) |
+| `customer` | 1 user → N customers | `userId`, `name`, `address`, `deliveryAddress`, `deliveryName`, `receiverName`, `receiverPhone`, `customData` (JSONB) |
+| `product` | 1 user → N products | `userId`, `name`, `unitPrice`, `specification`, `categoryId`, `unitId`, `customData` (JSONB) |
 | `category` | 1 user → N categories | `userId`, `name` |
 | `unit` | 1 user → N units | `userId`, `name` |
 | `document` | N docs → 1 company | `userId`, `companyId`, `customerId`, `templateId`, `type` (legacy), `documentNumber`, `data` (JSONB) |
@@ -141,6 +141,17 @@ Only has Categories and Units tabs. No "Document Types" tab (removed — templat
 - All queries filtered by `userId` at DB level
 
 ## Key Patterns
+
+### customData JSONB Pattern
+
+`company`, `customer`, and `product` tables each have a `customData: jsonb` column typed as `Record<string, string | number>`. Purpose: flexible key-value storage for template-specific autofill without schema migrations.
+
+**Autofill behavior:**
+- `customer.customData` → merged into `data.templateFields` when customer is selected in document form
+- `company.customData` → merged into `data.templateFields` when company is selected
+- `product.customData` → merged into item's `customFields` when product is selected in items table
+
+**UI:** `KeyValueEditor` component (`src/components/shared/key-value-editor.tsx`) — uncontrolled, ref-based. Parent reads via `ref.getData()`. Rendered in entity detail panels (companies, customers, products).
 
 ### Per-Document Column Override
 

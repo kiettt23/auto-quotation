@@ -24,7 +24,7 @@ import {
   deleteDocumentAction,
   duplicateDocumentAction,
 } from "@/actions/document.actions";
-import { formatCurrency } from "@/lib/utils/document-helpers";
+import { formatCurrency, mapCustomDataToColumnKeys } from "@/lib/utils/document-helpers";
 import { getExtraFormFields, getTemplateEntry, legacyTypeToTemplateId } from "@/lib/pdf/template-registry";
 import type { DocumentRow } from "@/services/document.service";
 import type { DocumentData, DocumentDataItem } from "@/lib/types/document-data";
@@ -163,7 +163,7 @@ export function DocumentDetailEditPanel({
       unitPrice: Number(p.unitPrice) || 0,
       quantity: items[index].quantity ?? 1,
       amount: (items[index].quantity ?? 1) * (Number(p.unitPrice) || 0),
-      ...(p.customData ? { customFields: { ...items[index].customFields, ...p.customData } } : {}),
+      ...(p.customData ? { customFields: { ...items[index].customFields, ...mapCustomDataToColumnKeys(p.customData, template?.columns ?? []) } } : {}),
     });
   }
 
@@ -238,11 +238,7 @@ export function DocumentDetailEditPanel({
     const result = await duplicateDocumentAction(doc.id);
     if (result.success) {
       toast.success("Đã nhân bản");
-      if (result.data?.id) {
-        router.push(`/documents/${result.data.id}`);
-      } else {
-        router.refresh();
-      }
+      router.refresh();
     } else {
       toast.error(result.error);
     }

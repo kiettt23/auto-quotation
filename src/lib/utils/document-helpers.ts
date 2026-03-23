@@ -1,3 +1,19 @@
+import type { ColumnDef } from "@/lib/types/column-def";
+
+/** Map customData keys (human labels) to column keys via case-insensitive label matching */
+export function mapCustomDataToColumnKeys(
+  customData: Record<string, string | number>,
+  columns: ColumnDef[],
+): Record<string, string | number> {
+  const labelToKey = new Map(columns.map((c) => [c.label.toLowerCase(), c.key]));
+  const result: Record<string, string | number> = {};
+  for (const [k, v] of Object.entries(customData)) {
+    const mapped = labelToKey.get(k.toLowerCase());
+    result[mapped ?? k] = v;
+  }
+  return result;
+}
+
 /** Calculate total from document items */
 export function calculateTotal(
   items: Array<{ quantity?: number; unitPrice?: number; amount?: number }>

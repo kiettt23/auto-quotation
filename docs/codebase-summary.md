@@ -68,6 +68,7 @@ src/
 │   │   └── simple-list-manager.tsx
 │   ├── shared/                    # Shared components
 │   │   ├── delete-confirm-dialog.tsx
+│   │   ├── key-value-editor.tsx   # Uncontrolled JSONB key-value editor (ref-based)
 │   │   ├── labeled-field.tsx
 │   │   ├── page-header.tsx
 │   │   ├── table-pagination.tsx
@@ -76,11 +77,12 @@ src/
 │   └── ui/                        # shadcn/ui components
 ├── db/
 │   ├── index.ts                   # Neon serverless client
+│   ├── seed.ts                    # Dev seed script (Vietnamese business data)
 │   └── schema/
 │       ├── auth.ts                # User/session/account/verification
-│       ├── company.ts
-│       ├── customer.ts
-│       ├── product.ts
+│       ├── company.ts             # +customData JSONB
+│       ├── customer.ts            # +customData JSONB
+│       ├── product.ts             # +customData JSONB
 │       ├── category.ts
 │       ├── unit.ts
 │       ├── document.ts            # Has templateId + legacy type enum
@@ -110,7 +112,7 @@ src/
 │   └── utils/
 │       ├── cn.ts
 │       ├── action-result.ts
-│       ├── document-helpers.ts    # calculateTotal, formatCurrency, formatDate
+│       ├── document-helpers.ts    # calculateTotal, formatCurrency, formatDate, mapCustomDataToColumnKeys
 │       ├── escape-like.ts
 │       └── generate-id.ts
 ├── services/                      # Business logic
@@ -150,6 +152,18 @@ These files were removed during the merge-doctype-into-template refactor:
 4. That's it — UI auto-discovers templates from registry
 
 **Current templates:** `quotation` (BG), `delivery-order` (PGH)
+
+**Key exports:**
+- `BUILTIN_KEYS` — set of system column keys excluded from product customData combobox
+- `getAllCustomColumnKeys()` — returns all custom (non-builtin, non-system) column key+label pairs across all templates
+
+### customData JSONB
+
+`company`, `customer`, and `product` each have `customData: jsonb` (`Record<string, string | number>`). Enables template-specific autofill without schema changes.
+
+- `customer.customData` / `company.customData` → autofilled into `data.templateFields`
+- `product.customData` → autofilled into item `customFields` via `mapCustomDataToColumnKeys()` (maps Vietnamese label keys to camelCase column keys by case-insensitive label match)
+- Edited via `KeyValueEditor` component (uncontrolled, ref-based: `ref.getData()`); key input is a shadcn Popover combobox sourced from `getAllCustomColumnKeys()`
 
 ### DocumentData.templateFields
 
