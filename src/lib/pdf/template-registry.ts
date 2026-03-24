@@ -133,10 +133,9 @@ export function getTemplateById(templateId: string): TemplateEntry {
   return entry;
 }
 
-/** Get template component by ID — throws if not found */
+/** Get template component by ID — falls back to default template */
 export function getTemplateComponent(templateId?: string | null): ComponentType<PdfTemplateProps> {
-  const entry = registry.find((t) => t.id === templateId);
-  if (!entry) throw new Error(`Template "${templateId}" not found in registry`);
+  const entry = registry.find((t) => t.id === templateId) ?? registry[0];
   return entry.component;
 }
 
