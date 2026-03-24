@@ -528,7 +528,7 @@ export function DocumentDetailEditPanel({
             {/* Manual document number suffix — only for create + manual mode */}
             {isCreate && isManualNumber && (
               <LabeledField
-                label={`Số chứng từ (${template?.numberPrefix ?? ""}  - ${documentDate.split("-").reverse().map((p, i) => i === 2 ? p.slice(2) : p).join("")} - ...)`}
+                label={`Số chứng từ (${template?.numberPrefix ?? ""}-${documentDate.split("-").reverse().map((p, i) => i === 2 ? p.slice(2) : p).join("")}-...)`}
               >
                 <Input
                   value={docNumberSuffix}

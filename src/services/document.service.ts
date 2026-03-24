@@ -74,8 +74,8 @@ function generateManualNumber(prefix: string, date: string, suffix?: string): st
     ? `${parts[2]}${parts[1]}${parts[0].slice(2)}`
     : new Date().toLocaleDateString("en-GB").replace(/\//g, "").slice(0, 6);
   return suffix
-    ? `${prefix} - ${ddMMyy} - ${suffix}`
-    : `${prefix} - ${ddMMyy}`;
+    ? `${prefix}-${ddMMyy}-${suffix}`
+    : `${prefix}-${ddMMyy}`;
 }
 
 /** Create a new document */
