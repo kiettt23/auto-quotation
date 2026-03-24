@@ -107,6 +107,8 @@ export function DocumentDetailEditPanel({
     return init;
   });
   const [notes, setNotes] = useState(existingData?.notes ?? "");
+  const [docNumberSuffix, setDocNumberSuffix] = useState("");
+  const isManualNumber = template?.numberMode === "manual";
   const [items, setItems] = useState<DocumentDataItem[]>(
     existingData?.items?.length
       ? existingData.items
@@ -284,6 +286,7 @@ export function DocumentDetailEditPanel({
       customerAddress,
       receiverName,
       receiverPhone,
+      ...(isManualNumber && docNumberSuffix ? { documentNumberSuffix: docNumberSuffix } : {}),
       items: items.map((it) => ({
         ...it,
         amount: (it.quantity ?? 0) * (it.unitPrice ?? 0),
@@ -522,6 +525,19 @@ export function DocumentDetailEditPanel({
                 />
               </LabeledField>
             </div>
+            {/* Manual document number suffix — only for create + manual mode */}
+            {isCreate && isManualNumber && (
+              <LabeledField
+                label={`Số chứng từ (${template?.numberPrefix ?? ""}  - ${documentDate.split("-").reverse().map((p, i) => i === 2 ? p.slice(2) : p).join("")} - ...)`}
+              >
+                <Input
+                  value={docNumberSuffix}
+                  onChange={(e) => { setDocNumberSuffix(e.target.value); markDirty(); }}
+                  placeholder="Nhập mã số..."
+                  className="h-8 text-xs"
+                />
+              </LabeledField>
+            )}
             <LabeledField label="Địa chỉ">
               <Input
                 value={customerAddress}

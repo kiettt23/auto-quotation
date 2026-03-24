@@ -31,7 +31,7 @@ export async function createDocumentAction(
       return err(parsed.error.issues[0].message);
     }
 
-    const { companyId, templateId, customerId, items, ...rest } = parsed.data;
+    const { companyId, templateId, customerId, documentNumberSuffix, items, ...rest } = parsed.data;
 
     // Validate that the selected company belongs to the current user
     const userCompanies = await listCompanies(userId);
@@ -44,6 +44,7 @@ export async function createDocumentAction(
       companyId,
       templateId,
       customerId: customerId || undefined,
+      documentNumberSuffix: documentNumberSuffix || undefined,
       data: { ...rest, items },
     });
 

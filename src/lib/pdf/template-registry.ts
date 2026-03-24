@@ -33,6 +33,14 @@ export interface TemplateEntry {
   color: TemplateColor;
   /** Extra customer fields shown on document form */
   extraFormFields?: ExtraFormField[];
+  /**
+   * Document number generation mode:
+   * - "auto" (default): shortLabel-year-autoIncrement (e.g. BG-2026-001)
+   * - "manual": prefix-date, user provides suffix (e.g. JS - 260324 - <input>)
+   */
+  numberMode?: "auto" | "manual";
+  /** Prefix for manual number mode (e.g. "JS") */
+  numberPrefix?: string;
   /** React component for PDF rendering */
   component: ComponentType<PdfTemplateProps>;
 }
@@ -78,6 +86,8 @@ const registry: TemplateEntry[] = [
     ],
     showTotal: false,
     signatureLabels: ["Người giao", "Tài xế", "Người nhận", "Thủ kho", "Kế toán"],
+    numberMode: "manual",
+    numberPrefix: "JS",
     color: { badgeBg: "bg-emerald-100", badgeText: "text-emerald-700", dotColor: "bg-emerald-500" },
     extraFormFields: [
       { key: "deliveryName", label: "Tên nơi giao", placeholder: "Công Ty TNHH Kyong Gi Vina" },

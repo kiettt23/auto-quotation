@@ -26,6 +26,8 @@ export const createDocumentSchema = z.object({
   receiverPhone: z.string().optional(),
   /** Template-specific extra fields (nested to avoid polluting shared data) */
   templateFields: z.record(z.string(), z.string()).optional(),
+  /** Suffix for manual document number (e.g. "ABC123" → "JS - 260324 - ABC123") */
+  documentNumberSuffix: z.string().optional(),
   items: z.array(documentItemSchema).min(1, "Cần ít nhất 1 sản phẩm"),
   notes: z.string().optional(),
   /** Per-document column override */

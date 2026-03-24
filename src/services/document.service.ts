@@ -42,8 +42,8 @@ export async function getDocumentById(documentId: string, userId: string) {
   return rows[0] ?? null;
 }
 
-/** Generate next document number using shortLabel from template, scoped to companyId */
-async function generateDocumentNumber(
+/** Generate next auto-increment document number: shortLabel-year-NNN */
+async function generateAutoNumber(
   companyId: string,
   shortLabel: string
 ): Promise<string> {
@@ -66,6 +66,18 @@ async function generateDocumentNumber(
   return `${shortLabel}-${year}-${String(nextNum).padStart(3, "0")}`;
 }
 
+/** Generate manual document number: prefix - ddMMyy - suffix */
+function generateManualNumber(prefix: string, date: string, suffix?: string): string {
+  // date comes as "YYYY-MM-DD" from the form; convert to ddMMyy
+  const parts = date.split("-");
+  const ddMMyy = parts.length === 3
+    ? `${parts[2]}${parts[1]}${parts[0].slice(2)}`
+    : new Date().toLocaleDateString("en-GB").replace(/\//g, "").slice(0, 6);
+  return suffix
+    ? `${prefix} - ${ddMMyy} - ${suffix}`
+    : `${prefix} - ${ddMMyy}`;
+}
+
 /** Create a new document */
 export async function createDocument(
   userId: string,
@@ -73,13 +85,23 @@ export async function createDocument(
     companyId: string;
     templateId: string;
     customerId?: string;
+    documentNumberSuffix?: string;
     data: Record<string, unknown>;
   }
 ) {
   const id = generateId();
   const template = getTemplateEntry(data.templateId);
   const shortLabel = template?.shortLabel ?? "DOC";
-  const documentNumber = await generateDocumentNumber(data.companyId, shortLabel);
+
+  // Generate document number based on template mode
+  const documentNumber =
+    template?.numberMode === "manual"
+      ? generateManualNumber(
+          template.numberPrefix ?? shortLabel,
+          (data.data as { date?: string }).date ?? new Date().toISOString().slice(0, 10),
+          data.documentNumberSuffix,
+        )
+      : await generateAutoNumber(data.companyId, shortLabel);
   const [row] = await db
     .insert(document)
     .values({
