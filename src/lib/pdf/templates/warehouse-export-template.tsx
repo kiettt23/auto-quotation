@@ -7,6 +7,14 @@ import type { PdfTemplateProps } from "../template-props";
  * Simple bordered table layout with quantity total in kgs
  */
 
+/** Format number as "1,298.00" — comma thousands, always 2 decimals */
+function formatKg(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
 const B = 1;
 const BC = "#000000";
 
@@ -194,9 +202,7 @@ export function WarehouseExportTemplate({
               </View>
               <View style={[s.td, { width: COL.quantity, textAlign: "right" }]}>
                 <Text>
-                  {item.quantity != null
-                    ? (Number.isInteger(item.quantity) ? String(item.quantity) : item.quantity.toFixed(2))
-                    : ""}
+                  {item.quantity != null ? formatKg(item.quantity) : ""}
                 </Text>
               </View>
               <View style={[s.td, { width: COL.note, borderRightWidth: 0 }]}>
@@ -212,9 +218,7 @@ export function WarehouseExportTemplate({
             </View>
             <View style={[s.td, { width: "20%", textAlign: "right", borderBottomWidth: 0 }]}>
               <Text style={{ fontWeight: "bold" }}>
-                {totalQty > 0
-                  ? (Number.isInteger(totalQty) ? String(totalQty) : totalQty.toFixed(2))
-                  : ""}
+                {totalQty > 0 ? formatKg(totalQty) : ""}
               </Text>
             </View>
             <View style={[s.td, { width: "18%", borderRightWidth: 0, borderBottomWidth: 0 }]}>

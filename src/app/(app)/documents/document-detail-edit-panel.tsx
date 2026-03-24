@@ -137,21 +137,28 @@ export function DocumentDetailEditPanel({
   );
 
   // Columns that need editable inputs in item cards
-  // Skip: stt (auto), productName (selector), quantity/unitPrice (dedicated), amount (computed)
-  const SKIP_ITEM_KEYS = new Set([
-    "stt",
-    "productName",
-    "quantity",
-    "unitPrice",
-    "amount",
-  ]);
-  const editableColumns = useMemo(
-    () => (template?.columns ?? []).filter((c) => !SKIP_ITEM_KEYS.has(c.key)),
+  // Always skip: stt (auto), productName (selector)
+  // Only skip quantity/unitPrice/amount when template has unitPrice (e.g. quotation)
+  const hasUnitPrice = useMemo(
+    () => (template?.columns ?? []).some((c) => c.key === "unitPrice"),
     [template],
+  );
+  const skipItemKeys = useMemo(() => {
+    const keys = new Set(["stt", "productName"]);
+    if (hasUnitPrice) {
+      keys.add("quantity");
+      keys.add("unitPrice");
+      keys.add("amount");
+    }
+    return keys;
+  }, [hasUnitPrice]);
+  const editableColumns = useMemo(
+    () => (template?.columns ?? []).filter((c) => !skipItemKeys.has(c.key)),
+    [template, skipItemKeys],
   );
 
   // Standard fields that map directly to DocumentDataItem properties
-  const STANDARD_ITEM_KEYS = new Set(["specification", "unit", "note"]);
+  const STANDARD_ITEM_KEYS = new Set(["specification", "unit", "quantity", "unitPrice", "note"]);
 
   function getItemColumnValue(
     item: DocumentDataItem,
@@ -159,13 +166,16 @@ export function DocumentDetailEditPanel({
   ): string | number {
     if (key === "specification") return item.specification ?? "";
     if (key === "unit") return item.unit ?? "";
+    if (key === "quantity") return item.quantity ?? 0;
+    if (key === "unitPrice") return item.unitPrice ?? 0;
     if (key === "note") return item.note ?? "";
     return item.customFields?.[key] ?? "";
   }
 
   function updateItemColumn(index: number, key: string, value: string) {
     if (STANDARD_ITEM_KEYS.has(key)) {
-      updateItem(index, { [key]: value });
+      const parsed = (key === "quantity" || key === "unitPrice") ? Number(value) || 0 : value;
+      updateItem(index, { [key]: parsed });
     } else {
       const item = items[index];
       updateItem(index, {
@@ -637,6 +647,11 @@ export function DocumentDetailEditPanel({
                                 ? "number"
                                 : "text"
                             }
+                            step={
+                              col.type === "number" || col.type === "currency"
+                                ? "any"
+                                : undefined
+                            }
                             value={val ?? ""}
                             onChange={(e) =>
                               updateItemColumn(i, col.key, e.target.value)
@@ -648,7 +663,8 @@ export function DocumentDetailEditPanel({
                     })}
                   </div>
                 )}
-                {/* Số lượng × Đơn giá */}
+                {/* Số lượng × Đơn giá — only for templates with unitPrice (e.g. quotation) */}
+                {hasUnitPrice && (
                 <div className="mt-1.5 flex items-center gap-1.5">
                   <LabeledField label="Số lượng" className="w-14">
                     <Input
@@ -683,6 +699,7 @@ export function DocumentDetailEditPanel({
                     </span>
                   </div>
                 </div>
+                )}
               </div>
             ))}
             {/* Add item — dashed card */}
@@ -696,7 +713,8 @@ export function DocumentDetailEditPanel({
           </div>
         </div>
 
-        {/* Total */}
+        {/* Total — only for templates with unitPrice */}
+        {hasUnitPrice && (
         <div className="mt-2 flex items-center justify-between rounded-lg bg-indigo-50 px-3 py-2">
           <span className="text-[11px] font-medium text-indigo-600">
             Tổng cộng
@@ -705,6 +723,7 @@ export function DocumentDetailEditPanel({
             {formatCurrency(total)}
           </span>
         </div>
+        )}
 
         <Separator className="my-3" />
 
