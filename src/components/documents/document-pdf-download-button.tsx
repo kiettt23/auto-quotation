@@ -22,6 +22,10 @@ interface Props {
     headerLayout?: string | null;
     driverName?: string | null;
     vehicleId?: string | null;
+    representative?: string | null;
+    position?: string | null;
+    bankAccount?: string | null;
+    bankName?: string | null;
   };
   columns: ColumnDef[];
   showTotal: boolean;

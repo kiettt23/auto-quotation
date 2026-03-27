@@ -219,6 +219,8 @@ function CompanyDetailPanel({
   const [taxCode, setTaxCode] = useState(company?.taxCode ?? "");
   const [bankName, setBankName] = useState(company?.bankName ?? "");
   const [bankAccount, setBankAccount] = useState(company?.bankAccount ?? "");
+  const [representative, setRepresentative] = useState(company?.representative ?? "");
+  const [position, setPosition] = useState(company?.position ?? "");
   const [driverName, setDriverName] = useState(company?.driverName ?? "");
   const [vehicleId, setVehicleId] = useState(company?.vehicleId ?? "");
   const [logoUrl, setLogoUrl] = useState(company?.logoUrl ?? "");
@@ -234,6 +236,8 @@ function CompanyDetailPanel({
     taxCode !== (company?.taxCode ?? "") ||
     bankName !== (company?.bankName ?? "") ||
     bankAccount !== (company?.bankAccount ?? "") ||
+    representative !== (company?.representative ?? "") ||
+    position !== (company?.position ?? "") ||
     driverName !== (company?.driverName ?? "") ||
     vehicleId !== (company?.vehicleId ?? "") ||
     logoUrl !== (company?.logoUrl ?? "") ||
@@ -253,6 +257,8 @@ function CompanyDetailPanel({
     formData.set("taxCode", taxCode);
     formData.set("bankName", bankName);
     formData.set("bankAccount", bankAccount);
+    formData.set("representative", representative);
+    formData.set("position", position);
     formData.set("driverName", driverName);
     formData.set("vehicleId", vehicleId);
     formData.set("logoUrl", logoUrl);
@@ -365,37 +371,28 @@ function CompanyDetailPanel({
                 />
               </LabeledField>
             </div>
+            <div className="flex gap-2">
+              <LabeledField label="Người đại diện" className="min-w-0 flex-1">
+                <Input
+                  value={representative}
+                  onChange={(e) => setRepresentative(e.target.value)}
+                  className="h-8 text-xs"
+                />
+              </LabeledField>
+              <LabeledField label="Chức vụ" className="w-36 shrink-0">
+                <Input
+                  value={position}
+                  onChange={(e) => setPosition(e.target.value)}
+                  className="h-8 text-xs"
+                />
+              </LabeledField>
+            </div>
           </div>
         </fieldset>
 
         <Separator className="my-3" />
 
-        {/* Group 2: Ngân hàng */}
-        <fieldset className="mb-3">
-          <legend className="mb-2 text-[13px] font-semibold text-slate-700">
-            Ngân hàng
-          </legend>
-          <div className="flex gap-2">
-            <LabeledField label="Tên ngân hàng" className="min-w-0 flex-1">
-              <Input
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                className="h-8 text-xs"
-              />
-            </LabeledField>
-            <LabeledField label="Số tài khoản" className="w-36 shrink-0">
-              <Input
-                value={bankAccount}
-                onChange={(e) => setBankAccount(e.target.value)}
-                className="h-8 text-xs"
-              />
-            </LabeledField>
-          </div>
-        </fieldset>
-
-        <Separator className="my-3" />
-
-        {/* Group 3: Vận chuyển */}
+        {/* Group 2: Vận chuyển */}
         <fieldset className="mb-3">
           <legend className="mb-2 text-[13px] font-semibold text-slate-700">
             Vận chuyển mặc định
@@ -412,6 +409,31 @@ function CompanyDetailPanel({
               <Input
                 value={vehicleId}
                 onChange={(e) => setVehicleId(e.target.value)}
+                className="h-8 text-xs"
+              />
+            </LabeledField>
+          </div>
+        </fieldset>
+
+        <Separator className="my-3" />
+
+        {/* Group 3: Ngân hàng */}
+        <fieldset className="mb-3">
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">
+            Ngân hàng
+          </legend>
+          <div className="flex gap-2">
+            <LabeledField label="Tên ngân hàng" className="min-w-0 flex-1">
+              <Input
+                value={bankName}
+                onChange={(e) => setBankName(e.target.value)}
+                className="h-8 text-xs"
+              />
+            </LabeledField>
+            <LabeledField label="Số tài khoản" className="w-36 shrink-0">
+              <Input
+                value={bankAccount}
+                onChange={(e) => setBankAccount(e.target.value)}
                 className="h-8 text-xs"
               />
             </LabeledField>

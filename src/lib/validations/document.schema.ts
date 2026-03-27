@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const documentItemSchema = z.object({
   productId: z.string().optional(),
-  productName: z.string().min(1, "Tên sản phẩm không được trống"),
+  productName: z.string().default(""),
   specification: z.union([z.string(), z.number()]).optional(),
   unit: z.string().optional(),
   quantity: z.coerce.number().optional(),
@@ -28,7 +28,7 @@ export const createDocumentSchema = z.object({
   templateFields: z.record(z.string(), z.string()).optional(),
   /** Suffix for manual document number (e.g. "ABC123" → "JS - 260324 - ABC123") */
   documentNumberSuffix: z.string().optional(),
-  items: z.array(documentItemSchema).min(1, "Cần ít nhất 1 sản phẩm"),
+  items: z.array(documentItemSchema).default([]),
   notes: z.string().optional(),
   /** Per-document column override */
   columns: z.array(z.object({

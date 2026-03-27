@@ -49,8 +49,6 @@ export async function duplicateCustomer(userId: string, customerId: string) {
     phone: original.phone ?? undefined,
     email: original.email ?? undefined,
     taxCode: original.taxCode ?? undefined,
-    deliveryName: original.deliveryName ?? undefined,
-    deliveryAddress: original.deliveryAddress ?? undefined,
     receiverName: original.receiverName ?? undefined,
     receiverPhone: original.receiverPhone ?? undefined,
   });
@@ -65,8 +63,6 @@ export async function createCustomer(
     phone?: string;
     email?: string;
     taxCode?: string;
-    deliveryName?: string;
-    deliveryAddress?: string;
     receiverName?: string;
     receiverPhone?: string;
   }

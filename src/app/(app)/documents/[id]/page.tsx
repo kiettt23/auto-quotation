@@ -44,6 +44,10 @@ export default async function DocumentDetailPage({
         headerLayout: company.headerLayout,
         driverName: company.driverName,
         vehicleId: company.vehicleId,
+        representative: company.representative,
+        position: company.position,
+        bankAccount: company.bankAccount,
+        bankName: company.bankName,
       }}
       columns={columns}
       showTotal={showTotal}

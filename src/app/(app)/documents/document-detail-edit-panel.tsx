@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { X, Plus, Trash2, Save, Eye, Loader2 } from "lucide-react";
@@ -106,14 +106,19 @@ export function DocumentDetailEditPanel({
     }
     return init;
   });
+  const [deliveryCustomerId, setDeliveryCustomerId] = useState(
+    (existingData?.templateFields?.deliveryCustomerId as string) ?? "",
+  );
   const [notes, setNotes] = useState(existingData?.notes ?? "");
   const [docNumberSuffix, setDocNumberSuffix] = useState("");
   const isManualNumber = template?.numberMode === "manual";
-  const [items, setItems] = useState<DocumentDataItem[]>(
-    existingData?.items?.length
-      ? existingData.items
-      : [{ productName: "", quantity: 1, unitPrice: 0, amount: 0 }],
-  );
+  const [items, setItems] = useState<DocumentDataItem[]>(() => {
+    if (existingData?.items?.length) return existingData.items;
+    const entry = getTemplateEntry(templateId);
+    if (entry?.hasItems === false) return [];
+    if (entry?.defaultItems?.length) return structuredClone(entry.defaultItems);
+    return [{ productName: "", quantity: 1, unitPrice: 0, amount: 0 }];
+  });
 
   function markDirty() {
     if (!isDirty) setIsDirty(true);
@@ -126,25 +131,58 @@ export function DocumentDetailEditPanel({
   const hasExtraField = (key: string) => extraFieldKeys.has(key);
   const hasAnyDeliveryField =
     hasExtraField("deliveryName") || hasExtraField("deliveryAddress");
+  const showProductSelector = template?.showProductSelector !== false;
+  const hasItems = template?.hasItems !== false;
+  /* Hide productName input when template has a 'label' column (avoids duplication) */
+  const hasLabelColumn = (template?.columns ?? []).some((c) => c.key === "label");
+  // Extra fields not handled by dedicated sections (delivery, driver, vehicle)
+  /* Keys that belong to customer section instead of "Thông tin chứng từ" */
+  const CUSTOMER_EXTRA_KEYS = new Set([
+    "representative", "position", "phone", "email", "taxCode",
+    "bankAccount", "bankName", "installAddress", "invoiceAddress", "fax",
+  ]);
+  const genericExtraFields = useMemo(() => {
+    const dedicated = new Set(["deliveryName", "deliveryAddress", "driverName", "vehicleId"]);
+    const autoSynced = new Set(hasExtraField("servicePrice") && hasItems ? ["servicePrice"] : []);
+    return templateExtraFields.filter(
+      (f) => !dedicated.has(f.key) && !autoSynced.has(f.key) && !CUSTOMER_EXTRA_KEYS.has(f.key)
+    );
+  }, [templateExtraFields]); // eslint-disable-line react-hooks/exhaustive-deps
+  const customerExtraFields = useMemo(() => {
+    return templateExtraFields.filter((f) => CUSTOMER_EXTRA_KEYS.has(f.key));
+  }, [templateExtraFields]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const selectedCompany = useMemo(
     () => companies.find((c) => c.id === companyId) ?? null,
     [companies, companyId],
   );
 
-  const total = useMemo(
-    () =>
-      items.reduce((s, it) => s + (it.quantity ?? 0) * (it.unitPrice ?? 0), 0),
-    [items],
-  );
-
   // Columns that need editable inputs in item cards
-  // Always skip: stt (auto), productName (selector)
   // Only skip quantity/unitPrice/amount when template has unitPrice (e.g. quotation)
   const hasUnitPrice = useMemo(
     () => (template?.columns ?? []).some((c) => c.key === "unitPrice"),
     [template],
   );
+
+  const total = useMemo(
+    () =>
+      items.reduce((s, it) => {
+        if (hasUnitPrice) return s + (it.quantity ?? 0) * (it.unitPrice ?? 0);
+        const cfAmt = it.customFields?.amount ? Number(it.customFields.amount) : 0;
+        return s + (cfAmt || it.amount || 0);
+      }, 0),
+    [items, hasUnitPrice],
+  );
+
+  /* Auto-sync servicePrice extraField from items total (PLHD template) */
+  useEffect(() => {
+    if (!hasExtraField("servicePrice") || total === 0) return;
+    const formatted = new Intl.NumberFormat("vi-VN").format(total);
+    setExtraFields((prev) => {
+      if (prev.servicePrice === formatted) return prev;
+      return { ...prev, servicePrice: formatted };
+    });
+  }, [total]); // eslint-disable-line react-hooks/exhaustive-deps
   const skipItemKeys = useMemo(() => {
     const keys = new Set(["stt", "productName"]);
     if (hasUnitPrice) {
@@ -180,9 +218,12 @@ export function DocumentDetailEditPanel({
       updateItem(index, { [key]: parsed });
     } else {
       const item = items[index];
-      updateItem(index, {
+      const patch: Partial<DocumentDataItem> = {
         customFields: { ...item.customFields, [key]: value },
-      });
+      };
+      /* Sync label → productName so PDF template can use either */
+      if (key === "label") patch.productName = value;
+      updateItem(index, patch);
     }
   }
 
@@ -197,13 +238,30 @@ export function DocumentDetailEditPanel({
     setReceiverPhone(c.receiverPhone ?? "");
     setExtraFields((prev) => ({
       ...prev,
-      ...(c.deliveryName ? { deliveryName: c.deliveryName } : {}),
-      ...(c.deliveryAddress ? { deliveryAddress: c.deliveryAddress } : {}),
+      // Spread built-in customer fields for template autofill
+      ...(c.phone ? { phone: c.phone } : {}),
+      ...(c.email ? { email: c.email } : {}),
+      ...(c.taxCode ? { taxCode: c.taxCode } : {}),
+      ...(c.installAddress ? { installAddress: c.installAddress } : {}),
+      ...(c.invoiceAddress ? { invoiceAddress: c.invoiceAddress } : {}),
       ...(c.customData
         ? Object.fromEntries(
             Object.entries(c.customData).map(([k, v]) => [k, String(v)]),
           )
         : {}),
+    }));
+  }
+
+  function handleDeliveryCustomerSelect(id: string) {
+    const c = customers.find((c) => c.id === id);
+    if (!c) return;
+    markDirty();
+    setDeliveryCustomerId(id);
+    setExtraFields((prev) => ({
+      ...prev,
+      deliveryName: c.name,
+      deliveryAddress: c.address ?? "",
+      deliveryCustomerId: id,
     }));
   }
 
@@ -265,7 +323,9 @@ export function DocumentDetailEditPanel({
     markDirty();
     setItems((prev) => [
       ...prev,
-      { productName: "", quantity: 1, unitPrice: 0, amount: 0 },
+      showProductSelector
+        ? { productName: "", quantity: 1, unitPrice: 0, amount: 0 }
+        : { productName: "" },
     ]);
   }
 
@@ -459,6 +519,58 @@ export function DocumentDetailEditPanel({
                 className="h-8 bg-slate-50 text-xs text-slate-500"
               />
             </LabeledField>
+            {!template?.hideCompanyDetails && (
+              <>
+                <div className="flex gap-2">
+                  <LabeledField label="Điện thoại" className="min-w-0 flex-1">
+                    <Input
+                      value={selectedCompany?.phone ?? ""}
+                      readOnly
+                      className="h-8 bg-slate-50 text-xs text-slate-500"
+                    />
+                  </LabeledField>
+                  <LabeledField label="Email" className="min-w-0 flex-1">
+                    <Input
+                      value={selectedCompany?.email ?? ""}
+                      readOnly
+                      className="h-8 bg-slate-50 text-xs text-slate-500"
+                    />
+                  </LabeledField>
+                </div>
+                <div className="flex gap-2">
+                  <LabeledField label="Số tài khoản" className="min-w-0 flex-1">
+                    <Input
+                      value={selectedCompany?.bankAccount ?? ""}
+                      readOnly
+                      className="h-8 bg-slate-50 text-xs text-slate-500"
+                    />
+                  </LabeledField>
+                  <LabeledField label="Ngân hàng" className="min-w-0 flex-1">
+                    <Input
+                      value={selectedCompany?.bankName ?? ""}
+                      readOnly
+                      className="h-8 bg-slate-50 text-xs text-slate-500"
+                    />
+                  </LabeledField>
+                </div>
+                <div className="flex gap-2">
+                  <LabeledField label="Người đại diện" className="min-w-0 flex-1">
+                    <Input
+                      value={selectedCompany?.representative ?? ""}
+                      readOnly
+                      className="h-8 bg-slate-50 text-xs text-slate-500"
+                    />
+                  </LabeledField>
+                  <LabeledField label="Chức vụ" className="min-w-0 flex-1">
+                    <Input
+                      value={selectedCompany?.position ?? ""}
+                      readOnly
+                      className="h-8 bg-slate-50 text-xs text-slate-500"
+                    />
+                  </LabeledField>
+                </div>
+              </>
+            )}
             {(hasExtraField("driverName") || hasExtraField("vehicleId")) && (
               <div className="flex gap-2">
                 {hasExtraField("driverName") && (
@@ -538,13 +650,54 @@ export function DocumentDetailEditPanel({
                 />
               </LabeledField>
             )}
-            <LabeledField label="Địa chỉ">
-              <Input
-                value={customerAddress}
-                onChange={(e) => setCustomerAddress(e.target.value)}
-                className="h-8 text-xs"
-              />
-            </LabeledField>
+            {/* Hide generic address when template has installAddress/invoiceAddress */}
+            {!hasExtraField("installAddress") && (
+              <LabeledField label="Địa chỉ">
+                <Input
+                  value={customerAddress}
+                  onChange={(e) => setCustomerAddress(e.target.value)}
+                  className="h-8 text-xs"
+                />
+              </LabeledField>
+            )}
+            {/* Receiver info — belongs to customer (Bên B) */}
+            <div className="flex gap-2">
+              <LabeledField label="Người nhận" className="min-w-0 flex-1">
+                <Input
+                  value={receiverName}
+                  onChange={(e) => setReceiverName(e.target.value)}
+                  className="h-8 text-xs"
+                />
+              </LabeledField>
+              <LabeledField label="SĐT" className="w-24">
+                <Input
+                  value={receiverPhone}
+                  onChange={(e) => setReceiverPhone(e.target.value)}
+                  className="h-8 text-xs"
+                />
+              </LabeledField>
+            </div>
+            {/* Customer-related extra fields (PLHD: representative, phone, address etc.) */}
+            {customerExtraFields.length > 0 && (
+              <div className="mt-1.5 grid grid-cols-2 gap-1.5">
+                {customerExtraFields.map((f) => (
+                  <LabeledField key={f.key} label={f.label}>
+                    <Input
+                      value={extraFields[f.key] ?? ""}
+                      onChange={(e) =>
+                        setExtraFields((prev) => ({
+                          ...prev,
+                          [f.key]: e.target.value,
+                        }))
+                      }
+                      onBlur={markDirty}
+                      placeholder={f.placeholder}
+                      className="h-8 text-xs"
+                    />
+                  </LabeledField>
+                ))}
+              </div>
+            )}
           </div>
         </fieldset>
 
@@ -552,65 +705,73 @@ export function DocumentDetailEditPanel({
           <>
             <Separator className="my-3" />
 
-            {/* Group 3 — Nơi giao */}
+            {/* Group 3 — Nơi giao (chọn từ danh sách khách hàng) */}
             <fieldset className="mb-3">
               <legend className="mb-2 text-[13px] font-semibold text-slate-700">
                 Nơi giao
               </legend>
               <div className="space-y-1.5">
-                {hasExtraField("deliveryName") && (
-                  <LabeledField label="Tên nơi giao">
-                    <Input
-                      value={extraFields.deliveryName ?? ""}
-                      onChange={(e) =>
-                        setExtraFields((prev) => ({
-                          ...prev,
-                          deliveryName: e.target.value,
-                        }))
-                      }
-                      className="h-8 text-xs"
-                    />
-                  </LabeledField>
-                )}
-                {hasExtraField("deliveryAddress") && (
+                <LabeledField label="Nơi giao">
+                  <Select value={deliveryCustomerId} onValueChange={handleDeliveryCustomerSelect}>
+                    <SelectTrigger className="h-8 text-xs">
+                      <SelectValue placeholder="Chọn nơi giao..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {customers.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </LabeledField>
+                {deliveryCustomerId && (
                   <LabeledField label="Địa chỉ">
                     <Input
                       value={extraFields.deliveryAddress ?? ""}
-                      onChange={(e) =>
-                        setExtraFields((prev) => ({
-                          ...prev,
-                          deliveryAddress: e.target.value,
-                        }))
-                      }
-                      className="h-8 text-xs"
+                      readOnly
+                      className="h-8 bg-slate-50 text-xs text-slate-500"
                     />
                   </LabeledField>
                 )}
-                <div className="flex gap-2">
-                  <LabeledField label="Người nhận" className="min-w-0 flex-1">
-                    <Input
-                      value={receiverName}
-                      onChange={(e) => setReceiverName(e.target.value)}
-                      className="h-8 text-xs"
-                    />
-                  </LabeledField>
-                  <LabeledField label="SĐT" className="w-24">
-                    <Input
-                      value={receiverPhone}
-                      onChange={(e) => setReceiverPhone(e.target.value)}
-                      className="h-8 text-xs"
-                    />
-                  </LabeledField>
-                </div>
               </div>
             </fieldset>
           </>
         )}
 
-        <Separator className="my-3" />
+        {/* Generic extra fields (PLHD, DNTT etc.) */}
+        {genericExtraFields.length > 0 && (
+          <>
+            <Separator className="my-3" />
+            <fieldset className="mb-3">
+              <legend className="mb-2 text-[13px] font-semibold text-slate-700">
+                Thông tin chứng từ
+              </legend>
+              <div className="grid grid-cols-2 gap-1.5">
+                {genericExtraFields.map((f) => (
+                  <LabeledField key={f.key} label={f.label}>
+                    <Input
+                      value={extraFields[f.key] ?? ""}
+                      onChange={(e) =>
+                        setExtraFields((prev) => ({
+                          ...prev,
+                          [f.key]: e.target.value,
+                        }))
+                      }
+                      placeholder={f.placeholder}
+                      className="h-7 text-xs"
+                    />
+                  </LabeledField>
+                ))}
+              </div>
+            </fieldset>
+          </>
+        )}
 
-        {/* Items */}
-        <div>
+        {hasItems && <Separator className="my-3" />}
+
+        {/* Items — hidden for letter-type templates (hasItems=false) */}
+        {hasItems && <div>
           <div className="mb-2">
             <span className="text-[13px] font-semibold text-slate-700">
               Sản phẩm ({items.length})
@@ -622,8 +783,10 @@ export function DocumentDetailEditPanel({
                 key={i}
                 className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5"
               >
+                {!hasLabelColumn && (
                 <div className="flex items-center gap-1.5">
                   <div className="min-w-0 flex-1">
+                    {showProductSelector ? (
                     <Select
                       value={item.productId ?? ""}
                       onValueChange={(v) => handleProductSelect(i, v)}
@@ -639,6 +802,14 @@ export function DocumentDetailEditPanel({
                         ))}
                       </SelectContent>
                     </Select>
+                    ) : (
+                    <Input
+                      value={item.productName}
+                      onChange={(e) => updateItem(i, { productName: e.target.value })}
+                      placeholder="Nhập tên dòng..."
+                      className="h-7 text-xs"
+                    />
+                    )}
                   </div>
                   {items.length > 1 && (
                     <button
@@ -649,10 +820,12 @@ export function DocumentDetailEditPanel({
                     </button>
                   )}
                 </div>
+                )}
 
                 {/* Template-driven editable fields (all columns shown in PDF) */}
                 {editableColumns.length > 0 && (
-                  <div className="mt-1.5 grid grid-cols-3 gap-1.5">
+                  <div className={`${hasLabelColumn ? "" : "mt-1.5 "}flex items-end gap-1.5`}>
+                  <div className={`flex-1 grid gap-1.5 ${editableColumns.length <= 2 ? "grid-cols-2" : "grid-cols-3"}`}>
                     {editableColumns.map((col) => {
                       const val = getItemColumnValue(item, col.key);
                       return (
@@ -677,6 +850,15 @@ export function DocumentDetailEditPanel({
                         </LabeledField>
                       );
                     })}
+                  </div>
+                  {hasLabelColumn && items.length > 1 && (
+                    <button
+                      onClick={() => removeItem(i)}
+                      className="mb-0.5 h-7 shrink-0 cursor-pointer text-slate-300 hover:text-red-500"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  )}
                   </div>
                 )}
                 {/* Số lượng × Đơn giá — only for templates with unitPrice (e.g. quotation) */}
@@ -724,13 +906,13 @@ export function DocumentDetailEditPanel({
               className="flex w-full cursor-pointer items-center justify-center gap-1 rounded-xl border border-dashed border-slate-200 py-2.5 text-[11px] font-medium text-slate-400 transition-colors hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600"
             >
               <Plus className="h-3 w-3" />
-              Thêm sản phẩm
+              Thêm dòng
             </button>
           </div>
-        </div>
+        </div>}
 
-        {/* Total — only for templates with unitPrice */}
-        {hasUnitPrice && (
+        {/* Total */}
+        {(hasUnitPrice || template?.showTotal) && (
         <div className="mt-2 flex items-center justify-between rounded-lg bg-indigo-50 px-3 py-2">
           <span className="text-[11px] font-medium text-indigo-600">
             Tổng cộng

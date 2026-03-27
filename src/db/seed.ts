@@ -201,8 +201,6 @@ async function seed() {
       address: "KCN Minh Hưng III, Chơn Thành, Bình Phước",
       phone: "0271 356 1234",
       taxCode: "3801567890",
-      deliveryName: "Kho hàng Kyong Gi Vina",
-      deliveryAddress: "Lô A5, Đường N3, KCN Minh Hưng III, Chơn Thành, Bình Phước",
       receiverName: "Nguyễn Thị Mai",
       receiverPhone: "0901234567",
       customData: { department: "Phòng vật tư", purchaseOrderPrefix: "PO-KG" },

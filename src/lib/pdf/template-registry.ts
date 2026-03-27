@@ -1,6 +1,7 @@
 import type { ComponentType } from "react";
 import type { PdfTemplateProps } from "./template-props";
 import type { ColumnDef } from "@/lib/types/column-def";
+import type { DocumentDataItem } from "@/lib/types/document-data";
 
 /** Extra form field definition for template-specific customer inputs */
 export interface ExtraFormField {
@@ -36,11 +37,19 @@ export interface TemplateEntry {
   /**
    * Document number generation mode:
    * - "auto" (default): shortLabel-year-autoIncrement (e.g. BG-2026-001)
-   * - "manual": prefix-date, user provides suffix (e.g. JS - 260324 - <input>)
+   * - "manual": prefix-date, user provides suffix (e.g. JS-260324-<input>)
    */
   numberMode?: "auto" | "manual";
   /** Prefix for manual number mode (e.g. "JS") */
   numberPrefix?: string;
+  /** Show product selector dropdown in item rows (default: true) */
+  showProductSelector?: boolean;
+  /** Show items section at all in detail pane (default: true). Set false for letter-type templates */
+  hasItems?: boolean;
+  /** Default item rows seeded when creating a new document with this template */
+  defaultItems?: DocumentDataItem[];
+  /** Hide company detail fields (phone, email, bank, representative etc.) in detail pane */
+  hideCompanyDetails?: boolean;
   /** React component for PDF rendering */
   component: ComponentType<PdfTemplateProps>;
 }
@@ -88,6 +97,7 @@ const registry: TemplateEntry[] = [
     signatureLabels: ["Người giao", "Tài xế", "Người nhận", "Thủ kho", "Kế toán"],
     numberMode: "manual",
     numberPrefix: "JS",
+    hideCompanyDetails: true,
     color: { badgeBg: "bg-emerald-100", badgeText: "text-emerald-700", dotColor: "bg-emerald-500" },
     extraFormFields: [
       { key: "deliveryName", label: "Tên nơi giao", placeholder: "Công Ty TNHH Kyong Gi Vina" },
@@ -115,6 +125,7 @@ const registry: TemplateEntry[] = [
     ],
     showTotal: true,
     signatureLabels: ["Thủ kho", "Tài xế", "Người nhận hàng"],
+    hideCompanyDetails: true,
     color: { badgeBg: "bg-amber-100", badgeText: "text-amber-700", dotColor: "bg-amber-500" },
     extraFormFields: [
       { key: "vehicleId", label: "Số xe", placeholder: "50E-12345" },
@@ -122,6 +133,83 @@ const registry: TemplateEntry[] = [
     get component() {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       return require("./templates/warehouse-export-template").WarehouseExportTemplate;
+    },
+  },
+  {
+    id: "contract-appendix",
+    name: "Phụ lục hợp đồng",
+    description: "Layout hợp đồng 2 bên, bảng khoản thu, điều khoản cố định",
+    shortLabel: "PLHD",
+    columns: [
+      { key: "label", label: "Khoản thu", type: "text", width: "60%", system: false },
+      { key: "amount", label: "Số tiền (VNĐ)", type: "currency", width: "40%", align: "right" },
+    ],
+    showTotal: true,
+    showProductSelector: false,
+    defaultItems: [
+      { productName: "Tiền cước Internet", customFields: { label: "Tiền cước Internet", amount: "0" } },
+      { productName: "Tiền cước PayTV", customFields: { label: "Tiền cước PayTV", amount: "0" } },
+      { productName: "Tiền thuê thiết bị đầu cuối", customFields: { label: "Tiền thuê thiết bị đầu cuối", amount: "0" } },
+    ],
+    signatureLabels: ["Đại diện bên A", "Đại diện bên B"],
+    color: { badgeBg: "bg-sky-100", badgeText: "text-sky-700", dotColor: "bg-sky-500" },
+    extraFormFields: [
+      { key: "representative", label: "Người đại diện Bên A", placeholder: "Nguyễn Văn A" },
+      { key: "position", label: "Chức vụ Bên A", placeholder: "Giám đốc" },
+      { key: "installAddress", label: "Địa chỉ lắp đặt", placeholder: "1D Nguyễn Duy, Phường Gia Định..." },
+      { key: "invoiceAddress", label: "Địa chỉ hóa đơn", placeholder: "1D Nguyễn Duy, Phường Gia Định..." },
+      { key: "phone", label: "Điện thoại Bên A", placeholder: "0969659975" },
+      { key: "fax", label: "Fax", placeholder: "" },
+      { key: "bankAccount", label: "Số tài khoản Bên A", placeholder: "" },
+      { key: "bankName", label: "Ngân hàng Bên A", placeholder: "" },
+      { key: "taxCode", label: "Mã số thuế Bên A", placeholder: "0316142378" },
+      { key: "email", label: "Email Bên A", placeholder: "" },
+      { key: "contractNo", label: "Số hợp đồng", placeholder: "SGAAV3359" },
+      { key: "contractDate", label: "Ngày ký HĐ", placeholder: "25/10/2022" },
+      { key: "effectiveDate", label: "Ngày hiệu lực", placeholder: "10/03/2026" },
+      { key: "servicePackage", label: "Gói dịch vụ", placeholder: "Meta (1000Mbps/1000Mbps)" },
+      { key: "servicePriceCode", label: "Gói tính cước", placeholder: "Meta-13.0T" },
+      { key: "servicePrice", label: "Giá gói dịch vụ", placeholder: "4.080.000" },
+      { key: "paymentMonths", label: "Số tháng", placeholder: "13.0" },
+      { key: "paymentPeriodFrom", label: "Kỳ hạn TT từ", placeholder: "10/03/2026" },
+      { key: "paymentPeriodTo", label: "Kỳ hạn TT đến", placeholder: "09/04/2027" },
+    ],
+    get component() {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      return require("./templates/contract-appendix-template").ContractAppendixTemplate;
+    },
+  },
+  {
+    id: "payment-request",
+    name: "Đề nghị thanh toán",
+    description: "Layout thư đề nghị thanh toán, không có bảng sản phẩm",
+    shortLabel: "DNTT",
+    columns: [],
+    showTotal: false,
+    hasItems: false,
+    showProductSelector: false,
+    signatureLabels: [],
+    color: { badgeBg: "bg-rose-100", badgeText: "text-rose-700", dotColor: "bg-rose-500" },
+    extraFormFields: [
+      { key: "refNumber", label: "Số công văn", placeholder: "SGAAV3359 / FTEL" },
+      { key: "subject", label: "V/v", placeholder: "Thanh toán cước phí Internet" },
+      { key: "contractNo", label: "Số hợp đồng", placeholder: "SGAAV3359" },
+      { key: "contractDate", label: "Ngày ký HĐ", placeholder: "25/10/2022" },
+      { key: "servicePackage", label: "Gói dịch vụ", placeholder: "FTTH - Super500" },
+      { key: "periodMonths", label: "Số tháng", placeholder: "13" },
+      { key: "periodFrom", label: "Từ ngày", placeholder: "10/03/2026" },
+      { key: "periodTo", label: "Đến ngày", placeholder: "09/04/2027" },
+      { key: "totalAmount", label: "Tổng tiền (VNĐ)", placeholder: "4.080.000" },
+      { key: "amountInWords", label: "Số tiền bằng chữ", placeholder: "Bốn triệu không trăm tám mươi nghìn đồng" },
+      { key: "paymentDeadline", label: "Hạn thanh toán", placeholder: "15/03/2026" },
+      { key: "bankAccount", label: "Số tài khoản", placeholder: "0181002666594" },
+      { key: "bankName", label: "Ngân hàng", placeholder: "Vietcombank" },
+      { key: "bankBranch", label: "Chi nhánh NH", placeholder: "Nam Sài Gòn" },
+      { key: "paymentContent", label: "Nội dung CK", placeholder: "SGAAV3359 _ thanh toán cước" },
+    ],
+    get component() {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      return require("./templates/payment-request-template").PaymentRequestTemplate;
     },
   },
 ];

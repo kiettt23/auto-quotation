@@ -11,6 +11,10 @@ export const company = pgTable("company", {
   email: text("email"),
   bankName: text("bank_name"),
   bankAccount: text("bank_account"),
+  /** Legal representative name */
+  representative: text("representative"),
+  /** Representative's position/title */
+  position: text("position"),
   /** Company logo as data URL (base64) or external URL */
   logoUrl: text("logo_url"),
   /** Header layout: "left" (logo left, info right) or "center" (centered) */

@@ -10,10 +10,10 @@ export const customer = pgTable("customer", {
   phone: text("phone"),
   email: text("email"),
   taxCode: text("tax_code"),
-  /** Default delivery info — auto-fill when creating documents */
-  deliveryAddress: text("delivery_address"),
-  /** Delivery contact name (e.g. "Nguyễn Văn A") */
-  deliveryName: text("delivery_name"),
+  /** Installation address for contract appendix autofill */
+  installAddress: text("install_address"),
+  /** Invoice address for contract appendix autofill */
+  invoiceAddress: text("invoice_address"),
   receiverName: text("receiver_name"),
   receiverPhone: text("receiver_phone"),
   /** Flexible key-value data for template-specific autofill */
