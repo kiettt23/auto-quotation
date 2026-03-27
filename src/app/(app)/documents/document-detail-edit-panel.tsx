@@ -139,7 +139,7 @@ export function DocumentDetailEditPanel({
   /* Keys that belong to customer section instead of "Thông tin chứng từ" */
   const CUSTOMER_EXTRA_KEYS = new Set([
     "representative", "position", "phone", "email", "taxCode",
-    "bankAccount", "bankName", "installAddress", "invoiceAddress", "fax",
+    "installAddress", "invoiceAddress", "fax",
   ]);
   const genericExtraFields = useMemo(() => {
     const dedicated = new Set(["deliveryName", "deliveryAddress", "driverName", "vehicleId"]);
@@ -419,6 +419,11 @@ export function DocumentDetailEditPanel({
                 headerLayout: selectedCompany?.headerLayout,
                 driverName: selectedCompany?.driverName,
                 vehicleId: selectedCompany?.vehicleId,
+                representative: selectedCompany?.representative,
+                position: selectedCompany?.position,
+                bankAccount: selectedCompany?.bankAccount,
+                bankName: selectedCompany?.bankName,
+                customData: selectedCompany?.customData as Record<string, string | number> | null,
               }}
               columns={template?.columns ?? []}
               showTotal={template?.showTotal ?? false}
@@ -520,56 +525,58 @@ export function DocumentDetailEditPanel({
               />
             </LabeledField>
             {!template?.hideCompanyDetails && (
-              <>
-                <div className="flex gap-2">
-                  <LabeledField label="Điện thoại" className="min-w-0 flex-1">
-                    <Input
-                      value={selectedCompany?.phone ?? ""}
-                      readOnly
-                      className="h-8 bg-slate-50 text-xs text-slate-500"
-                    />
-                  </LabeledField>
-                  <LabeledField label="Email" className="min-w-0 flex-1">
-                    <Input
-                      value={selectedCompany?.email ?? ""}
-                      readOnly
-                      className="h-8 bg-slate-50 text-xs text-slate-500"
-                    />
-                  </LabeledField>
-                </div>
-                <div className="flex gap-2">
-                  <LabeledField label="Số tài khoản" className="min-w-0 flex-1">
-                    <Input
-                      value={selectedCompany?.bankAccount ?? ""}
-                      readOnly
-                      className="h-8 bg-slate-50 text-xs text-slate-500"
-                    />
-                  </LabeledField>
-                  <LabeledField label="Ngân hàng" className="min-w-0 flex-1">
-                    <Input
-                      value={selectedCompany?.bankName ?? ""}
-                      readOnly
-                      className="h-8 bg-slate-50 text-xs text-slate-500"
-                    />
-                  </LabeledField>
-                </div>
-                <div className="flex gap-2">
-                  <LabeledField label="Người đại diện" className="min-w-0 flex-1">
-                    <Input
-                      value={selectedCompany?.representative ?? ""}
-                      readOnly
-                      className="h-8 bg-slate-50 text-xs text-slate-500"
-                    />
-                  </LabeledField>
-                  <LabeledField label="Chức vụ" className="min-w-0 flex-1">
-                    <Input
-                      value={selectedCompany?.position ?? ""}
-                      readOnly
-                      className="h-8 bg-slate-50 text-xs text-slate-500"
-                    />
-                  </LabeledField>
-                </div>
-              </>
+              <div className="flex gap-2">
+                <LabeledField label="Điện thoại" className="min-w-0 flex-1">
+                  <Input
+                    value={selectedCompany?.phone ?? ""}
+                    readOnly
+                    className="h-8 bg-slate-50 text-xs text-slate-500"
+                  />
+                </LabeledField>
+                <LabeledField label="Email" className="min-w-0 flex-1">
+                  <Input
+                    value={selectedCompany?.email ?? ""}
+                    readOnly
+                    className="h-8 bg-slate-50 text-xs text-slate-500"
+                  />
+                </LabeledField>
+              </div>
+            )}
+            {!template?.hideBankFields && (
+              <div className="flex gap-2">
+                <LabeledField label="Số tài khoản" className="min-w-0 flex-1">
+                  <Input
+                    value={selectedCompany?.bankAccount ?? ""}
+                    readOnly
+                    className="h-8 bg-slate-50 text-xs text-slate-500"
+                  />
+                </LabeledField>
+                <LabeledField label="Ngân hàng" className="min-w-0 flex-1">
+                  <Input
+                    value={selectedCompany?.bankName ?? ""}
+                    readOnly
+                    className="h-8 bg-slate-50 text-xs text-slate-500"
+                  />
+                </LabeledField>
+              </div>
+            )}
+            {!template?.hideRepresentativeFields && (
+              <div className="flex gap-2">
+                <LabeledField label="Người đại diện" className="min-w-0 flex-1">
+                  <Input
+                    value={selectedCompany?.representative ?? ""}
+                    readOnly
+                    className="h-8 bg-slate-50 text-xs text-slate-500"
+                  />
+                </LabeledField>
+                <LabeledField label="Chức vụ" className="min-w-0 flex-1">
+                  <Input
+                    value={selectedCompany?.position ?? ""}
+                    readOnly
+                    className="h-8 bg-slate-50 text-xs text-slate-500"
+                  />
+                </LabeledField>
+              </div>
             )}
             {(hasExtraField("driverName") || hasExtraField("vehicleId")) && (
               <div className="flex gap-2">
@@ -661,6 +668,7 @@ export function DocumentDetailEditPanel({
               </LabeledField>
             )}
             {/* Receiver info — belongs to customer (Bên B) */}
+            {!template?.hideReceiverFields && (
             <div className="flex gap-2">
               <LabeledField label="Người nhận" className="min-w-0 flex-1">
                 <Input
@@ -677,6 +685,7 @@ export function DocumentDetailEditPanel({
                 />
               </LabeledField>
             </div>
+            )}
             {/* Customer-related extra fields (PLHD: representative, phone, address etc.) */}
             {customerExtraFields.length > 0 && (
               <div className="mt-1.5 grid grid-cols-2 gap-1.5">

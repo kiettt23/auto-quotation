@@ -48,8 +48,14 @@ export interface TemplateEntry {
   hasItems?: boolean;
   /** Default item rows seeded when creating a new document with this template */
   defaultItems?: DocumentDataItem[];
-  /** Hide company detail fields (phone, email, bank, representative etc.) in detail pane */
+  /** Hide company contact fields (phone, email) in detail pane */
   hideCompanyDetails?: boolean;
+  /** Hide company bank fields (bankAccount, bankName) in detail pane */
+  hideBankFields?: boolean;
+  /** Hide company representative fields (representative, position) in detail pane */
+  hideRepresentativeFields?: boolean;
+  /** Hide receiver name/phone fields in detail pane */
+  hideReceiverFields?: boolean;
   /** React component for PDF rendering */
   component: ComponentType<PdfTemplateProps>;
 }
@@ -98,6 +104,8 @@ const registry: TemplateEntry[] = [
     numberMode: "manual",
     numberPrefix: "JS",
     hideCompanyDetails: true,
+    hideBankFields: true,
+    hideRepresentativeFields: true,
     color: { badgeBg: "bg-emerald-100", badgeText: "text-emerald-700", dotColor: "bg-emerald-500" },
     extraFormFields: [
       { key: "deliveryName", label: "Tên nơi giao", placeholder: "Công Ty TNHH Kyong Gi Vina" },
@@ -126,6 +134,8 @@ const registry: TemplateEntry[] = [
     showTotal: true,
     signatureLabels: ["Thủ kho", "Tài xế", "Người nhận hàng"],
     hideCompanyDetails: true,
+    hideBankFields: true,
+    hideRepresentativeFields: true,
     color: { badgeBg: "bg-amber-100", badgeText: "text-amber-700", dotColor: "bg-amber-500" },
     extraFormFields: [
       { key: "vehicleId", label: "Số xe", placeholder: "50E-12345" },
@@ -188,11 +198,13 @@ const registry: TemplateEntry[] = [
     showTotal: false,
     hasItems: false,
     showProductSelector: false,
+    hideCompanyDetails: true,
+    hideReceiverFields: true,
     signatureLabels: [],
     color: { badgeBg: "bg-rose-100", badgeText: "text-rose-700", dotColor: "bg-rose-500" },
     extraFormFields: [
-      { key: "refNumber", label: "Số công văn", placeholder: "SGAAV3359 / FTEL" },
-      { key: "subject", label: "V/v", placeholder: "Thanh toán cước phí Internet" },
+      { key: "installAddress", label: "Địa chỉ lắp đặt", placeholder: "1D Nguyễn Duy, Phường Gia Định..." },
+      { key: "invoiceAddress", label: "Địa chỉ hóa đơn", placeholder: "1D Nguyễn Duy, Phường Gia Định..." },
       { key: "contractNo", label: "Số hợp đồng", placeholder: "SGAAV3359" },
       { key: "contractDate", label: "Ngày ký HĐ", placeholder: "25/10/2022" },
       { key: "servicePackage", label: "Gói dịch vụ", placeholder: "FTTH - Super500" },
@@ -202,9 +214,6 @@ const registry: TemplateEntry[] = [
       { key: "totalAmount", label: "Tổng tiền (VNĐ)", placeholder: "4.080.000" },
       { key: "amountInWords", label: "Số tiền bằng chữ", placeholder: "Bốn triệu không trăm tám mươi nghìn đồng" },
       { key: "paymentDeadline", label: "Hạn thanh toán", placeholder: "15/03/2026" },
-      { key: "bankAccount", label: "Số tài khoản", placeholder: "0181002666594" },
-      { key: "bankName", label: "Ngân hàng", placeholder: "Vietcombank" },
-      { key: "bankBranch", label: "Chi nhánh NH", placeholder: "Nam Sài Gòn" },
       { key: "paymentContent", label: "Nội dung CK", placeholder: "SGAAV3359 _ thanh toán cước" },
     ],
     get component() {

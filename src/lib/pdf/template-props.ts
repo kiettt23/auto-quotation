@@ -19,6 +19,7 @@ export interface PdfTemplateProps {
     position?: string | null;
     bankAccount?: string | null;
     bankName?: string | null;
+    customData?: Record<string, string | number> | null;
   };
   data: DocumentData;
   columns: ColumnDef[];

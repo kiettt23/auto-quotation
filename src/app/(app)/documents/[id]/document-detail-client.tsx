@@ -20,6 +20,7 @@ interface CompanyInfo {
   position?: string | null;
   bankAccount?: string | null;
   bankName?: string | null;
+  customData?: Record<string, string | number> | null;
 }
 
 export function DocumentDetailClient({

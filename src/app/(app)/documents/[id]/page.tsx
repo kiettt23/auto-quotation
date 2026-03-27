@@ -48,6 +48,7 @@ export default async function DocumentDetailPage({
         position: company.position,
         bankAccount: company.bankAccount,
         bankName: company.bankName,
+        customData: company.customData as Record<string, string | number> | null,
       }}
       columns={columns}
       showTotal={showTotal}

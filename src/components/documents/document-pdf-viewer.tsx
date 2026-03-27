@@ -63,6 +63,7 @@ interface Props {
     position?: string | null;
     bankAccount?: string | null;
     bankName?: string | null;
+    customData?: Record<string, string | number> | null;
   };
   columns: ColumnDef[];
   showTotal: boolean;
