@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { X, Plus, Trash2, Save, Eye, Loader2 } from "lucide-react";
+import { X, Plus, Trash2, Save, Eye, Loader2, FilePlus2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -335,6 +335,28 @@ export function DocumentDetailEditPanel({
     setItems((prev) => prev.filter((_, i) => i !== index));
   }
 
+  /** Create a DNTT document pre-filled from the current PLHD templateFields */
+  async function handleCreateDntt() {
+    setIsPending(true);
+    const result = await createDocumentAction({
+      companyId,
+      templateId: "payment-request",
+      date: documentDate || undefined,
+      customerId: customerId || undefined,
+      customerName,
+      customerAddress,
+      templateFields: extraFields,
+      items: [],
+    });
+    setIsPending(false);
+    if (result.success) {
+      toast.success("Đã tạo DNTT từ PLHD");
+      onSaved();
+    } else {
+      toast.error(result.error);
+    }
+  }
+
   async function handleSave() {
     setIsPending(true);
     const payload = {
@@ -432,6 +454,19 @@ export function DocumentDetailEditPanel({
               templateId={templateId}
               size="panel"
             />
+            {templateId === "contract-appendix" && (
+              <Button
+                onClick={handleCreateDntt}
+                disabled={isPending}
+                size="sm"
+                variant="outline"
+                className="h-7 gap-1 px-2 text-xs"
+                title="Tạo Đề nghị thanh toán từ phụ lục này"
+              >
+                <FilePlus2 className="h-3 w-3" />
+                Tạo DNTT
+              </Button>
+            )}
           </>
         )}
         <button

@@ -58,6 +58,15 @@ export function AppHeader({ userName, userEmail }: AppHeaderProps) {
 
   useEffect(() => {
     updateIndicator();
+    // Recalc after fonts/layout settle on first load
+    const frame = requestAnimationFrame(updateIndicator);
+    const navEl = navRef.current;
+    const ro = navEl ? new ResizeObserver(updateIndicator) : null;
+    if (navEl && ro) ro.observe(navEl);
+    return () => {
+      cancelAnimationFrame(frame);
+      ro?.disconnect();
+    };
   }, [updateIndicator]);
 
   async function handleLogout() {

@@ -197,8 +197,8 @@ export function PaymentRequestTemplate({
 
         {/* ── Fee line ── */}
         <Text style={s.body}>
-          Cước phí Internet <Text style={s.bold}>{f(tf, "periodMonths")}</Text>{" "}
-          Tháng ({f(tf, "periodFrom")} đến ngày {f(tf, "periodTo")}) của hợp
+          Cước phí Internet <Text style={s.bold}>{f(tf, "paymentMonths")}</Text>{" "}
+          Tháng ({f(tf, "paymentPeriodFrom")} đến ngày {f(tf, "paymentPeriodTo")}) của hợp
           đồng là: <Text style={s.bold}>{totalAmount} VNĐ</Text>
         </Text>
 
