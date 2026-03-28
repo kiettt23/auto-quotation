@@ -149,8 +149,7 @@ export function PaymentRequestTemplate({
             <Text style={s.department}>TRUNG TÂM SÀI GÒN 4</Text>
             <Text style={s.headerSep}>----------------------</Text>
             <Text style={s.refLine}>
-              Số: <Text style={s.refBold}>{contractNo || documentNumber}</Text>{" "}
-              / FTEL
+              Số: {contractNo || documentNumber} / FTEL
             </Text>
             <Text style={s.subjectLine}>V/v Thanh toán cước phí</Text>
           </View>
@@ -191,23 +190,25 @@ export function PaymentRequestTemplate({
           <Text style={s.bold}>{contractNo}</Text> ký ngày{" "}
           <Text style={s.bold}>{f(tf, "contractDate")}</Text> giữa{" "}
           <Text style={s.bold}>{customerName}</Text> và FPT Telecom, gói dịch vụ{" "}
-          <Text style={s.bold}>{f(tf, "servicePackage")}</Text>,{"\n"}
+          {f(tf, "servicePackage")},{"\n"}
           FPT Telecom xin thông báo:
         </Text>
 
         {/* ── Fee line ── */}
         <Text style={s.body}>
-          Cước phí Internet <Text style={s.bold}>{f(tf, "paymentMonths")}</Text>{" "}
-          Tháng ({f(tf, "paymentPeriodFrom")} đến ngày {f(tf, "paymentPeriodTo")}) của hợp
-          đồng là: <Text style={s.bold}>{totalAmount} VNĐ</Text>
+          Cước phí Internet {f(tf, "paymentMonths")} Tháng (
+          {f(tf, "paymentPeriodFrom")} đến ngày {f(tf, "paymentPeriodTo")}) của
+          hợp đồng là: {totalAmount} VNĐ
         </Text>
 
         {/* ── Amount due ── */}
         <Text style={s.body}>
           Số tiền còn phải thanh toán:{" "}
           <Text style={s.bold}>{totalAmount} VNĐ</Text> bao gồm VAT (
-          <Text style={s.italic}>Số tiền bằng chữ: </Text>
-          <Text style={s.boldItalic}>{f(tf, "amountInWords")}./.</Text>).
+          <Text style={s.italic}>
+            Số tiền bằng chữ: {f(tf, "amountInWords")}./.
+          </Text>
+          ).
         </Text>
 
         {/* ── Payment methods intro ── */}
@@ -286,7 +287,9 @@ export function PaymentRequestTemplate({
             <Text style={s.sigPosition}>
               {(company.position ?? "GIÁM ĐỐC").toUpperCase()}
             </Text>
-            <Text style={s.sigName}>{company.representative?.toUpperCase() ?? ""}</Text>
+            <Text style={s.sigName}>
+              {company.representative?.toUpperCase() ?? ""}
+            </Text>
           </View>
         </View>
       </Page>

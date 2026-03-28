@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { X, Plus, Trash2, Save, Eye, Loader2, FilePlus2 } from "lucide-react";
@@ -50,6 +50,8 @@ interface Props {
   companies: CompanyRow[];
   onClose: () => void;
   onSaved: () => void;
+  /** Register an auto-save function with the parent for use when switching/closing panel */
+  onRegisterAutoSave?: (fn: () => Promise<void>) => void;
 }
 
 export function DocumentDetailEditPanel({
@@ -59,6 +61,7 @@ export function DocumentDetailEditPanel({
   companies,
   onClose,
   onSaved,
+  onRegisterAutoSave,
 }: Props) {
   const router = useRouter();
   const isCreate = !doc;
@@ -125,6 +128,24 @@ export function DocumentDetailEditPanel({
   function markDirty() {
     if (!isDirty) setIsDirty(true);
   }
+
+  // Warn user before closing/refreshing the browser tab when there are unsaved changes
+  useEffect(() => {
+    if (!isDirty || isCreate) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty, isCreate]);
+
+  // Keep a stable ref to handleSave so parent can call it without stale closure issues
+  const handleSaveRef = useRef<() => Promise<void>>(async () => {});
+  useEffect(() => {
+    if (!onRegisterAutoSave || isCreate) return;
+    // Register async function that auto-saves only when dirty
+    onRegisterAutoSave(async () => { if (isDirty) await handleSaveRef.current(); });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDirty]);
+
 
   const extraFieldKeys = useMemo(
     () => new Set(templateExtraFields.map((f) => f.key)),
@@ -388,6 +409,7 @@ export function DocumentDetailEditPanel({
   }
 
   async function handleSave() {
+    handleSaveRef.current = handleSave;
     setIsPending(true);
     const payload = {
       companyId,
@@ -449,18 +471,20 @@ export function DocumentDetailEditPanel({
         {!isCreate && (
           <>
             <Button
-              asChild
               size="sm"
               variant="outline"
               className="h-7 gap-1 px-2 text-xs"
               title="Mở trang xem trước PDF"
+              onClick={async () => {
+                if (isDirty) await handleSave();
+                window.open(`/documents/${doc.id}`, "_blank");
+              }}
             >
-              <Link href={`/documents/${doc.id}`} target="_blank">
-                <Eye className="h-3 w-3" />
-                Xem trước
-              </Link>
+              <Eye className="h-3 w-3" />
+              Xem trước
             </Button>
             <DocumentPdfDownloadButton
+              onBeforeDownload={isDirty ? handleSave : undefined}
               document={doc}
               company={{
                 name: selectedCompany?.name ?? "",
@@ -500,7 +524,7 @@ export function DocumentDetailEditPanel({
           </>
         )}
         <button
-          onClick={onClose}
+          onClick={async () => { if (isDirty && !isCreate) await handleSave(); onClose(); }}
           className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
           title="Đóng"
         >

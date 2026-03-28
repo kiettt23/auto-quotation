@@ -59,6 +59,8 @@ export function DocumentListClient({
   const [page, setPage] = useState(1);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  // Ref to panel's auto-save function — called before switching/closing panel
+  const panelAutoSaveRef = useRef<(() => Promise<void>) | null>(null);
 
   // Filter tab sliding indicator
   const filterContainerRef = useRef<HTMLDivElement>(null);
@@ -108,12 +110,14 @@ export function DocumentListClient({
     setIsCreating(true);
   }
 
-  function handleSelect(id: string) {
+  async function handleSelect(id: string) {
+    if (panelAutoSaveRef.current) await panelAutoSaveRef.current();
     setIsCreating(false);
     setSelectedId((prev) => (prev === id ? null : id));
   }
 
-  function handleClose() {
+  async function handleClose() {
+    if (panelAutoSaveRef.current) await panelAutoSaveRef.current();
     setSelectedId(null);
     setIsCreating(false);
   }
@@ -394,6 +398,7 @@ export function DocumentListClient({
             companies={companies}
             onClose={handleClose}
             onSaved={handleSaved}
+            onRegisterAutoSave={(fn) => { panelAutoSaveRef.current = fn; }}
           />
         )}
       </div>

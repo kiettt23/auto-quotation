@@ -37,6 +37,8 @@ interface Props {
   size?: "default" | "panel" | "row";
   /** Show text label next to icon (for row size) */
   showLabel?: boolean;
+  /** Optional async hook called before PDF generation — use to auto-save unsaved changes */
+  onBeforeDownload?: () => Promise<void>;
 }
 
 export function DocumentPdfDownloadButton({
@@ -49,12 +51,14 @@ export function DocumentPdfDownloadButton({
   templateId,
   size = "default",
   showLabel,
+  onBeforeDownload,
 }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
   const fontsRegistered = useRef(false);
   const TemplateComponent = getTemplateComponent(templateId);
 
   async function handleDownload() {
+    if (onBeforeDownload) await onBeforeDownload();
     if (!fontsRegistered.current) {
       registerPdfFonts();
       fontsRegistered.current = true;
