@@ -194,12 +194,20 @@ export function PaymentRequestTemplate({
           FPT Telecom xin thông báo:
         </Text>
 
-        {/* ── Fee line ── */}
-        <Text style={s.body}>
-          Cước phí Internet {f(tf, "paymentMonths")} Tháng (
-          {f(tf, "paymentPeriodFrom")} đến ngày {f(tf, "paymentPeriodTo")}) của
-          hợp đồng là: {totalAmount} VNĐ
-        </Text>
+        {/* ── Fee lines — one per PLHD item ── */}
+        {(data.items ?? []).map((item, idx) => {
+          const cf = (item.customFields ?? {}) as Record<string, string | number>;
+          const amt = cf.amount
+            ? new Intl.NumberFormat("vi-VN").format(Number(String(cf.amount).replace(/\./g, "").replace(/,/g, ".")))
+            : "0";
+          return (
+            <Text key={idx} style={s.body}>
+              Cước phí {item.productName || "Internet"} {cf.paymentMonths || ""} Tháng (
+              {cf.paymentPeriodFrom || ""} đến ngày {cf.paymentPeriodTo || ""}) của
+              hợp đồng là: {amt} VNĐ
+            </Text>
+          );
+        })}
 
         {/* ── Amount due ── */}
         <Text style={s.body}>

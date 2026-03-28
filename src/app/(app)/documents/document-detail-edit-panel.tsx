@@ -397,7 +397,7 @@ export function DocumentDetailEditPanel({
         paymentDeadline,
         paymentContent,
       },
-      items: [],
+      items: items.map((it) => ({ ...it })),
     });
     setIsPending(false);
     if (result.success) {
