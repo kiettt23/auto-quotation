@@ -46,6 +46,7 @@ export function numberToWordsVN(amount: number): string {
     let result = "";
     if (h > 0) result += units[h] + " trăm";
     if (t === 0 && u === 0) return result;
+    if (t === 0 && h === 0) return units[u];
     if (t === 0 && h > 0) { result += " linh " + units[u]; return result; }
     if (t === 1) { result += (h > 0 ? " " : "") + teens[u]; return result; }
     result += (h > 0 ? " " : "") + units[t] + " mươi";
