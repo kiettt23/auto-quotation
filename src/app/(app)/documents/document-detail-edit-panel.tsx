@@ -25,6 +25,8 @@ import {
 import {
   formatCurrency,
   mapCustomDataToColumnKeys,
+  calculateTotal,
+  numberToWordsVN,
 } from "@/lib/utils/document-helpers";
 import {
   getExtraFormFields,
@@ -338,6 +340,28 @@ export function DocumentDetailEditPanel({
   /** Create a DNTT document pre-filled from the current PLHD templateFields */
   async function handleCreateDntt() {
     setIsPending(true);
+    // PLHD stores amounts in customFields.amount (string), not quantity*unitPrice
+    const total = items.reduce((sum, it) => {
+      const v = it.customFields?.amount;
+      const n = typeof v === "string" ? parseFloat(v.replace(/\./g, "").replace(/,/g, ".")) : (v ?? 0);
+      return sum + (isNaN(n) ? 0 : n);
+    }, 0) || calculateTotal(items);
+    const totalFormatted = new Intl.NumberFormat("vi-VN").format(total);
+
+    // paymentDeadline: day=15, if doc day >15 then next month
+    let paymentDeadline = extraFields.paymentDeadline || "";
+    if (!paymentDeadline && documentDate) {
+      const d = new Date(documentDate);
+      if (d.getDate() > 15) d.setMonth(d.getMonth() + 1);
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const yyyy = d.getFullYear();
+      paymentDeadline = `15/${mm}/${yyyy}`;
+    }
+
+    // paymentContent: "{contractNo} _ thanh toán cước"
+    const contractNo = extraFields.contractNo || "";
+    const paymentContent = extraFields.paymentContent || (contractNo ? `${contractNo} _ thanh toán cước` : "");
+
     const result = await createDocumentAction({
       companyId,
       templateId: "payment-request",
@@ -345,7 +369,13 @@ export function DocumentDetailEditPanel({
       customerId: customerId || undefined,
       customerName,
       customerAddress,
-      templateFields: extraFields,
+      templateFields: {
+        ...extraFields,
+        totalAmount: extraFields.totalAmount || totalFormatted,
+        amountInWords: extraFields.amountInWords || numberToWordsVN(total),
+        paymentDeadline,
+        paymentContent,
+      },
       items: [],
     });
     setIsPending(false);
