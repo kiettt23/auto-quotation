@@ -5,7 +5,7 @@ export interface ColumnDef {
   /** Display label shown in table header and PDF */
   label: string;
   /** Data type determines input/rendering behavior */
-  type: "text" | "number" | "currency";
+  type: "text" | "number" | "currency" | "checkbox";
   /** Width percentage for PDF rendering (e.g. "15%") */
   width: string;
   /** Text alignment — defaults to "left" for text, "right" for number/currency */

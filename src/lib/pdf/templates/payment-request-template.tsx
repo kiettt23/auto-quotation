@@ -194,20 +194,39 @@ export function PaymentRequestTemplate({
           FPT Telecom xin thông báo:
         </Text>
 
-        {/* ── Fee lines — one per PLHD item ── */}
-        {(data.items ?? []).map((item, idx) => {
-          const cf = (item.customFields ?? {}) as Record<string, string | number>;
-          const amt = cf.amount
-            ? new Intl.NumberFormat("vi-VN").format(Number(String(cf.amount).replace(/\./g, "").replace(/,/g, ".")))
-            : "0";
-          return (
-            <Text key={idx} style={s.body}>
-              Cước phí {item.productName || "Internet"} {cf.paymentMonths || ""} Tháng (
-              {cf.paymentPeriodFrom || ""} đến ngày {cf.paymentPeriodTo || ""}) của
-              hợp đồng là: {amt} VNĐ
-            </Text>
-          );
-        })}
+        {/* ── Fee lines — hidden items' amounts merge into the first visible line ── */}
+        {(() => {
+          const allItems = data.items ?? [];
+          const parseAmt = (v: string | number | undefined) => {
+            if (!v) return 0;
+            const n = Number(String(v).replace(/\./g, "").replace(/,/g, "."));
+            return isNaN(n) ? 0 : n;
+          };
+          const hiddenTotal = allItems
+            .filter((it) => {
+              const v = (it.customFields ?? {} as Record<string, string | number>).hideInDntt;
+              return v && v !== "0";
+            })
+            .reduce((sum, it) => sum + parseAmt((it.customFields ?? {} as Record<string, string | number>).amount), 0);
+          const visible = allItems.filter((it) => {
+            const v = (it.customFields ?? {} as Record<string, string | number>).hideInDntt;
+            return !v || v === "0";
+          });
+          return visible.map((item, idx) => {
+            const cf = (item.customFields ?? {}) as Record<string, string | number>;
+            const ownAmt = parseAmt(cf.amount);
+            /* First visible line gets hidden items' amounts added */
+            const displayAmt = idx === 0 ? ownAmt + hiddenTotal : ownAmt;
+            const fmtAmt = new Intl.NumberFormat("vi-VN").format(displayAmt);
+            return (
+              <Text key={idx} style={s.body}>
+                Cước phí {item.productName || "Internet"} {cf.paymentMonths || ""} Tháng (
+                {cf.paymentPeriodFrom || ""} đến ngày {cf.paymentPeriodTo || ""}) của
+                hợp đồng là: {fmtAmt} VNĐ
+              </Text>
+            );
+          });
+        })()}
 
         {/* ── Amount due ── */}
         <Text style={s.body}>

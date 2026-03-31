@@ -125,6 +125,15 @@ export function DocumentDetailEditPanel({
     return [{ productName: "", quantity: 1, unitPrice: 0, amount: 0 }];
   });
 
+  /* Re-init items when template changes during create */
+  useEffect(() => {
+    if (!isCreate) return;
+    const entry = getTemplateEntry(templateId);
+    if (entry?.hasItems === false) { setItems([]); return; }
+    if (entry?.defaultItems?.length) { setItems(structuredClone(entry.defaultItems)); return; }
+    setItems([{ productName: "", quantity: 1, unitPrice: 0, amount: 0 }]);
+  }, [templateId, isCreate]);
+
   function markDirty() {
     if (!isDirty) setIsDirty(true);
   }
@@ -909,6 +918,20 @@ export function DocumentDetailEditPanel({
                     />
                     )}
                   </div>
+                  {editableColumns.filter((c) => c.type === "checkbox").map((col) => {
+                    const val = getItemColumnValue(item, col.key);
+                    return (
+                      <label key={col.key} className="flex shrink-0 cursor-pointer items-center gap-1 text-[10px] text-slate-400" title={col.label}>
+                        <input
+                          type="checkbox"
+                          checked={val === "1" || val === "true"}
+                          onChange={(e) => updateItemColumn(i, col.key, e.target.checked ? "1" : "0")}
+                          className="h-3.5 w-3.5 cursor-pointer"
+                        />
+                        {col.label}
+                      </label>
+                    );
+                  })}
                   {items.length > 1 && (
                     <button
                       onClick={() => removeItem(i)}
@@ -923,8 +946,8 @@ export function DocumentDetailEditPanel({
                 {/* Template-driven editable fields (all columns shown in PDF) */}
                 {editableColumns.length > 0 && (
                   <div className={`${hasLabelColumn ? "" : "mt-1.5 "}flex items-end gap-1.5`}>
-                  <div className={`flex-1 grid gap-1.5 ${editableColumns.length <= 2 ? "grid-cols-2" : "grid-cols-3"}`}>
-                    {editableColumns.map((col) => {
+                  <div className={`flex-1 grid gap-1.5 ${editableColumns.filter((c) => c.type !== "checkbox").length <= 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+                    {editableColumns.filter((c) => c.type !== "checkbox").map((col) => {
                       const val = getItemColumnValue(item, col.key);
                       return (
                         <LabeledField key={col.key} label={col.label}>
@@ -949,6 +972,20 @@ export function DocumentDetailEditPanel({
                       );
                     })}
                   </div>
+                  {hasLabelColumn && editableColumns.filter((c) => c.type === "checkbox").map((col) => {
+                    const val = getItemColumnValue(item, col.key);
+                    return (
+                      <div key={col.key} className="mb-0.5 flex h-7 shrink-0 flex-col items-center justify-end">
+                        <span className="text-[9px] leading-none text-slate-400">{col.label}</span>
+                        <input
+                          type="checkbox"
+                          checked={val === "1" || val === "true"}
+                          onChange={(e) => updateItemColumn(i, col.key, e.target.checked ? "1" : "0")}
+                          className="mt-0.5 h-3.5 w-3.5 cursor-pointer"
+                        />
+                      </div>
+                    );
+                  })}
                   {hasLabelColumn && items.length > 1 && (
                     <button
                       onClick={() => removeItem(i)}

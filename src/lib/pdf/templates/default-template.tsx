@@ -15,7 +15,9 @@ export function DefaultTemplate({
   signatureLabels,
 }: PdfTemplateProps) {
   const items = data.items ?? [];
-  const hasAmount = columns.some((c) => c.key === "amount");
+  /* Exclude checkbox columns from PDF rendering */
+  const pdfColumns = columns.filter((c) => c.type !== "checkbox");
+  const hasAmount = pdfColumns.some((c) => c.key === "amount");
   const total = hasAmount
     ? items.reduce((sum, item) => sum + (item.amount ?? (item.quantity ?? 0) * (item.unitPrice ?? 0)), 0)
     : 0;
@@ -78,7 +80,7 @@ export function DefaultTemplate({
 
         {/* Table header */}
         <View style={s.tableHeader}>
-          {columns.map((col) => (
+          {pdfColumns.map((col) => (
             <Text
               key={col.key}
               style={[
@@ -94,7 +96,7 @@ export function DefaultTemplate({
         {/* Table rows */}
         {items.map((item, i) => (
           <View key={i} style={i % 2 === 1 ? s.tableRowAlt : s.tableRow}>
-            {columns.map((col) => (
+            {pdfColumns.map((col) => (
               <Text
                 key={col.key}
                 style={[
