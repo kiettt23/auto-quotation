@@ -40,6 +40,7 @@ import type { CustomerRow } from "@/services/customer.service";
 import type { CompanyRow } from "@/services/company.service";
 import { LabeledField } from "@/components/shared/labeled-field";
 import { DocumentPdfDownloadButton } from "@/components/documents/document-pdf-download-button";
+import { DocumentWordDownloadButton } from "@/components/documents/document-word-download-button";
 
 const templateList = getTemplateList();
 
@@ -562,6 +563,44 @@ export function DocumentDetailEditPanel({
               title={template?.name ?? "Tài liệu"}
               signatureLabels={template?.signatureLabels ?? []}
               templateId={templateId}
+              size="panel"
+            />
+            <DocumentWordDownloadButton
+              templateId={templateId}
+              onBeforeDownload={isDirty ? handleSave : undefined}
+              fileName={`${doc.documentNumber}`}
+              props={{
+                title: template?.name ?? "Tài liệu",
+                documentNumber: doc.documentNumber,
+                date: documentDate ? documentDate.split("-").reverse().join("/") : "",
+                company: {
+                  name: selectedCompany?.name ?? "",
+                  address: selectedCompany?.address,
+                  phone: selectedCompany?.phone,
+                  taxCode: selectedCompany?.taxCode,
+                  logoUrl: selectedCompany?.logoUrl,
+                  headerLayout: selectedCompany?.headerLayout,
+                  driverName: selectedCompany?.driverName,
+                  vehicleId: selectedCompany?.vehicleId,
+                  representative: selectedCompany?.representative,
+                  position: selectedCompany?.position,
+                  bankAccount: selectedCompany?.bankAccount,
+                  bankName: selectedCompany?.bankName,
+                  customData: selectedCompany?.customData as Record<string, string | number> | null,
+                },
+                data: {
+                  customerName,
+                  customerAddress,
+                  receiverName,
+                  receiverPhone,
+                  notes,
+                  templateFields: extraFields,
+                  items,
+                },
+                columns: template?.columns ?? [],
+                showTotal: template?.showTotal ?? false,
+                signatureLabels: template?.signatureLabels ?? [],
+              }}
               size="panel"
             />
             {templateId === "contract-appendix" && (
