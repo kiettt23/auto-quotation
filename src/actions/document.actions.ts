@@ -50,7 +50,8 @@ export async function createDocumentAction(
 
     revalidateDocuments();
     return ok(doc);
-  } catch {
+  } catch (e) {
+    console.error("createDocumentAction error:", e);
     return err("Đã xảy ra lỗi khi tạo tài liệu.");
   }
 }
@@ -84,7 +85,8 @@ export async function updateDocumentAction(
     if (!doc) return err("Không tìm thấy tài liệu.");
     revalidateDocuments();
     return ok(doc);
-  } catch {
+  } catch (e) {
+    console.error("updateDocumentAction error:", e);
     return err("Đã xảy ra lỗi khi cập nhật tài liệu.");
   }
 }

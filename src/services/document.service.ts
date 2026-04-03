@@ -128,9 +128,11 @@ export async function updateDocument(
     data?: Record<string, unknown>;
   }
 ) {
+  /* companyId is immutable after creation — exclude from update to avoid unique constraint conflicts */
+  const { companyId: _, ...updateData } = data;
   const [row] = await db
     .update(document)
-    .set({ ...data, updatedAt: new Date() })
+    .set({ ...updateData, updatedAt: new Date() })
     .where(and(eq(document.id, documentId), eq(document.userId, userId)))
     .returning();
 

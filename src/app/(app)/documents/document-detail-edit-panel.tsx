@@ -129,8 +129,14 @@ export function DocumentDetailEditPanel({
   useEffect(() => {
     if (!isCreate) return;
     const entry = getTemplateEntry(templateId);
-    if (entry?.hasItems === false) { setItems([]); return; }
-    if (entry?.defaultItems?.length) { setItems(structuredClone(entry.defaultItems)); return; }
+    if (entry?.hasItems === false) {
+      setItems([]);
+      return;
+    }
+    if (entry?.defaultItems?.length) {
+      setItems(structuredClone(entry.defaultItems));
+      return;
+    }
     setItems([{ productName: "", quantity: 1, unitPrice: 0, amount: 0 }]);
   }, [templateId, isCreate]);
 
@@ -141,7 +147,9 @@ export function DocumentDetailEditPanel({
   // Warn user before closing/refreshing the browser tab when there are unsaved changes
   useEffect(() => {
     if (!isDirty || isCreate) return;
-    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [isDirty, isCreate]);
@@ -151,10 +159,11 @@ export function DocumentDetailEditPanel({
   useEffect(() => {
     if (!onRegisterAutoSave || isCreate) return;
     // Register async function that auto-saves only when dirty
-    onRegisterAutoSave(async () => { if (isDirty) await handleSaveRef.current(); });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    onRegisterAutoSave(async () => {
+      if (isDirty) await handleSaveRef.current();
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDirty]);
-
 
   const extraFieldKeys = useMemo(
     () => new Set(templateExtraFields.map((f) => f.key)),
@@ -166,18 +175,36 @@ export function DocumentDetailEditPanel({
   const showProductSelector = template?.showProductSelector !== false;
   const hasItems = template?.hasItems !== false;
   /* Hide productName input when template has a 'label' column (avoids duplication) */
-  const hasLabelColumn = (template?.columns ?? []).some((c) => c.key === "label");
+  const hasLabelColumn = (template?.columns ?? []).some(
+    (c) => c.key === "label",
+  );
   // Extra fields not handled by dedicated sections (delivery, driver, vehicle)
   /* Keys that belong to customer section instead of "Thông tin chứng từ" */
   const CUSTOMER_EXTRA_KEYS = new Set([
-    "representative", "position", "phone", "email", "taxCode",
-    "installAddress", "invoiceAddress", "fax",
+    "representative",
+    "position",
+    "phone",
+    "email",
+    "taxCode",
+    "installAddress",
+    "invoiceAddress",
+    "fax",
   ]);
   const genericExtraFields = useMemo(() => {
-    const dedicated = new Set(["deliveryName", "deliveryAddress", "driverName", "vehicleId"]);
-    const autoSynced = new Set(hasExtraField("servicePrice") && hasItems ? ["servicePrice"] : []);
+    const dedicated = new Set([
+      "deliveryName",
+      "deliveryAddress",
+      "driverName",
+      "vehicleId",
+    ]);
+    const autoSynced = new Set(
+      hasExtraField("servicePrice") && hasItems ? ["servicePrice"] : [],
+    );
     return templateExtraFields.filter(
-      (f) => !dedicated.has(f.key) && !autoSynced.has(f.key) && !CUSTOMER_EXTRA_KEYS.has(f.key)
+      (f) =>
+        !dedicated.has(f.key) &&
+        !autoSynced.has(f.key) &&
+        !CUSTOMER_EXTRA_KEYS.has(f.key),
     );
   }, [templateExtraFields]); // eslint-disable-line react-hooks/exhaustive-deps
   const customerExtraFields = useMemo(() => {
@@ -200,7 +227,9 @@ export function DocumentDetailEditPanel({
     () =>
       items.reduce((s, it) => {
         if (hasUnitPrice) return s + (it.quantity ?? 0) * (it.unitPrice ?? 0);
-        const cfAmt = it.customFields?.amount ? Number(it.customFields.amount) : 0;
+        const cfAmt = it.customFields?.amount
+          ? Number(it.customFields.amount)
+          : 0;
         return s + (cfAmt || it.amount || 0);
       }, 0),
     [items, hasUnitPrice],
@@ -230,7 +259,13 @@ export function DocumentDetailEditPanel({
   );
 
   // Standard fields that map directly to DocumentDataItem properties
-  const STANDARD_ITEM_KEYS = new Set(["specification", "unit", "quantity", "unitPrice", "note"]);
+  const STANDARD_ITEM_KEYS = new Set([
+    "specification",
+    "unit",
+    "quantity",
+    "unitPrice",
+    "note",
+  ]);
 
   function getItemColumnValue(
     item: DocumentDataItem,
@@ -246,7 +281,8 @@ export function DocumentDetailEditPanel({
 
   function updateItemColumn(index: number, key: string, value: string) {
     if (STANDARD_ITEM_KEYS.has(key)) {
-      const parsed = (key === "quantity" || key === "unitPrice") ? Number(value) || 0 : value;
+      const parsed =
+        key === "quantity" || key === "unitPrice" ? Number(value) || 0 : value;
       updateItem(index, { [key]: parsed });
     } else {
       const item = items[index];
@@ -371,11 +407,15 @@ export function DocumentDetailEditPanel({
   async function handleCreateDntt() {
     setIsPending(true);
     // PLHD stores amounts in customFields.amount (string), not quantity*unitPrice
-    const total = items.reduce((sum, it) => {
-      const v = it.customFields?.amount;
-      const n = typeof v === "string" ? parseFloat(v.replace(/\./g, "").replace(/,/g, ".")) : (v ?? 0);
-      return sum + (isNaN(n) ? 0 : n);
-    }, 0) || calculateTotal(items);
+    const total =
+      items.reduce((sum, it) => {
+        const v = it.customFields?.amount;
+        const n =
+          typeof v === "string"
+            ? parseFloat(v.replace(/\./g, "").replace(/,/g, "."))
+            : (v ?? 0);
+        return sum + (isNaN(n) ? 0 : n);
+      }, 0) || calculateTotal(items);
     const totalFormatted = new Intl.NumberFormat("vi-VN").format(total);
 
     // paymentDeadline: day=15, if doc day >15 then next month
@@ -390,7 +430,9 @@ export function DocumentDetailEditPanel({
 
     // paymentContent: "{contractNo} _ thanh toán cước"
     const contractNo = extraFields.contractNo || "";
-    const paymentContent = extraFields.paymentContent || (contractNo ? `${contractNo} _ thanh toán cước` : "");
+    const paymentContent =
+      extraFields.paymentContent ||
+      (contractNo ? `${contractNo} _ thanh toán cước` : "");
 
     const result = await createDocumentAction({
       companyId,
@@ -429,7 +471,9 @@ export function DocumentDetailEditPanel({
       customerAddress,
       receiverName,
       receiverPhone,
-      ...(isManualNumber && docNumberSuffix ? { documentNumberSuffix: docNumberSuffix } : {}),
+      ...(isManualNumber && docNumberSuffix
+        ? { documentNumberSuffix: docNumberSuffix }
+        : {}),
       items: items.map((it) => ({
         ...it,
         amount: (it.quantity ?? 0) * (it.unitPrice ?? 0),
@@ -508,7 +552,10 @@ export function DocumentDetailEditPanel({
                 position: selectedCompany?.position,
                 bankAccount: selectedCompany?.bankAccount,
                 bankName: selectedCompany?.bankName,
-                customData: selectedCompany?.customData as Record<string, string | number> | null,
+                customData: selectedCompany?.customData as Record<
+                  string,
+                  string | number
+                > | null,
               }}
               columns={template?.columns ?? []}
               showTotal={template?.showTotal ?? false}
@@ -533,7 +580,10 @@ export function DocumentDetailEditPanel({
           </>
         )}
         <button
-          onClick={async () => { if (isDirty && !isCreate) await handleSave(); onClose(); }}
+          onClick={async () => {
+            if (isDirty && !isCreate) await handleSave();
+            onClose();
+          }}
           className="cursor-pointer rounded-md p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
           title="Đóng"
         >
@@ -660,14 +710,17 @@ export function DocumentDetailEditPanel({
             )}
             {!template?.hideRepresentativeFields && (
               <div className="flex gap-2">
-                <LabeledField label="Người đại diện" className="min-w-0 flex-1">
+                <LabeledField
+                  label="Người đại diện Bên B"
+                  className="min-w-0 flex-1"
+                >
                   <Input
                     value={selectedCompany?.representative ?? ""}
                     readOnly
                     className="h-8 bg-slate-50 text-xs text-slate-500"
                   />
                 </LabeledField>
-                <LabeledField label="Chức vụ" className="min-w-0 flex-1">
+                <LabeledField label="Chức vụ Bên B" className="min-w-0 flex-1">
                   <Input
                     value={selectedCompany?.position ?? ""}
                     readOnly
@@ -745,11 +798,18 @@ export function DocumentDetailEditPanel({
             {/* Manual document number suffix — only for create + manual mode */}
             {isCreate && isManualNumber && (
               <LabeledField
-                label={`Số chứng từ (${template?.numberPrefix ?? ""}-${documentDate.split("-").reverse().map((p, i) => i === 2 ? p.slice(2) : p).join("")}-...)`}
+                label={`Số chứng từ (${template?.numberPrefix ?? ""}-${documentDate
+                  .split("-")
+                  .reverse()
+                  .map((p, i) => (i === 2 ? p.slice(2) : p))
+                  .join("")}-...)`}
               >
                 <Input
                   value={docNumberSuffix}
-                  onChange={(e) => { setDocNumberSuffix(e.target.value); markDirty(); }}
+                  onChange={(e) => {
+                    setDocNumberSuffix(e.target.value);
+                    markDirty();
+                  }}
                   placeholder="Nhập mã số..."
                   className="h-8 text-xs"
                 />
@@ -767,22 +827,22 @@ export function DocumentDetailEditPanel({
             )}
             {/* Receiver info — belongs to customer (Bên B) */}
             {!template?.hideReceiverFields && (
-            <div className="flex gap-2">
-              <LabeledField label="Người nhận" className="min-w-0 flex-1">
-                <Input
-                  value={receiverName}
-                  onChange={(e) => setReceiverName(e.target.value)}
-                  className="h-8 text-xs"
-                />
-              </LabeledField>
-              <LabeledField label="SĐT" className="w-24">
-                <Input
-                  value={receiverPhone}
-                  onChange={(e) => setReceiverPhone(e.target.value)}
-                  className="h-8 text-xs"
-                />
-              </LabeledField>
-            </div>
+              <div className="flex gap-2">
+                <LabeledField label="Người nhận" className="min-w-0 flex-1">
+                  <Input
+                    value={receiverName}
+                    onChange={(e) => setReceiverName(e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                </LabeledField>
+                <LabeledField label="SĐT" className="w-24">
+                  <Input
+                    value={receiverPhone}
+                    onChange={(e) => setReceiverPhone(e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                </LabeledField>
+              </div>
             )}
             {/* Customer-related extra fields (PLHD: representative, phone, address etc.) */}
             {customerExtraFields.length > 0 && (
@@ -819,7 +879,10 @@ export function DocumentDetailEditPanel({
               </legend>
               <div className="space-y-1.5">
                 <LabeledField label="Nơi giao">
-                  <Select value={deliveryCustomerId} onValueChange={handleDeliveryCustomerSelect}>
+                  <Select
+                    value={deliveryCustomerId}
+                    onValueChange={handleDeliveryCustomerSelect}
+                  >
                     <SelectTrigger className="h-8 text-xs">
                       <SelectValue placeholder="Chọn nơi giao..." />
                     </SelectTrigger>
@@ -878,191 +941,235 @@ export function DocumentDetailEditPanel({
         {hasItems && <Separator className="my-3" />}
 
         {/* Items — hidden for letter-type templates (hasItems=false) */}
-        {hasItems && <div>
-          <div className="mb-2">
-            <span className="text-[13px] font-semibold text-slate-700">
-              Sản phẩm ({items.length})
-            </span>
-          </div>
-          <div className="space-y-2">
-            {items.map((item, i) => (
-              <div
-                key={i}
-                className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5"
-              >
-                {!hasLabelColumn && (
-                <div className="flex items-center gap-1.5">
-                  <div className="min-w-0 flex-1">
-                    {showProductSelector ? (
-                    <Select
-                      value={item.productId ?? ""}
-                      onValueChange={(v) => handleProductSelect(i, v)}
-                    >
-                      <SelectTrigger className="h-7 text-xs">
-                        <SelectValue placeholder="Chọn sản phẩm..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {products.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
-                            {p.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    ) : (
-                    <Input
-                      value={item.productName}
-                      onChange={(e) => updateItem(i, { productName: e.target.value })}
-                      placeholder="Nhập tên dòng..."
-                      className="h-7 text-xs"
-                    />
-                    )}
-                  </div>
-                  {editableColumns.filter((c) => c.type === "checkbox").map((col) => {
-                    const val = getItemColumnValue(item, col.key);
-                    return (
-                      <label key={col.key} className="flex shrink-0 cursor-pointer items-center gap-1 text-[10px] text-slate-400" title={col.label}>
-                        <input
-                          type="checkbox"
-                          checked={val === "1" || val === "true"}
-                          onChange={(e) => updateItemColumn(i, col.key, e.target.checked ? "1" : "0")}
-                          className="h-3.5 w-3.5 cursor-pointer"
-                        />
-                        {col.label}
-                      </label>
-                    );
-                  })}
-                  {items.length > 1 && (
-                    <button
-                      onClick={() => removeItem(i)}
-                      className="shrink-0 cursor-pointer text-slate-300 hover:text-red-500"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  )}
-                </div>
-                )}
-
-                {/* Template-driven editable fields (all columns shown in PDF) */}
-                {editableColumns.length > 0 && (
-                  <div className={`${hasLabelColumn ? "" : "mt-1.5 "}flex items-end gap-1.5`}>
-                  <div className={`flex-1 grid gap-1.5 ${editableColumns.filter((c) => c.type !== "checkbox").length <= 2 ? "grid-cols-2" : "grid-cols-3"}`}>
-                    {editableColumns.filter((c) => c.type !== "checkbox").map((col) => {
-                      const val = getItemColumnValue(item, col.key);
-                      return (
-                        <LabeledField key={col.key} label={col.label}>
+        {hasItems && (
+          <div>
+            <div className="mb-2">
+              <span className="text-[13px] font-semibold text-slate-700">
+                Sản phẩm ({items.length})
+              </span>
+            </div>
+            <div className="space-y-2">
+              {items.map((item, i) => (
+                <div
+                  key={i}
+                  className="rounded-xl border border-slate-100 bg-slate-50/50 p-2.5"
+                >
+                  {!hasLabelColumn && (
+                    <div className="flex items-center gap-1.5">
+                      <div className="min-w-0 flex-1">
+                        {showProductSelector ? (
+                          <Select
+                            value={item.productId ?? ""}
+                            onValueChange={(v) => handleProductSelect(i, v)}
+                          >
+                            <SelectTrigger className="h-7 text-xs">
+                              <SelectValue placeholder="Chọn sản phẩm..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {products.map((p) => (
+                                <SelectItem key={p.id} value={p.id}>
+                                  {p.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        ) : (
                           <Input
-                            type={
-                              col.type === "number" || col.type === "currency"
-                                ? "number"
-                                : "text"
-                            }
-                            step={
-                              col.type === "number" || col.type === "currency"
-                                ? "any"
-                                : undefined
-                            }
-                            value={val ?? ""}
+                            value={item.productName}
                             onChange={(e) =>
-                              updateItemColumn(i, col.key, e.target.value)
+                              updateItem(i, { productName: e.target.value })
                             }
+                            placeholder="Nhập tên dòng..."
                             className="h-7 text-xs"
                           />
-                        </LabeledField>
-                      );
-                    })}
-                  </div>
-                  {hasLabelColumn && editableColumns.filter((c) => c.type === "checkbox").map((col) => {
-                    const val = getItemColumnValue(item, col.key);
-                    return (
-                      <div key={col.key} className="mb-0.5 flex h-7 shrink-0 flex-col items-center justify-end">
-                        <span className="text-[9px] leading-none text-slate-400">{col.label}</span>
-                        <input
-                          type="checkbox"
-                          checked={val === "1" || val === "true"}
-                          onChange={(e) => updateItemColumn(i, col.key, e.target.checked ? "1" : "0")}
-                          className="mt-0.5 h-3.5 w-3.5 cursor-pointer"
-                        />
+                        )}
                       </div>
-                    );
-                  })}
-                  {hasLabelColumn && items.length > 1 && (
-                    <button
-                      onClick={() => removeItem(i)}
-                      className="mb-0.5 h-7 shrink-0 cursor-pointer text-slate-300 hover:text-red-500"
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </button>
-                  )}
-                  </div>
-                )}
-                {/* Số lượng × Đơn giá — only for templates with unitPrice (e.g. quotation) */}
-                {hasUnitPrice && (
-                <div className="mt-1.5 flex items-center gap-1.5">
-                  <LabeledField label="Số lượng" className="w-14">
-                    <Input
-                      type="number"
-                      min={0}
-                      value={item.quantity ?? 0}
-                      onChange={(e) =>
-                        updateItem(i, { quantity: Number(e.target.value) || 0 })
-                      }
-                      className="h-7 text-xs"
-                    />
-                  </LabeledField>
-                  <span className="mt-3.5 text-[11px] text-slate-300">×</span>
-                  <LabeledField label="Đơn giá" className="flex-1">
-                    <Input
-                      type="number"
-                      min={0}
-                      value={item.unitPrice ?? 0}
-                      onChange={(e) =>
-                        updateItem(i, {
-                          unitPrice: Number(e.target.value) || 0,
-                        })
-                      }
-                      className="h-7 text-xs"
-                    />
-                  </LabeledField>
-                  <div className="mt-3.5 shrink-0 rounded-md bg-indigo-50/80 px-2 py-0.5 text-right">
-                    <span className="text-xs font-bold text-indigo-600">
-                      {formatCurrency(
-                        (item.quantity ?? 0) * (item.unitPrice ?? 0),
+                      {editableColumns
+                        .filter((c) => c.type === "checkbox")
+                        .map((col) => {
+                          const val = getItemColumnValue(item, col.key);
+                          return (
+                            <label
+                              key={col.key}
+                              className="flex shrink-0 cursor-pointer items-center gap-1 text-[10px] text-slate-400"
+                              title={col.label}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={val === "1" || val === "true"}
+                                onChange={(e) =>
+                                  updateItemColumn(
+                                    i,
+                                    col.key,
+                                    e.target.checked ? "1" : "0",
+                                  )
+                                }
+                                className="h-3.5 w-3.5 cursor-pointer"
+                              />
+                              {col.label}
+                            </label>
+                          );
+                        })}
+                      {items.length > 1 && (
+                        <button
+                          onClick={() => removeItem(i)}
+                          className="shrink-0 cursor-pointer text-slate-300 hover:text-red-500"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
                       )}
-                    </span>
-                  </div>
+                    </div>
+                  )}
+
+                  {/* Template-driven editable fields (all columns shown in PDF) */}
+                  {editableColumns.length > 0 && (
+                    <div
+                      className={`${hasLabelColumn ? "" : "mt-1.5 "}flex items-end gap-1.5`}
+                    >
+                      <div
+                        className={`flex-1 grid gap-1.5 ${editableColumns.filter((c) => c.type !== "checkbox").length <= 2 ? "grid-cols-2" : "grid-cols-3"}`}
+                      >
+                        {editableColumns
+                          .filter((c) => c.type !== "checkbox")
+                          .map((col) => {
+                            const val = getItemColumnValue(item, col.key);
+                            return (
+                              <LabeledField key={col.key} label={col.label}>
+                                <Input
+                                  type={
+                                    col.type === "number" ||
+                                    col.type === "currency"
+                                      ? "number"
+                                      : "text"
+                                  }
+                                  step={
+                                    col.type === "number" ||
+                                    col.type === "currency"
+                                      ? "any"
+                                      : undefined
+                                  }
+                                  value={val ?? ""}
+                                  onChange={(e) =>
+                                    updateItemColumn(i, col.key, e.target.value)
+                                  }
+                                  className="h-7 text-xs"
+                                />
+                              </LabeledField>
+                            );
+                          })}
+                      </div>
+                      {hasLabelColumn &&
+                        editableColumns
+                          .filter((c) => c.type === "checkbox")
+                          .map((col) => {
+                            const val = getItemColumnValue(item, col.key);
+                            return (
+                              <div
+                                key={col.key}
+                                className="mb-0.5 flex h-7 shrink-0 flex-col items-center justify-end"
+                              >
+                                <span className="text-[9px] leading-none text-slate-400">
+                                  {col.label}
+                                </span>
+                                <input
+                                  type="checkbox"
+                                  checked={val === "1" || val === "true"}
+                                  onChange={(e) =>
+                                    updateItemColumn(
+                                      i,
+                                      col.key,
+                                      e.target.checked ? "1" : "0",
+                                    )
+                                  }
+                                  className="mt-0.5 h-3.5 w-3.5 cursor-pointer"
+                                />
+                              </div>
+                            );
+                          })}
+                      {hasLabelColumn && items.length > 1 && (
+                        <button
+                          onClick={() => removeItem(i)}
+                          className="mb-0.5 h-7 shrink-0 cursor-pointer text-slate-300 hover:text-red-500"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
+                  )}
+                  {/* Số lượng × Đơn giá — only for templates with unitPrice (e.g. quotation) */}
+                  {hasUnitPrice && (
+                    <div className="mt-1.5 flex items-center gap-1.5">
+                      <LabeledField label="Số lượng" className="w-14">
+                        <Input
+                          type="number"
+                          min={0}
+                          value={item.quantity ?? 0}
+                          onChange={(e) =>
+                            updateItem(i, {
+                              quantity: Number(e.target.value) || 0,
+                            })
+                          }
+                          className="h-7 text-xs"
+                        />
+                      </LabeledField>
+                      <span className="mt-3.5 text-[11px] text-slate-300">
+                        ×
+                      </span>
+                      <LabeledField label="Đơn giá" className="flex-1">
+                        <Input
+                          type="number"
+                          min={0}
+                          value={item.unitPrice ?? 0}
+                          onChange={(e) =>
+                            updateItem(i, {
+                              unitPrice: Number(e.target.value) || 0,
+                            })
+                          }
+                          className="h-7 text-xs"
+                        />
+                      </LabeledField>
+                      <div className="mt-3.5 shrink-0 rounded-md bg-indigo-50/80 px-2 py-0.5 text-right">
+                        <span className="text-xs font-bold text-indigo-600">
+                          {formatCurrency(
+                            (item.quantity ?? 0) * (item.unitPrice ?? 0),
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
-                )}
-              </div>
-            ))}
-            {/* Add item — dashed card */}
-            <button
-              onClick={addItem}
-              className="flex w-full cursor-pointer items-center justify-center gap-1 rounded-xl border border-dashed border-slate-200 py-2.5 text-[11px] font-medium text-slate-400 transition-colors hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600"
-            >
-              <Plus className="h-3 w-3" />
-              Thêm dòng
-            </button>
+              ))}
+              {/* Add item — dashed card */}
+              <button
+                onClick={addItem}
+                className="flex w-full cursor-pointer items-center justify-center gap-1 rounded-xl border border-dashed border-slate-200 py-2.5 text-[11px] font-medium text-slate-400 transition-colors hover:border-indigo-300 hover:bg-indigo-50/50 hover:text-indigo-600"
+              >
+                <Plus className="h-3 w-3" />
+                Thêm dòng
+              </button>
+            </div>
           </div>
-        </div>}
+        )}
 
         {/* Total */}
         {(hasUnitPrice || template?.showTotal) && (
-        <div className="mt-2 flex items-center justify-between rounded-lg bg-indigo-50 px-3 py-2">
-          <span className="text-[11px] font-medium text-indigo-600">
-            Tổng cộng
-          </span>
-          <span className="text-[13px] font-bold text-indigo-700">
-            {formatCurrency(total)}
-          </span>
-        </div>
+          <div className="mt-2 flex items-center justify-between rounded-lg bg-indigo-50 px-3 py-2">
+            <span className="text-[11px] font-medium text-indigo-600">
+              Tổng cộng
+            </span>
+            <span className="text-[13px] font-bold text-indigo-700">
+              {formatCurrency(total)}
+            </span>
+          </div>
         )}
 
         <Separator className="my-3" />
 
         {/* Notes */}
         <fieldset>
-          <legend className="mb-2 text-[13px] font-semibold text-slate-700">Ghi chú</legend>
+          <legend className="mb-2 text-[13px] font-semibold text-slate-700">
+            Ghi chú
+          </legend>
           <Textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}

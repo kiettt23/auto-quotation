@@ -218,10 +218,14 @@ export function PaymentRequestTemplate({
             /* First visible line gets hidden items' amounts added */
             const displayAmt = idx === 0 ? ownAmt + hiddenTotal : ownAmt;
             const fmtAmt = new Intl.NumberFormat("vi-VN").format(displayAmt);
+            /* Item customFields fallback to top-level templateFields for period info */
+            const months = cf.paymentMonths || f(tf, "paymentMonths");
+            const periodFrom = cf.paymentPeriodFrom || f(tf, "paymentPeriodFrom");
+            const periodTo = cf.paymentPeriodTo || f(tf, "paymentPeriodTo");
             return (
               <Text key={idx} style={s.body}>
-                Cước phí {item.productName || "Internet"} {cf.paymentMonths || ""} Tháng (
-                {cf.paymentPeriodFrom || ""} đến ngày {cf.paymentPeriodTo || ""}) của
+                Cước phí {item.productName || "Internet"} {months} Tháng (
+                {periodFrom} đến ngày {periodTo}) của
                 hợp đồng là: {fmtAmt} VNĐ
               </Text>
             );

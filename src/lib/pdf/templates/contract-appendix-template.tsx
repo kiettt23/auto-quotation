@@ -142,7 +142,7 @@ const s = StyleSheet.create({
   sigBlock: { alignItems: "center", width: 180 },
   sigTitle: { fontSize: 9, fontWeight: "bold" },
   sigPosition: { fontSize: 9, marginTop: 2 },
-  sigName: { fontSize: 10, fontWeight: "bold", marginTop: 70 },
+  sigName: { fontSize: 10, fontWeight: "bold", marginTop: 40 },
 
   /* Footer */
   footerSpacer: { flexGrow: 1 },

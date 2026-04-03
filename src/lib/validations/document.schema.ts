@@ -34,7 +34,7 @@ export const createDocumentSchema = z.object({
   columns: z.array(z.object({
     key: z.string(),
     label: z.string(),
-    type: z.enum(["text", "number", "currency"]),
+    type: z.enum(["text", "number", "currency", "checkbox"]),
     width: z.string(),
     align: z.enum(["left", "right", "center"]).optional(),
     system: z.boolean().optional(),
