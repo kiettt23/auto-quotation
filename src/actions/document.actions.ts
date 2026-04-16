@@ -76,9 +76,13 @@ export async function updateDocumentAction(
       return err("Công ty không hợp lệ.");
     }
 
+    /* If docNumber is set, use it as the full document number */
+    const docNumber = rest.templateFields?.docNumber;
+
     const doc = await updateDocument(documentId, userId, {
       companyId,
       customerId: customerId || undefined,
+      ...(docNumber ? { documentNumber: docNumber } : {}),
       data: { ...rest, items },
     });
 

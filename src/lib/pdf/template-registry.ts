@@ -188,8 +188,11 @@ const registry: TemplateEntry[] = [
         label: "Địa chỉ giao",
         placeholder: "Lô C, Đường N11, KCN Minh Hưng III...",
       },
-      { key: "driverName", label: "Tên tài xế", placeholder: "Nguyễn Văn A" },
+      { key: "docNumber", label: "Mã chứng từ", placeholder: "TEXIS-140426" },
+      { key: "driverName", label: "Đơn vị vận chuyển", placeholder: "Grab" },
       { key: "vehicleId", label: "Số xe", placeholder: "50E-12345" },
+      { key: "hideSignBuyer", label: "Ẩn ô Người mua" },
+      { key: "hideSignAccountant", label: "Ẩn ô Kế toán" },
     ],
     get component() {
       // eslint-disable-next-line @typescript-eslint/no-require-imports

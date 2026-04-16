@@ -179,6 +179,17 @@ export function JesangDeliveryTemplate({
 }: PdfTemplateProps) {
   const items = data.items ?? [];
 
+  /* Format number with comma thousands separator, preserving original decimal places */
+  const fmtNum = (v: string | number | undefined): string => {
+    if (v === undefined || v === "") return "";
+    const raw = String(v).replace(/,/g, "");
+    const n = parseFloat(raw);
+    if (isNaN(n)) return String(v);
+    const decMatch = raw.match(/\.(\d+)$/);
+    const decimals = decMatch ? decMatch[1].length : 0;
+    return new Intl.NumberFormat("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(n);
+  };
+
   /* Parse date */
   const dp = date.split("/");
   const day = dp[0] ?? "";
@@ -246,8 +257,8 @@ export function JesangDeliveryTemplate({
           <View style={s.gridRow}>
             <View style={s.gridLabel}>
               <Text>
-                Giao hàng đến địa điểm chỉ{"\n"}định của Jesang{"\n"}(Delivery
-                to address that{"\n"}Jesang requests)
+                Giao hàng đến địa điểm chỉ{"\n"}định khách hàng yêu cầu{"\n"}(Delivery
+                to address that{"\n"}requested)
               </Text>
             </View>
             <View style={s.gridValue}>
@@ -265,7 +276,7 @@ export function JesangDeliveryTemplate({
           {/* Row 3: Driver + Receiver */}
           <View style={[s.gridRow, { minHeight: 28 }]}>
             <View style={s.gridHalfLabel}>
-              <Text>Tên tài xế (Driver{"'"}s name)</Text>
+              <Text>Đơn vị vận chuyển (Driver)</Text>
             </View>
             <View style={s.gridHalfValueBorder}>
               <Text>{data.templateFields?.driverName ?? ""}</Text>
@@ -346,16 +357,10 @@ export function JesangDeliveryTemplate({
                 <Text>{String(item.customFields?.["lotNo"] ?? "")}</Text>
               </View>
               <View style={[s.td, { width: COL.box, textAlign: "center" }]}>
-                <Text>
-                  {String(item.customFields?.["boxQty"] ?? "")}
-                </Text>
+                <Text>{fmtNum(item.customFields?.["boxQty"])}</Text>
               </View>
               <View style={[s.td, { width: COL.weight, textAlign: "center" }]}>
-                <Text>
-                  {String(
-                    item.customFields?.["netWeight"] ?? "",
-                  )}
-                </Text>
+                <Text>{fmtNum(item.customFields?.["netWeight"])}</Text>
               </View>
               <View style={[s.td, { width: COL.invoice, textAlign: "center", borderRightWidth: 0 }]}>
                 <Text>{String(item.customFields?.["invoiceVat"] ?? "")}</Text>
@@ -392,7 +397,7 @@ export function JesangDeliveryTemplate({
               ]}
             >
               <Text style={{ fontWeight: "bold" }}>
-                {totalBox > 0 ? (Number.isInteger(totalBox) ? String(totalBox) : totalBox.toFixed(2)) : ""}
+                {totalBox > 0 ? fmtNum(totalBox) : ""}
               </Text>
             </View>
             <View
@@ -402,7 +407,7 @@ export function JesangDeliveryTemplate({
               ]}
             >
               <Text style={{ fontWeight: "bold" }}>
-                {totalWeight > 0 ? `${Number.isInteger(totalWeight) ? String(totalWeight) : totalWeight.toFixed(2)} kg` : ""}
+                {totalWeight > 0 ? `${fmtNum(totalWeight)} kg` : ""}
               </Text>
             </View>
             <View
@@ -431,13 +436,15 @@ export function JesangDeliveryTemplate({
 
         {/* ═══ SIGNATURES — 3 rows: VN titles, EN titles, empty space ═══ */}
         {(() => {
-          const sigs = [
-            { vn: "Người mua", en: "Buyer" },
-            { vn: "Người nhận", en: "Receiver" },
-            { vn: "Thủ kho", en: "W/H Keeper" },
-            { vn: "Kế toán", en: "Chief Accountant" },
-            { vn: "Người lập phiếu", en: "Receipt by" },
+          const tf = (data.templateFields ?? {}) as Record<string, string>;
+          const allSigs = [
+            { vn: "Người mua", en: "Buyer", hide: tf.hideSignBuyer === "1" },
+            { vn: "Người nhận", en: "Receiver", hide: false },
+            { vn: "Đơn vị vận chuyển", en: "Driver", hide: false },
+            { vn: "Kế toán", en: "Chief Accountant", hide: tf.hideSignAccountant === "1" },
+            { vn: "Người lập phiếu", en: "Receipt by", hide: false },
           ];
+          const sigs = allSigs.filter((s) => !s.hide);
           const last = sigs.length - 1;
           return (
             <View style={s.sigWrap}>

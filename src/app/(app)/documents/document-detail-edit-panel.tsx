@@ -957,7 +957,23 @@ export function DocumentDetailEditPanel({
                 Thông tin chứng từ
               </legend>
               <div className="grid grid-cols-2 gap-1.5">
-                {genericExtraFields.map((f) => (
+                {genericExtraFields.map((f) =>
+                  f.key.startsWith("hide") ? (
+                    <label key={f.key} className="flex items-center gap-2 text-xs text-slate-600">
+                      <input
+                        type="checkbox"
+                        checked={extraFields[f.key] === "1"}
+                        onChange={(e) =>
+                          setExtraFields((prev) => ({
+                            ...prev,
+                            [f.key]: e.target.checked ? "1" : "0",
+                          }))
+                        }
+                        className="h-3.5 w-3.5 cursor-pointer"
+                      />
+                      {f.label}
+                    </label>
+                  ) : (
                   <LabeledField key={f.key} label={f.label}>
                     <Input
                       value={extraFields[f.key] ?? ""}
@@ -971,7 +987,8 @@ export function DocumentDetailEditPanel({
                       className="h-7 text-xs"
                     />
                   </LabeledField>
-                ))}
+                  ),
+                )}
               </div>
             </fieldset>
           </>

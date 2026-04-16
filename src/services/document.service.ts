@@ -93,15 +93,16 @@ export async function createDocument(
   const template = getTemplateEntry(data.templateId);
   const shortLabel = template?.shortLabel ?? "DOC";
 
-  // Generate document number based on template mode
-  const documentNumber =
-    template?.numberMode === "manual"
+  // Use explicit docNumber if provided, otherwise generate
+  const explicitDocNumber = (data.data as { templateFields?: Record<string, string> }).templateFields?.docNumber;
+  const documentNumber = explicitDocNumber
+    || (template?.numberMode === "manual"
       ? generateManualNumber(
           template.numberPrefix ?? shortLabel,
           (data.data as { date?: string }).date ?? new Date().toISOString().slice(0, 10),
           data.documentNumberSuffix,
         )
-      : await generateAutoNumber(data.companyId, shortLabel);
+      : await generateAutoNumber(data.companyId, shortLabel));
   const [row] = await db
     .insert(document)
     .values({
@@ -125,6 +126,7 @@ export async function updateDocument(
   data: {
     companyId?: string;
     customerId?: string;
+    documentNumber?: string;
     data?: Record<string, unknown>;
   }
 ) {
